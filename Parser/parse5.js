@@ -25,7 +25,6 @@ var taskMap = {};
 for(i=0; i<tasks.length; i++){
     (function(i) {
         taskMap[tasks[i].get('id')] = tasks[i].get('name');
-        //console.log(tasks[i].get('name'));
     })(i);
 }
 
@@ -35,7 +34,6 @@ var nodes = etree.findall('./process/laneSet/lane/flowNodeRef');
 for(i=0; i<nodes.length; i++){
     (function(i) {
         graph.addNode(nodes[i].text);
-        //console.log(nodes[i].text);
     })(i);
 }
 
@@ -73,15 +71,18 @@ for(i=0; i<lanes.length; i++){
     })(i);
 }
 
-/*for (var x in laneToTasks){
+for (var x in laneToTasks){
     console.log(x + ': ');
     var value = laneToTasks[x];
-    for (var y in value){
-        console.log(value[y].text.substring(0,4));
-        if(value[y].text.substring(0,4)!="Task")
-            laneToTasks[x].splice(laneToTasks[x].indexOf(value[y]));
+    var numTasks = value.length;
+    for (y=0;y<numTasks;y++){
+        if(value[y].text.substring(0,4)!="Task"){
+            laneToTasks[x].splice(laneToTasks[x].indexOf(value[y]),1);
+            y--;
+            numTasks--;
+        }
     }
-}*/
+}
 
 for (var x in laneToTasks){
     console.log(x + ': ');
@@ -91,7 +92,3 @@ for (var x in laneToTasks){
     }
     console.log('\n');
 }
-
-//console.log(etree.findall('./process/laneSet').length); // entities
-//console.log(etree.findall('./entry/category')[0].get('term')); // monitoring.entity.create
-//console.log(etree.findall('*/category/[@term="monitoring.entity.update"]').length); // 1
