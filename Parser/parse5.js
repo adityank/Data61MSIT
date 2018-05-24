@@ -4,6 +4,9 @@ var fs = require('fs');
 // module for element tree 
 var et = require('elementtree');
 
+var DepGraph = require('dependency-graph').DepGraph;
+var graph = new DepGraph();
+
 // In particular, tree for XML file
 var XML = et.XML;
 var ElementTree = et.ElementTree;
@@ -22,10 +25,30 @@ var taskMap = {};
 for(i=0; i<tasks.length; i++){
     (function(i) {
         taskMap[tasks[i].get('id')] = tasks[i].get('name');
-        console.log(tasks[i].get('name'));
+        //console.log(tasks[i].get('name'));
     })(i);
 }
 
+// add nodes
+var nodes = etree.findall('./process/laneSet/lane/flowNodeRef');
+
+for(i=0; i<nodes.length; i++){
+    (function(i) {
+        graph.addNode(nodes[i].text);
+        //console.log(nodes[i].text);
+    })(i);
+}
+
+//build dependancy graph
+var flows = etree.findall('./process/sequenceFlow');
+for(i=0; i<flows.length; i++){
+    (function(i) {
+        graph.addDependency(flows[i].get('sourceRef'), flows[i].get('targetRef'));
+        //console.log(tasks[i].get('name'));
+    })(i);
+}
+
+console.log(graph.overallOrder());
 
 // Get all participants(lanes)
 var childlanes,numchildlanes,laneName,accessible,childlane;
@@ -46,7 +69,7 @@ for(i=0; i<lanes.length; i++){
             laneName += ", " + childlane.get('name');
             numchildlanes--;
         }
-        console.log(laneName);
+        //console.log(laneName);
     })(i);
 }
 
