@@ -1,0 +1,349 @@
+{
+    "definitions": {
+        "collaboration": {
+            "participant": ""
+        },
+        "process": {
+            "laneSet": {
+                "lane": [
+                    {
+                        "flowNodeRef": [
+                            "StartEvent_0gg5eg0",
+                            "Task_15fwqr8",
+                            "EndEvent_1sx1pte",
+                            "IntermediateThrowEvent_0n6k3k9"
+                        ]
+                    },
+                    {
+                        "flowNodeRef": [
+                            "Task_1n0u060",
+                            "Task_0gdc5s6",
+                            "Task_01t0j4q",
+                            "IntermediateThrowEvent_1gdugs4",
+                            "Task_198078j",
+                            "ExclusiveGateway_001gvx5",
+                            "IntermediateThrowEvent_1j85kmy",
+                            "EndEvent_1u2oj4d",
+                            "ExclusiveGateway_1xp01ve",
+                            "EndEvent_127hkds"
+                        ],
+                        "childLaneSet": {
+                            "lane": [
+                                {
+                                    "flowNodeRef": [
+                                        "Task_1n0u060",
+                                        "Task_0gdc5s6",
+                                        "Task_01t0j4q",
+                                        "ExclusiveGateway_001gvx5",
+                                        "IntermediateThrowEvent_1j85kmy",
+                                        "EndEvent_127hkds"
+                                    ]
+                                },
+                                {
+                                    "flowNodeRef": [
+                                        "IntermediateThrowEvent_1gdugs4",
+                                        "Task_198078j",
+                                        "EndEvent_1u2oj4d",
+                                        "ExclusiveGateway_1xp01ve"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "startEvent": {
+                "outgoing": "SequenceFlow_1xcftc6"
+            },
+            "sequenceFlow": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+            ],
+            "task": [
+                {
+                    "incoming": "SequenceFlow_1xcftc6",
+                    "outgoing": "SequenceFlow_0iz4m9e"
+                },
+                {
+                    "incoming": "SequenceFlow_0wkcmye",
+                    "outgoing": "SequenceFlow_0b93c4m"
+                },
+                {
+                    "incoming": "SequenceFlow_1wskcv0",
+                    "outgoing": "SequenceFlow_0wkcmye"
+                },
+                {
+                    "incoming": "SequenceFlow_0usbbz7",
+                    "outgoing": "SequenceFlow_070ymcw"
+                },
+                {
+                    "incoming": "SequenceFlow_0dbv7tv",
+                    "outgoing": "SequenceFlow_1jon5iz"
+                }
+            ],
+            "intermediateThrowEvent": [
+                {
+                    "incoming": "SequenceFlow_0b93c4m",
+                    "outgoing": "SequenceFlow_0dbv7tv"
+                },
+                {
+                    "incoming": "SequenceFlow_0iz4m9e",
+                    "outgoing": "SequenceFlow_0yaqrcb"
+                },
+                {
+                    "incoming": "SequenceFlow_14bo37u",
+                    "outgoing": "SequenceFlow_0xnmz9t"
+                }
+            ],
+            "exclusiveGateway": {
+                "incoming": "SequenceFlow_0yaqrcb",
+                "outgoing": [
+                    "SequenceFlow_1wskcv0",
+                    "SequenceFlow_0usbbz7"
+                ]
+            },
+            "endEvent": [
+                {
+                    "incoming": "SequenceFlow_0uzxcil"
+                },
+                {
+                    "incoming": "SequenceFlow_0xnmz9t"
+                },
+                {
+                    "incoming": "SequenceFlow_070ymcw"
+                }
+            ],
+            "parallelGateway": {
+                "incoming": "SequenceFlow_1jon5iz",
+                "outgoing": [
+                    "SequenceFlow_0uzxcil",
+                    "SequenceFlow_14bo37u"
+                ]
+            }
+        },
+        "bpmndi:BPMNDiagram": {
+            "bpmndi:BPMNPlane": {
+                "bpmndi:BPMNShape": [
+                    {
+                        "omgdc:Bounds": ""
+                    },
+                    {
+                        "omgdc:Bounds": ""
+                    },
+                    {
+                        "omgdc:Bounds": ""
+                    },
+                    {
+                        "omgdc:Bounds": ""
+                    },
+                    {
+                        "omgdc:Bounds": ""
+                    },
+                    {
+                        "omgdc:Bounds": "",
+                        "bpmndi:BPMNLabel": {
+                            "omgdc:Bounds": ""
+                        }
+                    },
+                    {
+                        "omgdc:Bounds": ""
+                    },
+                    {
+                        "omgdc:Bounds": ""
+                    },
+                    {
+                        "omgdc:Bounds": "",
+                        "bpmndi:BPMNLabel": {
+                            "omgdc:Bounds": ""
+                        }
+                    },
+                    {
+                        "omgdc:Bounds": ""
+                    },
+                    {
+                        "omgdc:Bounds": ""
+                    },
+                    {
+                        "omgdc:Bounds": ""
+                    },
+                    {
+                        "omgdc:Bounds": "",
+                        "bpmndi:BPMNLabel": {
+                            "omgdc:Bounds": ""
+                        }
+                    },
+                    {
+                        "omgdc:Bounds": "",
+                        "bpmndi:BPMNLabel": {
+                            "omgdc:Bounds": ""
+                        }
+                    },
+                    {
+                        "omgdc:Bounds": "",
+                        "bpmndi:BPMNLabel": {
+                            "omgdc:Bounds": ""
+                        }
+                    },
+                    {
+                        "omgdc:Bounds": "",
+                        "bpmndi:BPMNLabel": {
+                            "omgdc:Bounds": ""
+                        }
+                    },
+                    {
+                        "omgdc:Bounds": "",
+                        "bpmndi:BPMNLabel": {
+                            "omgdc:Bounds": ""
+                        }
+                    },
+                    {
+                        "omgdc:Bounds": "",
+                        "bpmndi:BPMNLabel": {
+                            "omgdc:Bounds": ""
+                        }
+                    },
+                    {
+                        "omgdc:Bounds": "",
+                        "bpmndi:BPMNLabel": {
+                            "omgdc:Bounds": ""
+                        }
+                    }
+                ],
+                "bpmndi:BPMNEdge": [
+                    {
+                        "omgdi:waypoint": [
+                            "",
+                            ""
+                        ],
+                        "bpmndi:BPMNLabel": {
+                            "omgdc:Bounds": ""
+                        }
+                    },
+                    {
+                        "omgdi:waypoint": [
+                            "",
+                            ""
+                        ],
+                        "bpmndi:BPMNLabel": {
+                            "omgdc:Bounds": ""
+                        }
+                    },
+                    {
+                        "omgdi:waypoint": [
+                            "",
+                            ""
+                        ],
+                        "bpmndi:BPMNLabel": {
+                            "omgdc:Bounds": ""
+                        }
+                    },
+                    {
+                        "omgdi:waypoint": [
+                            "",
+                            ""
+                        ],
+                        "bpmndi:BPMNLabel": {
+                            "omgdc:Bounds": ""
+                        }
+                    },
+                    {
+                        "omgdi:waypoint": [
+                            "",
+                            ""
+                        ],
+                        "bpmndi:BPMNLabel": {
+                            "omgdc:Bounds": ""
+                        }
+                    },
+                    {
+                        "omgdi:waypoint": [
+                            "",
+                            ""
+                        ],
+                        "bpmndi:BPMNLabel": {
+                            "omgdc:Bounds": ""
+                        }
+                    },
+                    {
+                        "omgdi:waypoint": [
+                            "",
+                            ""
+                        ],
+                        "bpmndi:BPMNLabel": {
+                            "omgdc:Bounds": ""
+                        }
+                    },
+                    {
+                        "omgdi:waypoint": [
+                            "",
+                            ""
+                        ],
+                        "bpmndi:BPMNLabel": {
+                            "omgdc:Bounds": ""
+                        }
+                    },
+                    {
+                        "omgdi:waypoint": [
+                            "",
+                            "",
+                            "",
+                            ""
+                        ],
+                        "bpmndi:BPMNLabel": {
+                            "omgdc:Bounds": ""
+                        }
+                    },
+                    {
+                        "omgdi:waypoint": [
+                            "",
+                            "",
+                            "",
+                            ""
+                        ],
+                        "bpmndi:BPMNLabel": {
+                            "omgdc:Bounds": ""
+                        }
+                    },
+                    {
+                        "omgdi:waypoint": [
+                            "",
+                            ""
+                        ],
+                        "bpmndi:BPMNLabel": {
+                            "omgdc:Bounds": ""
+                        }
+                    },
+                    {
+                        "omgdi:waypoint": [
+                            "",
+                            ""
+                        ],
+                        "bpmndi:BPMNLabel": {
+                            "omgdc:Bounds": ""
+                        }
+                    },
+                    {
+                        "omgdi:waypoint": [
+                            "",
+                            ""
+                        ],
+                        "bpmndi:BPMNLabel": {
+                            "omgdc:Bounds": ""
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}
