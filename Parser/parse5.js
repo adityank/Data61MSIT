@@ -1,3 +1,22 @@
+/******************************************************************************************************************
+* File:parse5.go
+* Project: MSIT-SE Studio Project (Data61)
+* Copyright: Team Unchained
+* Versions:
+*   
+*   26 May 2018 - Adity Kamble - Parsing of a BPMN file done to extract the tasks and lanes. A dependancy graph
+*   is created to identify dependancies between tasks. Tasks are mapped to lanes to identify access control logic. 
+*
+* Description: This is the parser which takes in a BPMN file and stores the extracted information in different objects. 
+*
+* External Dependencies: 
+* 1. Input BPMN file
+* 2. Node-modules: fs, elementtree, dependency-graph
+*
+******************************************************************************************************************/
+
+
+
 // module for file-system
 var fs = require('fs');
 
@@ -11,84 +30,87 @@ var graph = new DepGraph();
 var XML = et.XML;
 var ElementTree = et.ElementTree;
 
-var element = et.Element;
-var subElement = et.SubElement;
+var iter;
 
-var data, etree, i;
-
-data = fs.readFileSync('bpmn/pizza.bpmn').toString();
-etree = et.parse(data);
+// The input bpmn file
+var data = fs.readFileSync('bpmn/pizza.bpmn').toString();
+var etree = et.parse(data);
 
 // Get all tasks
 var tasks = etree.findall('./process/task');
+
+// A mapping between unique task_id and the corresponding task name
 var taskMap = {};
-for(i=0; i<tasks.length; i++){
-    (function(i) {
-        taskMap[tasks[i].get('id')] = tasks[i].get('name');
-    })(i);
+for(iter=0; iter<tasks.length; iter++){
+    (function(iter) {
+        taskMap[tasks[iter].get('id')] = tasks[iter].get('name');
+    })(iter);
 }
 
-// add nodes
+// The nodes of the dependancy tree will be the constructs like gateways and tasks
 var nodes = etree.findall('./process/laneSet/lane/flowNodeRef');
 
-for(i=0; i<nodes.length; i++){
-    (function(i) {
-        graph.addNode(nodes[i].text);
-    })(i);
+// Add the nodes to the graph
+for(iter=0; iter<nodes.length; iter++){
+    (function(iter) {
+        graph.addNode(nodes[iter].text);
+    })(iter);
 }
 
 //build dependancy graph
 var flows = etree.findall('./process/sequenceFlow');
-for(i=0; i<flows.length; i++){
-    (function(i) {
-        graph.addDependency(flows[i].get('sourceRef'), flows[i].get('targetRef'));
-        //console.log(tasks[i].get('name'));
-    })(i);
+for(iter=0; iter<flows.length; iter++){
+    (function(iter) {
+        graph.addDependency(flows[iter].get('sourceRef'), flows[iter].get('targetRef'));
+    })(iter);
 }
 
 console.log(graph.overallOrder());
 
 // Get all participants(lanes)
 var childlanes,numchildlanes,laneName,accessible,childlane;
+
+// Stores mapping between the lane and the tasks(operations) restricted in that lane
 var laneToTasks = {};
 var lanes = etree.findall('./process/laneSet/lane');
-for(i=0; i<lanes.length; i++){
-    (function(i) {
-        laneName = lanes[i].get('name');
-        childlanes = lanes[i].findall('./childLaneSet/lane');
+for(iter=0; iter<lanes.length; iter++){
+    (function(iter) {
+        laneName = lanes[iter].get('name');
+        childlanes = lanes[iter].findall('./childLaneSet/lane');
         numchildlanes = childlanes.length;
+
+        // If no childlanes, map tasks to that lane
         if(numchildlanes == 0){
-            // constructs accessible inside a lane
-            laneToTasks[laneName] = lanes[i].findall('./flowNodeRef');
+            laneToTasks[laneName] = lanes[iter].findall('./flowNodeRef');
         }
+        // else separately map tasks to childlanes
         while(numchildlanes>0){
             childlane = childlanes[numchildlanes-1];
             laneToTasks[childlane.get('name')] = childlane.findall('./flowNodeRef');
             laneName += ", " + childlane.get('name');
             numchildlanes--;
         }
-        //console.log(laneName);
-    })(i);
+    })(iter);
 }
 
-for (var x in laneToTasks){
-    console.log(x + ': ');
-    var value = laneToTasks[x];
+// Filter out non-task nodes from the mapping, since we only need tasks
+for (var lane in laneToTasks){
+    var value = laneToTasks[lane];
     var numTasks = value.length;
-    for (y=0;y<numTasks;y++){
-        if(value[y].text.substring(0,4)!="Task"){
-            laneToTasks[x].splice(laneToTasks[x].indexOf(value[y]),1);
-            y--;
+    for (iter=0;iter<numTasks;iter++){
+        if(value[iter].text.substring(0,4)!="Task"){
+            laneToTasks[lane].splice(laneToTasks[lane].indexOf(value[iter]),1);
+            iter--;
             numTasks--;
         }
     }
 }
 
-for (var x in laneToTasks){
-    console.log(x + ': ');
-    var value = laneToTasks[x];
+for (var lane in laneToTasks){
+    console.log(lane + ': ');
+    var value = laneToTasks[lane];
     for (var y in value){
         console.log(taskMap[value[y].text]+" ");
     }
-    console.log('\n');
+    console.log('----');
 }
