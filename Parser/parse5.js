@@ -65,7 +65,28 @@ for(iter=0; iter<flows.length; iter++){
     })(iter);
 }
 
-console.log(graph.overallOrder());
+//console.log(graph.overallOrder());
+//console.log("dependancies");
+
+// Print dependancies
+for(iter=0; iter<nodes.length; iter++){
+    console.log(nodes[iter].text);
+    (function(iter) {
+        console.log(graph.dependenciesOf(nodes[iter].text));
+    })(iter);
+    console.log("---------------------------------");
+}
+
+/*console.log("dependants");
+// Print dependants
+for(iter=0; iter<nodes.length; iter++){
+    console.log(nodes[iter].text);
+    (function(iter) {
+        console.log(graph.dependantsOf(nodes[iter].text));
+    })(iter);
+    console.log("---------------------------------");
+}*/
+
 
 // Get all participants(lanes)
 var childlanes,numchildlanes,laneName,accessible,childlane;
