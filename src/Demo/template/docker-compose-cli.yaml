@@ -9,8 +9,8 @@
 # Description: This is the template file defining docker containers to simulate testing network.
 #
 # External Dependencies: Hyperledger fabric library
-#                        base\docker-compose-base.yaml
-#                        base\peer-base.yaml
+#                        base\\docker-compose-base.yaml
+#                        base\\peer-base.yaml
 #
 #*****************************************************************************************************************/
 
@@ -23,7 +23,7 @@ version: '2'
 
 volumes:
   orderer.${domain}:
-  ${peerVolumes}
+${peerVolumes}
 
 networks:
   ${networkName}:

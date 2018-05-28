@@ -39,8 +39,8 @@ PeerOrgs:
   # ---------------------------------------------------------------------------
   # Org1
   # ---------------------------------------------------------------------------
-  #- Name: ${peerName}
-    #Domain: ${peerDomainPrefix}.${domain}
+  #- Name: \${peerName}
+    #Domain: \${peerDomainPrefix}.\${domain}
     #EnableNodeOUs: true
     # ---------------------------------------------------------------------------
     # "Specs"
@@ -76,7 +76,7 @@ PeerOrgs:
     # name collisions
     # ---------------------------------------------------------------------------
     #Template:
-    #  Count: ${peerCount}
+    #  Count: 1
       # Start: 5
       # Hostname: {{.Prefix}}{{.Index}} # default
     # ---------------------------------------------------------------------------
@@ -85,6 +85,6 @@ PeerOrgs:
     # Count: The number of user accounts _in addition_ to Admin
     # ---------------------------------------------------------------------------
     #Users:
-    #  Count: ${peerUserCount}
+    #  Count: 1
 
 # cryopto-config-peer.yaml content goes here

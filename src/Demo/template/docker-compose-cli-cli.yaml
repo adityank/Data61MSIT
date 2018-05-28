@@ -12,10 +12,10 @@
       - CORE_PEER_ADDRESS=peer0.${peerDomainPrefix}.${domain}:7051
       - CORE_PEER_LOCALMSPID=${peerName}MSP
       - CORE_PEER_TLS_ENABLED=true
-      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/${peerDomainPrefix}.{domain}/peers/peer0.${peerDomainPrefix}.{domain}/tls/server.crt
-      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/${peerDomainPrefix}.{domain}/peers/peer0.${peerDomainPrefix}.{domain}/tls/server.key
-      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/${peerDomainPrefix}.{domain}/peers/peer0.${peerDomainPrefix}.{domain}/tls/ca.crt
-      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/${peerDomainPrefix}.{domain}/users/Admin@${peerDomainPrefix}.{domain}/msp
+      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/${peerDomainPrefix}.${domain}/peers/peer0.${peerDomainPrefix}.${domain}/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/${peerDomainPrefix}.${domain}/peers/peer0.${peerDomainPrefix}.${domain}/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/${peerDomainPrefix}.${domain}/peers/peer0.${peerDomainPrefix}.${domain}/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/${peerDomainPrefix}.${domain}/users/Admin@${peerDomainPrefix}.${domain}/msp
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: /bin/bash
     volumes:
