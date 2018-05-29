@@ -33,7 +33,7 @@ var ElementTree = et.ElementTree;
 var iter;
 
 // The input bpmn file
-var data = fs.readFileSync('bpmn/pizza.bpmn').toString();
+var data = fs.readFileSync('../../bpmn_examples/pizza.bpmn').toString();
 var etree = et.parse(data);
 
 // Get all tasks

@@ -1,10 +1,10 @@
 {
-  "name": "parser",
+  "name": "translator",
   "version": "1.0.0",
-  "description": "A parser that takes in bpmn file and extracts relevant information",
-  "main": "parser.js",
+  "description": "Translator from BPMN to Go",
+  "main": "main.js",
   "scripts": {
-    "test": "node parser.js"
+    "test": "node main.js"
   },
   "author": "Aditya Kamble",
   "license": "ISC",

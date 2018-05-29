@@ -1,5 +1,5 @@
 var fs = require('fs'),
-	readline = require('readline');
+readline = require('readline');
 
 var writer = fs.createWriteStream('test.go');
 
@@ -7,7 +7,7 @@ var writer = fs.createWriteStream('test.go');
 function generateGo(tasks, args) {
 	console.log('begin');
 
-	var template = fs.readFileSync('./template/task.txt', 'utf8');
+	var template = fs.readFileSync('../../template/task.txt', 'utf8');
 
 	for (var i=0; i<tasks.length; i++) {
 		var task_name = tasks[i];
