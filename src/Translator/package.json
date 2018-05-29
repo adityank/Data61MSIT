@@ -1,0 +1,16 @@
+{
+  "name": "parser",
+  "version": "1.0.0",
+  "description": "A parser that takes in bpmn file and extracts relevant information",
+  "main": "parser.js",
+  "scripts": {
+    "test": "node parser.js"
+  },
+  "author": "Aditya Kamble",
+  "license": "ISC",
+  "dependencies": {
+    "dependency-graph": "^0.7.0",
+    "elementtree": "^0.1.7",
+    "fs": "0.0.1-security"
+  }
+}
