@@ -147,7 +147,7 @@ function generatePeerBase(networkName) {
 
 function generateYAML(orgs, networkName, domain) {
     console.log('---begin generating YAML files---');
-    outpath = 'out/'+domain+'/'+networkName+'/';
+    outpath = '../../out/'+domain+'/'+networkName+'/';
     checkPath(domain,networkName);
     generatePeerBase(networkName);
     generateDockerComposeBase(orgs, networkName, domain);
@@ -158,20 +158,20 @@ function generateYAML(orgs, networkName, domain) {
 }
 
 function checkPath(domain,networkName) {
-    if (!fs.existsSync('out')) {
-        fs.mkdirSync('out');
+    if (!fs.existsSync('../../out')) {
+        fs.mkdirSync('../../out');
     }
-    if (!fs.existsSync('out/'+domain)) {
-        fs.mkdirSync('out/'+domain);
+    if (!fs.existsSync('../../out/'+domain)) {
+        fs.mkdirSync('../../out/'+domain);
     }
-    if (!fs.existsSync('out/'+domain+'/'+networkName)) {
-        fs.mkdirSync('out/'+domain+'/'+networkName);
+    if (!fs.existsSync('../../out/'+domain+'/'+networkName)) {
+        fs.mkdirSync('../../out/'+domain+'/'+networkName);
     }
-    if (!fs.existsSync('out/'+domain+'/'+networkName)) {
-        fs.mkdirSync('out/'+domain+'/'+networkName);
+    if (!fs.existsSync('../../out/'+domain+'/'+networkName)) {
+        fs.mkdirSync('../../out/'+domain+'/'+networkName);
     }
-    if (!fs.existsSync('out/'+domain+'/'+networkName+'/base')) {
-        fs.mkdirSync('out/'+domain+'/'+networkName+'/base');
+    if (!fs.existsSync('../../out/'+domain+'/'+networkName+'/base')) {
+        fs.mkdirSync('../../out/'+domain+'/'+networkName+'/base');
     }
 }
 
