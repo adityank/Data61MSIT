@@ -1,7 +1,7 @@
 var fs = require('fs'),
 readline = require('readline');
 
-var writer = fs.createWriteStream('test.go');
+var writer = fs.createWriteStream('../../test.go');
 
 
 function generateGo(tasks, args) {
