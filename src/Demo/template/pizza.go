@@ -141,14 +141,50 @@ func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response 
 	eventAsBytes, _ := json.Marshal(event)
 	APIstub.PutState(event.ID, eventAsBytes)
 	s.EventIDs = append(s.EventIDs, event.ID)
-	// Deliver deliverer
+	// delivery en route
 	event := Event{
-		Type: "task"
-		ID: "ass123"
+		Type: "event"
+		ID: "enr123"
 		Name: "Assign Deliverer"
 		Status: "notavail"
-		Dependency: []string {"con123",}
-		Access: map[string]bool {"restaurant.example.com":true,}
+		Dependency: []string {"ass123",}
+		Access: map[string]bool {"deliverer.example.com":true,}
+	}
+	eventAsBytes, _ := json.Marshal(event)
+	APIstub.PutState(event.ID, eventAsBytes)
+	s.EventIDs = append(s.EventIDs, event.ID)
+	// deliver order
+	event := Event{
+		Type: "task"
+		ID: "del123"
+		Name: "Deliver Order"
+		Status: "notavail"
+		Dependency: []string {"ass123",}
+		Access: map[string]bool {"deliverer.example.com":true,}
+	}
+	eventAsBytes, _ := json.Marshal(event)
+	APIstub.PutState(event.ID, eventAsBytes)
+	s.EventIDs = append(s.EventIDs, event.ID)
+	// AND
+	event := Event{
+		Type: "AND"
+		ID: "and123"
+		Name: "Parellel Gateway"
+		Status: "notavail"
+		Dependency: []string {"del123",}
+		Access: map[string]bool {,}
+	}
+	eventAsBytes, _ := json.Marshal(event)
+	APIstub.PutState(event.ID, eventAsBytes)
+	s.EventIDs = append(s.EventIDs, event.ID)
+	// collect pizza and pay
+	event := Event{
+		Type: "event"
+		ID: "pay123"
+		Name: "Collect Pizza and Pay"
+		Status: "notavail"
+		Dependency: []string {"and123",}
+		Access: map[string]bool {"customer.example.com",}
 	}
 	eventAsBytes, _ := json.Marshal(event)
 	APIstub.PutState(event.ID, eventAsBytes)
