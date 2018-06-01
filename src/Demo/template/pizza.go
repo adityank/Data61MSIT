@@ -30,13 +30,17 @@ import (
 
 // Define the Smart Contract structure
 type SmartContract struct {
+	EventIDs []string
 }
 
 // Define the order structure, with 5 properties.  Structure tags are used by encoding/json library
-type TaskStatus struct {
-	TaskId string `json:"id"`
-	TaskName  string `json:"name"`
-	Status string `json:"status"`
+type Event struct {
+	Type string `json:"type"`
+	ID string `json:"id"`
+	Name  string `json:"name"`
+	Status string `json:"status"` // avail, notavail, done
+	Dependency []string `json:"dependency"`
+	Access map[string]bool `json:"access"`
 }
 
 var accessControl = map[string]map[string]bool {
@@ -57,17 +61,98 @@ var accessControl = map[string]map[string]bool {
 	},
 }
 
-var taskDependency = map[string][]string {
-	"confirmOrder": ["AND","createOrder"],
-	"createOrder": ["START"],
-	"cancelOrder": ["AND","createOrder"]
-}
 
 /*
  * The Init method is called when the Smart Contract "pizza" is instantiated by the blockchain network
  * Best practice is to have any Ledger initialization in separate function -- see initLedger()
  */
 func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response {
+	var event Event
+	var eventAsBytes []byte
+	// create order
+	event := Event{
+		Type: "task"
+		ID: "cre123"
+		Name: "Create Order"
+		Status: "avail"
+		Dependency: []string {,}
+		Access: map[string]bool {"customer.example.com":true,}
+	}
+	eventAsBytes, _ := json.Marshal(event)
+	APIstub.PutState(event.ID, eventAsBytes)
+	s.EventIDs = append(s.EventIDs, event.ID)
+	// receive order
+	event := Event{
+		Type: "event"
+		ID: "rec123"
+		Name: "Receive Order"
+		Status: "notavail"
+		Dependency: []string {"cre123",}
+		Access: map[string]bool {"restaurant.example.com":true,}
+	}
+	eventAsBytes, _ := json.Marshal(event)
+	APIstub.PutState(event.ID, eventAsBytes)
+	s.EventIDs = append(s.EventIDs, event.ID)
+	// XOR
+	event := Event{
+		Type: "XOR"
+		ID: "xor123"
+		Name: "Exclusive Gateway"
+		Status: "notavail"
+		Dependency: []string {"rec123",}
+		Access: map[string]bool {,}
+	}
+	eventAsBytes, _ := json.Marshal(event)
+	APIstub.PutState(event.ID, eventAsBytes)
+	s.EventIDs = append(s.EventIDs, event.ID)
+	// confirm order
+	event := Event{
+		Type: "task"
+		ID: "con123"
+		Name: "Confirm Order"
+		Status: "notavail"
+		Dependency: []string {"xor123",}
+		Access: map[string]bool {"restaurant.example.com":true,}
+	}
+	eventAsBytes, _ := json.Marshal(event)
+	APIstub.PutState(event.ID, eventAsBytes)
+	s.EventIDs = append(s.EventIDs, event.ID)
+	// cancel order
+	event := Event{
+		Type: "task"
+		ID: "can123"
+		Name: "Cancel Order"
+		Status: "notavail"
+		Dependency: []string {"xor123",}
+		Access: map[string]bool {"restaurant.example.com":true,}
+	}
+	eventAsBytes, _ := json.Marshal(event)
+	APIstub.PutState(event.ID, eventAsBytes)
+	s.EventIDs = append(s.EventIDs, event.ID)
+	// assign deliverer
+	event := Event{
+		Type: "task"
+		ID: "ass123"
+		Name: "Assign Deliverer"
+		Status: "notavail"
+		Dependency: []string {"con123",}
+		Access: map[string]bool {"restaurant.example.com":true,}
+	}
+	eventAsBytes, _ := json.Marshal(event)
+	APIstub.PutState(event.ID, eventAsBytes)
+	s.EventIDs = append(s.EventIDs, event.ID)
+	// Deliver deliverer
+	event := Event{
+		Type: "task"
+		ID: "ass123"
+		Name: "Assign Deliverer"
+		Status: "notavail"
+		Dependency: []string {"con123",}
+		Access: map[string]bool {"restaurant.example.com":true,}
+	}
+	eventAsBytes, _ := json.Marshal(event)
+	APIstub.PutState(event.ID, eventAsBytes)
+	s.EventIDs = append(s.EventIDs, event.ID)
 	return shim.Success(nil)
 }
 
