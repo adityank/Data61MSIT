@@ -1,0 +1,4 @@
+.idea/*
+out/*
+src/Demo/out/*
+.DS_STORE

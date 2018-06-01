@@ -18,6 +18,7 @@ package main
 import (
 	"bytes"
 	"strings"
+	"errors"
 	"encoding/json"
 	"encoding/pem"
 	"crypto/x509"
@@ -33,7 +34,7 @@ type SmartContract struct {
 	EventIDs []string
 }
 
-// Define the order structure, with 5 properties.  Structure tags are used by encoding/json library
+// Define the Event structure, with 6 properties.  Structure tags are used by encoding/json library
 type Event struct {
 	Type string `json:"type"`
 	ID string `json:"id"`
@@ -41,24 +42,6 @@ type Event struct {
 	Status string `json:"status"` // avail, notavail, done
 	Dependency []string `json:"dependency"`
 	Access map[string]bool `json:"access"`
-}
-
-var accessControl = map[string]map[string]bool {
-	"confirmOrder": map[string]bool {
-		"restaurant.example.com":true,
-	},
-	"createOrder": map[string]bool {
-		"customer.example.com":true,
-	},
-	"cancelOrder": map[string]bool {
-		"restaurant.example.com":true,
-	},
-	"assignDeliverer": map[string]bool {
-		"restaurant.example.com":true,
-	},
-	"deliverOrder": map[string]bool {
-		"deliverer.example.com":true,
-	},
 }
 
 
@@ -70,7 +53,7 @@ func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response 
 	var event Event
 	var eventAsBytes []byte
 	// create order
-	event := Event{
+	event = Event{
 		Type: "task"
 		ID: "cre123"
 		Name: "Create Order"
@@ -78,11 +61,11 @@ func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response 
 		Dependency: []string {,}
 		Access: map[string]bool {"customer.example.com":true,}
 	}
-	eventAsBytes, _ := json.Marshal(event)
+	eventAsBytes, _ = json.Marshal(event)
 	APIstub.PutState(event.ID, eventAsBytes)
 	s.EventIDs = append(s.EventIDs, event.ID)
 	// receive order
-	event := Event{
+	event = Event{
 		Type: "event"
 		ID: "rec123"
 		Name: "Receive Order"
@@ -90,11 +73,11 @@ func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response 
 		Dependency: []string {"cre123",}
 		Access: map[string]bool {"restaurant.example.com":true,}
 	}
-	eventAsBytes, _ := json.Marshal(event)
+	eventAsBytes, _ = json.Marshal(event)
 	APIstub.PutState(event.ID, eventAsBytes)
 	s.EventIDs = append(s.EventIDs, event.ID)
 	// XOR
-	event := Event{
+	event = Event{
 		Type: "XOR"
 		ID: "xor123"
 		Name: "Exclusive Gateway"
@@ -102,11 +85,11 @@ func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response 
 		Dependency: []string {"rec123",}
 		Access: map[string]bool {,}
 	}
-	eventAsBytes, _ := json.Marshal(event)
+	eventAsBytes, _ = json.Marshal(event)
 	APIstub.PutState(event.ID, eventAsBytes)
 	s.EventIDs = append(s.EventIDs, event.ID)
 	// confirm order
-	event := Event{
+	event = Event{
 		Type: "task"
 		ID: "con123"
 		Name: "Confirm Order"
@@ -114,11 +97,11 @@ func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response 
 		Dependency: []string {"xor123",}
 		Access: map[string]bool {"restaurant.example.com":true,}
 	}
-	eventAsBytes, _ := json.Marshal(event)
+	eventAsBytes, _ = json.Marshal(event)
 	APIstub.PutState(event.ID, eventAsBytes)
 	s.EventIDs = append(s.EventIDs, event.ID)
 	// cancel order
-	event := Event{
+	event = Event{
 		Type: "task"
 		ID: "can123"
 		Name: "Cancel Order"
@@ -126,11 +109,11 @@ func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response 
 		Dependency: []string {"xor123",}
 		Access: map[string]bool {"restaurant.example.com":true,}
 	}
-	eventAsBytes, _ := json.Marshal(event)
+	eventAsBytes, _ = json.Marshal(event)
 	APIstub.PutState(event.ID, eventAsBytes)
 	s.EventIDs = append(s.EventIDs, event.ID)
 	// assign deliverer
-	event := Event{
+	event = Event{
 		Type: "task"
 		ID: "ass123"
 		Name: "Assign Deliverer"
@@ -138,11 +121,11 @@ func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response 
 		Dependency: []string {"con123",}
 		Access: map[string]bool {"restaurant.example.com":true,}
 	}
-	eventAsBytes, _ := json.Marshal(event)
+	eventAsBytes, _ = json.Marshal(event)
 	APIstub.PutState(event.ID, eventAsBytes)
 	s.EventIDs = append(s.EventIDs, event.ID)
 	// delivery en route
-	event := Event{
+	event = Event{
 		Type: "event"
 		ID: "enr123"
 		Name: "Assign Deliverer"
@@ -150,11 +133,11 @@ func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response 
 		Dependency: []string {"ass123",}
 		Access: map[string]bool {"deliverer.example.com":true,}
 	}
-	eventAsBytes, _ := json.Marshal(event)
+	eventAsBytes, _ = json.Marshal(event)
 	APIstub.PutState(event.ID, eventAsBytes)
 	s.EventIDs = append(s.EventIDs, event.ID)
 	// deliver order
-	event := Event{
+	event = Event{
 		Type: "task"
 		ID: "del123"
 		Name: "Deliver Order"
@@ -162,11 +145,11 @@ func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response 
 		Dependency: []string {"ass123",}
 		Access: map[string]bool {"deliverer.example.com":true,}
 	}
-	eventAsBytes, _ := json.Marshal(event)
+	eventAsBytes, _ = json.Marshal(event)
 	APIstub.PutState(event.ID, eventAsBytes)
 	s.EventIDs = append(s.EventIDs, event.ID)
 	// AND
-	event := Event{
+	event = Event{
 		Type: "AND"
 		ID: "and123"
 		Name: "Parellel Gateway"
@@ -174,11 +157,11 @@ func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response 
 		Dependency: []string {"del123",}
 		Access: map[string]bool {,}
 	}
-	eventAsBytes, _ := json.Marshal(event)
+	eventAsBytes, _ = json.Marshal(event)
 	APIstub.PutState(event.ID, eventAsBytes)
 	s.EventIDs = append(s.EventIDs, event.ID)
 	// collect pizza and pay
-	event := Event{
+	event = Event{
 		Type: "event"
 		ID: "pay123"
 		Name: "Collect Pizza and Pay"
@@ -186,15 +169,15 @@ func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response 
 		Dependency: []string {"and123",}
 		Access: map[string]bool {"customer.example.com",}
 	}
-	eventAsBytes, _ := json.Marshal(event)
+	eventAsBytes, _ = json.Marshal(event)
 	APIstub.PutState(event.ID, eventAsBytes)
 	s.EventIDs = append(s.EventIDs, event.ID)
 	return shim.Success(nil)
 }
 
 
-func (domain string) hasAccess(function string) bool {
-	if domains, ok:=accessControl[function]; ok {
+func (domain string) hasAccess(event Event) bool {
+	if domains, ok:=event.Access[function]; ok {
 		if access, found:=domains[domain];found {
 			return access
 		} else {
@@ -205,6 +188,43 @@ func (domain string) hasAccess(function string) bool {
 	}
 }
 
+
+func (s *SmartContract) TryEvent(APIstub shim.ChaincodeStubInterface, eventID string) bool {
+	eventAsBytes, _ := APIstub.GetState(eventID)
+	targetEvent := Event{}
+	json.Unmarshal(eventAsBytes, &targetEvent)
+
+	if targetEvent.Type == "task" {
+		if targetEvent.Status == "done" {
+			return false
+		} else if 
+	}
+}
+
+
+func (s *SmartContract) GetCaller(APIstub shim.ChaincodeStubInterface) (string,error) {
+    // GetCreator returns marshaled serialized identity of the client
+    creatorByte,_:= APIstub.GetCreator()
+    certStart := bytes.IndexAny(creatorByte, "-----BEGIN")
+    if certStart == -1 {
+       return nil,errors.New("No certificate found")
+    }
+    certText := creatorByte[certStart:]
+    bl, _ := pem.Decode(certText)
+    if bl == nil {
+       return nil,errors.New（"Could not decode the PEM structure"）
+    }
+
+    cert, err := x509.ParseCertificate(bl.Bytes)
+    if err != nil {
+       return nil,errors.New("ParseCertificate failed")
+    }
+    uname:=cert.Subject.CommonName
+    return uname, nil
+}
+
+
+
 /*
  * The Invoke method is called as a result of an application request to run the Smart Contract "pizza"
  * The calling application program has also specified the particular smart contract function to be called, with arguments
@@ -214,28 +234,7 @@ func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respons
 	// Retrieve the requested Smart Contract function and arguments
 	function, args := APIstub.GetFunctionAndParameters()
 
-    // GetCreator returns marshaled serialized identity of the client
-    creatorByte,_:= APIstub.GetCreator()
-    certStart := bytes.IndexAny(creatorByte, "-----BEGIN")
-    if certStart == -1 {
-       return shim.Error("No certificate found")
-    }
-    certText := creatorByte[certStart:]
-    bl, _ := pem.Decode(certText)
-    if bl == nil {
-       return shim.Error("Could not decode the PEM structure")
-    }
 
-    cert, err := x509.ParseCertificate(bl.Bytes)
-    if err != nil {
-       return shim.Error("ParseCertificate failed")
-    }
-    uname:=cert.Subject.CommonName
-    domainStart := strings.Index(uname,"@")
-    if domainStart == -1 {
-    	return shim.Error("Could not parce certificate domain")
-    }
-    domain := uname[domainStart+1:]
 
 	// Route to the appropriate handler function to interact with the ledger appropriately
 	if !domain.hasAccess(function) {
