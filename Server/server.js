@@ -25,7 +25,6 @@ REST.prototype.connectMysql = function() {
     });
 
     // Here make the connection to the bpmn database
-
     pool.getConnection(function(err,connection) {
         if(err) {
           self.stop(err);
@@ -36,7 +35,6 @@ REST.prototype.connectMysql = function() {
 }
 
 // Configure express and the body parser so the server process can get parsed URLs. 
-
 REST.prototype.configureExpress = function(connection) {
       var self = this;
       app.use(bodyParser.urlencoded({ extended: true }));

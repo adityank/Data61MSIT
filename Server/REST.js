@@ -1,34 +1,40 @@
+/* 
+  This provides restful api for server
+  @by700git
+*/
 
+// require database
+var mysql   = require("mysql");
 
-var mysql   = require("mysql");     //Database
 
 function REST_ROUTER(router,connection) {
     var self = this;
     self.handleRoutes(router,connection);
 }
 
-// Define the routes. A route is a path taken through the code dependent upon contents of the URL
 
+// Define the routes. A route is a path taken through the code dependent upon contents of the URL
 REST_ROUTER.prototype.handleRoutes= function(router,connection) {
 
     // GET with no specifier - returns system version information
     // req paramdter is the request object
     // res parameter is the response object
-
     router.get("/",function(req,res){
         res.json({"Message":"BPMN Translation Server Version 1.0"});
     });
 
+
+    // Index page used for testing
     router.get("/index",function(req,res){
         res.sendFile( __dirname + "/public/index.html" );
     });
 
     
-    // GET for /pending specifier - returns all pending orders currently stored in the database
+    // POST /api/v1/translate
     // req paramdter is the request object
     // res parameter is the response object
     /*
-    Request format
+    POST format
     {
         //  The BPMN    model   in  XML
         "xmlModel":
@@ -50,5 +56,5 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     });
 }
 
-// The next line just makes this module available
+// Makes this module available
 module.exports = REST_ROUTER;
