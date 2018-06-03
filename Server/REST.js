@@ -39,8 +39,14 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         "usePetriMethod":   true
     }
     */
-    router.post("/v1/translate",function(req,res){
+    router.post("/api/v1/translate",function(req,res){
         console.log("Translating the BPMN file" );
+        response = {
+          xmlModel:req.body.xmlModel,
+          processName:req.body.processName
+        };
+        console.log(response);
+        res.end(JSON.stringify(response));
     });
 }
 
