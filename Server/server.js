@@ -43,7 +43,8 @@ REST.prototype.configureExpress = function(connection) {
       app.use(bodyParser.json());
       app.use(bodyParser.text());
       var router = express.Router();
-      app.use('/api', router);
+      app.use('', router);
+      app.use(express.static('public'));
       var rest_router = new rest(router,connection);
       self.startServer();
 }

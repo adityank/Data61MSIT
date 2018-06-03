@@ -19,6 +19,10 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         res.json({"Message":"BPMN Translation Server Version 1.0"});
     });
 
+    router.get("/index",function(req,res){
+        res.sendFile( __dirname + "/public/index.html" );
+    });
+
     
     // GET for /pending specifier - returns all pending orders currently stored in the database
     // req paramdter is the request object
