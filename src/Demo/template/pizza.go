@@ -39,7 +39,7 @@ type Event struct {
 	Type string `json:"type"`
 	ID string `json:"id"`
 	Name  string `json:"name"`
-	Status string `json:"status"` // avail, notavail, done
+	Status string `json:"status"` // notavail, avail (gateways), done (tasks and XOR)
 	Dependency []string `json:"dependency"`
 	Access map[string]bool `json:"access"`
 }
@@ -189,16 +189,94 @@ func (domain string) hasAccess(event Event) bool {
 }
 
 
-func (s *SmartContract) TryEvent(APIstub shim.ChaincodeStubInterface, eventID string) bool {
-	eventAsBytes, _ := APIstub.GetState(eventID)
+func (s *SmartContract) TryEvent(APIstub shim.ChaincodeStubInterface, eventID string) (bool,error) {
+	eventAsBytes, err := APIstub.GetState(eventID)
+	if err!=nil {
+		return false, err
+	}
+
 	targetEvent := Event{}
 	json.Unmarshal(eventAsBytes, &targetEvent)
 
 	if targetEvent.Type == "task" {
 		if targetEvent.Status == "done" {
-			return false
-		} else if 
+			return false, nil
+		} else if targetEvent.Status == "notavail" {
+
+		} else {
+			return false, errors.New("Unexpected event status for "+targetEvent.ID)
+		}
+	} else if targetEvent.Type == "event" {
+
+	} else if targetEvent.Type == "AND" {
+
+	} else if targetEvent.Type == "OR" {
+
+	} else if targetEvent.Type == "XOR" {
+
+	} else {
+		return false, errors.New("Unexpected event type for "+targetEvent.ID)
 	}
+}
+
+// This verifies whether the prerequisite for an event is satisfied
+// i.e. any incoming event has been done / all incoming events have been done for AND
+func (s *SmartContract) VerifyPrereq(APIstub shim.ChaincodeStubInterface, eventID string) (bool,error) {
+	targetEvent, err := s.GetEvent(APIstub, eventID)
+	if err!=nil {
+		return  false, err
+	}
+	
+	if targetEvent.Type == "task" {
+
+	} else if targetEvent.Type == "event" {
+		prereq, err1 := s.VerifyPrereq
+	} else if targetEvent.Type == "AND" {
+
+	} else if targetEvent.Type == "OR" {
+
+	} else if targetEvent.Type == "XOR" {
+
+	} else {
+		return false, errors.New("Unexpected event type for "+targetEvent.ID)
+	}
+}
+
+// This function checks if the event by eventID is done for tasks/event
+// or prereq is done for gateways
+func (s *SmartContract) VerifySelf(APIstub shim.ChaincodeStubInterface, eventID string) (bool,error) {
+	targetEvent, err := s.GetEvent(APIstub, eventID)
+	if err!=nil {
+		return  false, err
+	}
+
+	if targetEvent.Type == "task" {
+		return targetEvent.Status == "done", nil
+	} else if targetEvent.Type == "event" {
+		prereq, err1 := s.VerifyPrereq(APIstub, eventID)
+		if err1!=nil {
+			return false, err1
+		}
+		if 
+	} else if targetEvent.Type == "AND" {
+
+	} else if targetEvent.Type == "OR" {
+
+	} else if targetEvent.Type == "XOR" {
+
+	} else {
+		return false, errors.New("Unexpected event type for "+targetEvent.ID)
+	}
+}
+
+func (s *SmartContract) GetEvent(APIstub shim.ChaincodeStubInterface, eventID string) (Event, error) {
+	eventAsBytes, err := APIstub.GetState(eventID)
+	if err!=nil {
+		return nil, err
+	}
+	targetEvent := Event{}
+	json.Unmarshal(eventAsBytes, &targetEvent)
+	return targetEvent,nil
 }
 
 
