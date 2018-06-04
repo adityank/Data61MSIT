@@ -15,8 +15,6 @@
 *
 ******************************************************************************************************************/
 
-
-
 // module for file-system
 var fs = require('fs');
 
@@ -65,6 +63,23 @@ for(iter=0; iter<flows.length; iter++){
     })(iter);
 }
 
+function addValueToList(key, value) {
+    if(dep[key])
+        dep[key] = dep[key];
+    else
+        dep[key] = [];
+    dep[key].push(value);
+}
+var dep = {};
+// store immediate dependants
+for(iter=0; iter<flows.length; iter++){
+    (function(iter) {
+        console.log(flows[iter].get('targetRef') + "----==----" + flows[iter].get('sourceRef'));
+        addValueToList(flows[iter].get('sourceRef'),flows[iter].get('targetRef'));
+    })(iter);
+}
+
+/*
 //console.log(graph.overallOrder());
 //console.log("dependancies");
 
@@ -77,7 +92,7 @@ for(iter=0; iter<nodes.length; iter++){
     console.log("---------------------------------");
 }
 
-/*console.log("dependants");
+console.log("dependants");
 // Print dependants
 for(iter=0; iter<nodes.length; iter++){
     console.log(nodes[iter].text);
@@ -127,11 +142,22 @@ for (var lane in laneToTasks){
     }
 }
 
+// Print lanes and the tasks belonging to that lane
 for (var lane in laneToTasks){
     console.log(lane + ': ');
     var value = laneToTasks[lane];
     for (var y in value){
         console.log(taskMap[value[y].text]+" ");
+    }
+    console.log('----');
+}
+
+// Print all constructs and its dependants
+for (var task in dep){
+    console.log(task + ': ');
+    var value = dep[task].length;
+    for (iter=0;iter<value;iter++){
+        console.log(dep[task][iter]+" ");
     }
     console.log('----');
 }

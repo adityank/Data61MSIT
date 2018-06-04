@@ -9,6 +9,7 @@
   "author": "Aditya Kamble",
   "license": "ISC",
   "dependencies": {
+    "collections": "^5.1.2",
     "dependency-graph": "^0.7.0",
     "elementtree": "^0.1.7",
     "fs": "0.0.1-security"
