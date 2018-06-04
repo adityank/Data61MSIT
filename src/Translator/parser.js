@@ -6,12 +6,16 @@
 *   
 *   26 May 2018 - Adity Kamble - Parsing of a BPMN file done to extract the tasks and lanes. A dependancy graph
 *   is created to identify dependancies between tasks. Tasks are mapped to lanes to identify access control logic. 
+*   04 June 2018 - Adity Kamble - Refactored by creating separate functions. Returning mainly 3 things:
+*   1. Incoming (parent) nodes for every construct.
+*   2. Outgoing (child) nodes for every construct.
+*   3. Access to tasks every lane has
 *
 * Description: This is the parser which takes in a BPMN file and stores the extracted information in different objects. 
 *
 * External Dependencies: 
-* 1. Input BPMN file
-* 2. Node-modules: fs, elementtree, dependency-graph
+* 1. Path for existing BPMN file.
+* 2. Node-modules: fs, elementtree
 *
 ******************************************************************************************************************/
 
@@ -157,24 +161,24 @@ function parse(filename){
         console.log('----');
     }
 
-    // Print all constructs and its dependants
+    // Print all constructs and its dependancies
     for (var task in incomingMap){
-        console.log(task + ': ');
         var value = incomingMap[task].length;
+        var parent = "";
         for (var iter=0;iter<value;iter++){
-            console.log(incomingMap[task][iter]+" ");
+            parent += incomingMap[task][iter]+", ";
         }
-        console.log('----');
+        console.log(task + ': ' + parent);
     }
-
+    console.log(".-.-..-.--.--.-.-..-.--.-.-");
     // Print all constructs and its dependants
     for (var task in outgoingMap){
-        console.log(task + ': ');
         var value = outgoingMap[task].length;
+        var child = "";
         for (var iter=0;iter<value;iter++){
-            console.log(outgoingMap[task][iter]+" ");
+            child += outgoingMap[task][iter]+", ";
         }
-        console.log('----');
+        console.log(task + ': ' + child);
     }*/
 
 }
