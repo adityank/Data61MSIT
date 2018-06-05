@@ -39,8 +39,10 @@ type Event struct {
 	Type string `json:"type"`
 	ID string `json:"id"`
 	Name  string `json:"name"`
-	Status string `json:"status"` // notavail, avail (gateways), done (tasks and XOR)
-	Dependency []string `json:"dependency"`
+	Token int `json:"token"`
+	XORtoken []string `json:"xortoken"`
+	Parents []string `json:"parents"`
+	Children []string `json:"children"`
 	Access map[string]bool `json:"access"`
 }
 
@@ -50,14 +52,32 @@ type Event struct {
  * Best practice is to have any Ledger initialization in separate function -- see initLedger()
  */
 func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response {
+	var StartIDs []string
 	var event Event
 	var eventAsBytes []byte
+	// start
+	event = Event{
+		Type: "start"
+		ID: "sta123"
+		Name: "Start"
+		Token: 1
+		XORtoken: []string {,}
+		Parents: []string {,}
+		Children []string {"cre123",}
+		Access map[string]bool {,}
+	}
+	eventAsBytes, _ = json.Marshal(event)
+	APIstub.PutState(event.ID, eventAsBytes)
+	StartIDs = append(StartIDs, event.ID)
+
 	// create order
 	event = Event{
 		Type: "task"
 		ID: "cre123"
 		Name: "Create Order"
-		Status: "avail"
+		Token: 0
+		XORtoken: []string{,}
+		Parents: []string {"sta123",}
 		Dependency: []string {,}
 		Access: map[string]bool {"customer.example.com":true,}
 	}
@@ -189,85 +209,55 @@ func (domain string) hasAccess(event Event) bool {
 }
 
 
-func (s *SmartContract) TryEvent(APIstub shim.ChaincodeStubInterface, eventID string) (bool,error) {
-	eventAsBytes, err := APIstub.GetState(eventID)
+func (s *SmartContract) DoTask(APIstub shim.ChaincodeStubInterface, taskID string) (bool,error) {
+	targetEvent, err := s.GetEvent(APIstub, taskID)
 	if err!=nil {
 		return false, err
 	}
-
-	targetEvent := Event{}
-	json.Unmarshal(eventAsBytes, &targetEvent)
-
 	if targetEvent.Type == "task" {
-		if targetEvent.Status == "done" {
+		if targetEvent.Token > 0 {
+			s.ConsumeToken(APIstub, targetEvent)
+			s.PropagateToken(APIstub, targetEvent)
+			return true, nil
+		} else if len(targetEvent.XORtoken)>0 {
+			for i,xorID := range targetEvent.XORtoken {
+				xor, err := s.GetEvent(APIstub, xorID)
+				if xor.Token>0 { // found a usable XOR token
+					s.ConsumeToken(APIstub, xor)
+					// delete tested XOR tokens
+					targetEvent.XORtoken = targetEvent.XORtoken[i+1:]
+					s.PropagateToken(APIstub, targetEvent)
+					return true, nil
+				}
+			}
+			// delete all tested XOR tokens
+			targetEvent.XORtoken = []string {,}
+			s.PutEvent(APIstub, targetEvent)
 			return false, nil
-		} else if targetEvent.Status == "notavail" {
-
 		} else {
-			return false, errors.New("Unexpected event status for "+targetEvent.ID)
+			return false, nil
 		}
-	} else if targetEvent.Type == "event" {
-
-	} else if targetEvent.Type == "AND" {
-
-	} else if targetEvent.Type == "OR" {
-
-	} else if targetEvent.Type == "XOR" {
-
 	} else {
-		return false, errors.New("Unexpected event type for "+targetEvent.ID)
+		return false, errors.New("Event type unexecutable: "+targetEvent.ID+", "+targetEvent.Type)
 	}
 }
 
-// This verifies whether the prerequisite for an event is satisfied
-// i.e. any incoming event has been done / all incoming events have been done for AND
-func (s *SmartContract) VerifyPrereq(APIstub shim.ChaincodeStubInterface, eventID string) (bool,error) {
-	targetEvent, err := s.GetEvent(APIstub, eventID)
-	if err!=nil {
-		return  false, err
-	}
-	
-	if targetEvent.Type == "task" {
 
-	} else if targetEvent.Type == "event" {
-		prereq, err1 := s.VerifyPrereq
-	} else if targetEvent.Type == "AND" {
-
-	} else if targetEvent.Type == "OR" {
-
-	} else if targetEvent.Type == "XOR" {
-
-	} else {
-		return false, errors.New("Unexpected event type for "+targetEvent.ID)
-	}
+func (s *SmartContract) ConsumeToken(APIstub shim.ChaincodeStubInterface, event Event) {
+	event.Token -= 1
+	s.PutEvent(APIstub, event)
 }
 
-// This function checks if the event by eventID is done for tasks/event
-// or prereq is done for gateways
-func (s *SmartContract) VerifySelf(APIstub shim.ChaincodeStubInterface, eventID string) (bool,error) {
-	targetEvent, err := s.GetEvent(APIstub, eventID)
-	if err!=nil {
-		return  false, err
+func (s *SmartContract) PropagateToken(APIstub shim.ChaincodeStubInterface, event Event) {
+	for _, child := range event.Children {
+		s.AddToken(APIstub, child, targetEvent.ID)
 	}
-
-	if targetEvent.Type == "task" {
-		return targetEvent.Status == "done", nil
-	} else if targetEvent.Type == "event" {
-		prereq, err1 := s.VerifyPrereq(APIstub, eventID)
-		if err1!=nil {
-			return false, err1
-		}
-		if 
-	} else if targetEvent.Type == "AND" {
-
-	} else if targetEvent.Type == "OR" {
-
-	} else if targetEvent.Type == "XOR" {
-
-	} else {
-		return false, errors.New("Unexpected event type for "+targetEvent.ID)
-	}
+	//recursive
+	// if self is XOR, add xor token instead
+	// if child is AND, check all incoming
 }
+
+
 
 func (s *SmartContract) GetEvent(APIstub shim.ChaincodeStubInterface, eventID string) (Event, error) {
 	eventAsBytes, err := APIstub.GetState(eventID)
@@ -279,6 +269,10 @@ func (s *SmartContract) GetEvent(APIstub shim.ChaincodeStubInterface, eventID st
 	return targetEvent,nil
 }
 
+func (s *SmartContract) PutEvent(APIstub shim.ChaincodeStubInterface, event Event) {
+	eventAsBytes,_ := json.Marshal(event)
+	APIstub.PutState(event.ID, eventAsBytes)
+}
 
 func (s *SmartContract) GetCaller(APIstub shim.ChaincodeStubInterface) (string,error) {
     // GetCreator returns marshaled serialized identity of the client
