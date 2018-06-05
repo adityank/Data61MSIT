@@ -6,6 +6,7 @@
 *   1.0 March 2018 - Initial implementation by Dongliang Zhou
 *	2.0 March 2018 - Added access control logic by Dongliang Zhou
 *   3.0 May 2018 - Refactor to include only information derivable from BPMN so that can be templated. Dongliang Zhou
+*   3.1 Jun 2018 - Transform to use token method to control task availability
 *
 * Description: This is the smart contract created manually to implement the pizza BPMN. 
 *
@@ -41,7 +42,7 @@ type Event struct {
 	Name  string `json:"name"`
 	Token int `json:"token"`
 	XORtoken []string `json:"xortoken"`
-	Parents []string `json:"parents"`
+	ANDtoken map[string]int `json:"andtoken"`
 	Children []string `json:"children"`
 	Access map[string]bool `json:"access"`
 }
@@ -62,7 +63,7 @@ func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response 
 		Name: "Start"
 		Token: 1
 		XORtoken: []string {,}
-		Parents: []string {,}
+		ANDtoken: map[string]int {,}
 		Children []string {"cre123",}
 		Access map[string]bool {,}
 	}
@@ -76,9 +77,9 @@ func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response 
 		ID: "cre123"
 		Name: "Create Order"
 		Token: 0
-		XORtoken: []string{,}
-		Parents: []string {"sta123",}
-		Dependency: []string {,}
+		XORtoken: []string {,}
+		ANDtoken: map[string]int {,}
+		Children: []string {"rec123",}
 		Access: map[string]bool {"customer.example.com":true,}
 	}
 	eventAsBytes, _ = json.Marshal(event)
@@ -89,8 +90,9 @@ func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response 
 		Type: "event"
 		ID: "rec123"
 		Name: "Receive Order"
-		Status: "notavail"
-		Dependency: []string {"cre123",}
+		XORtoken: []string {,}
+		ANDtoken: map[string]int {,}
+		Children: []string {"xor123",}
 		Access: map[string]bool {"restaurant.example.com":true,}
 	}
 	eventAsBytes, _ = json.Marshal(event)
@@ -101,8 +103,9 @@ func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response 
 		Type: "XOR"
 		ID: "xor123"
 		Name: "Exclusive Gateway"
-		Status: "notavail"
-		Dependency: []string {"rec123",}
+		XORtoken: []string {,}
+		ANDtoken: map[string]int {,}
+		Children: []string {"con123","can123",}
 		Access: map[string]bool {,}
 	}
 	eventAsBytes, _ = json.Marshal(event)
@@ -113,8 +116,9 @@ func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response 
 		Type: "task"
 		ID: "con123"
 		Name: "Confirm Order"
-		Status: "notavail"
-		Dependency: []string {"xor123",}
+		XORtoken: []string {,}
+		ANDtoken: map[string]int {,}
+		Children: []string {"ass123",}
 		Access: map[string]bool {"restaurant.example.com":true,}
 	}
 	eventAsBytes, _ = json.Marshal(event)
@@ -125,8 +129,9 @@ func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response 
 		Type: "task"
 		ID: "can123"
 		Name: "Cancel Order"
-		Status: "notavail"
-		Dependency: []string {"xor123",}
+		XORtoken: []string {,}
+		ANDtoken: map[string]int {,}
+		Children: []string {,}
 		Access: map[string]bool {"restaurant.example.com":true,}
 	}
 	eventAsBytes, _ = json.Marshal(event)
@@ -137,8 +142,9 @@ func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response 
 		Type: "task"
 		ID: "ass123"
 		Name: "Assign Deliverer"
-		Status: "notavail"
-		Dependency: []string {"con123",}
+		XORtoken: []string {,}
+		ANDtoken: map[string]int {,}
+		Children: []string {"enr123",}
 		Access: map[string]bool {"restaurant.example.com":true,}
 	}
 	eventAsBytes, _ = json.Marshal(event)
@@ -148,9 +154,10 @@ func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response 
 	event = Event{
 		Type: "event"
 		ID: "enr123"
-		Name: "Assign Deliverer"
-		Status: "notavail"
-		Dependency: []string {"ass123",}
+		Name: "Delivery En Route"
+		XORtoken: []string {,}
+		ANDtoken: map[string]int {,}
+		Children: []string {"del123",}
 		Access: map[string]bool {"deliverer.example.com":true,}
 	}
 	eventAsBytes, _ = json.Marshal(event)
@@ -161,8 +168,9 @@ func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response 
 		Type: "task"
 		ID: "del123"
 		Name: "Deliver Order"
-		Status: "notavail"
-		Dependency: []string {"ass123",}
+		XORtoken: []string {,}
+		ANDtoken: map[string]int {,}
+		Children: []string {"and123",}
 		Access: map[string]bool {"deliverer.example.com":true,}
 	}
 	eventAsBytes, _ = json.Marshal(event)
@@ -173,8 +181,9 @@ func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response 
 		Type: "AND"
 		ID: "and123"
 		Name: "Parellel Gateway"
-		Status: "notavail"
-		Dependency: []string {"del123",}
+		XORtoken: []string {,}
+		ANDtoken: map[string]int {"del123":0,}
+		Children: []string {"pay123",}
 		Access: map[string]bool {,}
 	}
 	eventAsBytes, _ = json.Marshal(event)
@@ -185,35 +194,45 @@ func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response 
 		Type: "event"
 		ID: "pay123"
 		Name: "Collect Pizza and Pay"
-		Status: "notavail"
-		Dependency: []string {"and123",}
+		XORtoken: []string {,}
+		ANDtoken: map[string]int {,}
+		Children: []string {,}
 		Access: map[string]bool {"customer.example.com",}
 	}
 	eventAsBytes, _ = json.Marshal(event)
 	APIstub.PutState(event.ID, eventAsBytes)
 	s.EventIDs = append(s.EventIDs, event.ID)
+
+	err = s.StartEvent(APIstub, StartIDs)
+	if err!= nil {
+		return shim.Error(err.Error())
+	}
 	return shim.Success(nil)
 }
 
-
-func (domain string) hasAccess(event Event) bool {
-	if domains, ok:=event.Access[function]; ok {
-		if access, found:=domains[domain];found {
-			return access
-		} else {
-			return false
+func (s *SmartContract) StartEvent(APIstub shim.ChaincodeStubInterface, StartIDs []string) (error) {
+	for id := range StartIDs {
+		startEvent, err := s.GetEvent(APIstub, id)
+		if err!=nil {
+			return err
 		}
-	} else {
-		return true
+		for _, childID := range startEvent.Children {
+			err =s.PropagateToken(APIstub, childID, id)
+			if err!=nil {
+				return err
+			}
+		}
 	}
+	return nil
 }
 
 
-func (s *SmartContract) DoTask(APIstub shim.ChaincodeStubInterface, taskID string) (bool,error) {
-	targetEvent, err := s.GetEvent(APIstub, taskID)
-	if err!=nil {
-		return false, err
-	}
+func (s *SmartContract) CheckAccess(caller string, task Event) bool {
+	return task.Access[caller]
+}
+
+
+func (s *SmartContract) DoTask(APIstub shim.ChaincodeStubInterface, targetEvent Event) (bool,error) {
 	if targetEvent.Type == "task" {
 		if targetEvent.Token > 0 {
 			s.ConsumeToken(APIstub, targetEvent)
@@ -226,7 +245,11 @@ func (s *SmartContract) DoTask(APIstub shim.ChaincodeStubInterface, taskID strin
 					s.ConsumeToken(APIstub, xor)
 					// delete tested XOR tokens
 					targetEvent.XORtoken = targetEvent.XORtoken[i+1:]
-					s.PropagateToken(APIstub, targetEvent)
+					s.PutEvent(APIstub, targetEvent)
+					// Propagate a token to all children
+					for _, childID := range targetEvent.Children {
+						s.PropagateToken(APIstub, childID, targetEvent.ID)
+					}
 					return true, nil
 				}
 			}
@@ -248,15 +271,83 @@ func (s *SmartContract) ConsumeToken(APIstub shim.ChaincodeStubInterface, event 
 	s.PutEvent(APIstub, event)
 }
 
-func (s *SmartContract) PropagateToken(APIstub shim.ChaincodeStubInterface, event Event) {
-	for _, child := range event.Children {
-		s.AddToken(APIstub, child, targetEvent.ID)
+func (s *SmartContract) PropagateToken(APIstub shim.ChaincodeStubInterface, targetEventID string, sourceID string) (error) {
+	targetEvent, err := GetEvent(APIstub, targetEventID)
+	if err!=nil {
+		return err
 	}
-	//recursive
-	// if self is XOR, add xor token instead
-	// if child is AND, check all incoming
+
+	if targetEvent.Type == "task" {
+		targetEvent.Token += 1
+		s.PutEvent(targetEvent)
+		return nil
+	} else if targetEvent.Type == "AND" {
+		// check all
+		targetEvent.ANDtoken[sourceID] += 1
+		minToken = targetEvent.ANDtoken[sourceID]
+		for parentID := range targetEvent.ANDtoken {
+			if targetEvent.ANDtoken[parentID]==0 {
+				minToken = 0
+				break
+			} else {
+				minToken = min(minToken, targetEvent.ANDtoken[parentID])
+			}
+		}
+		if minToken>0 {
+			for parentID := range targetEvent.ANDtoken {
+				targetEvent.ANDtoken[parentID] -= minToken
+			}
+			targetEvent.Token += minToken
+		}
+		s.PutEvent(APIstub, targetEvent)
+		return nil
+	} else if targetEvent.Type == "XOR" {
+		if len(targetEvent.Children)<=1 {
+			for _, childID := range targetEvent.Children {
+				err = s.PropagateToken(APIstub, childID, targetEvent.ID)
+				if err!= nil {
+					return err
+				}
+			}
+			return nil
+		} else {
+			targetEvent.Token += 1
+			s.PutEvent(targetEvent)
+			for _, childID := range targetEvent.Children {
+				err = s.PropagateXORToken(APIstub, childID, targetEvent.ID)
+				if err!=nil {
+					return err
+				}
+			}
+			return nil
+		}
+	} else {
+		for _, childID := range targetEvent.Children {
+			err = s.PropagateToken(APIstub, childID, targetEvent.ID)
+			if err!=nil {
+				return err
+			}
+		}
+		return nil
+	}
 }
 
+func (s *SmartContract) PropagateXORToken(APIstub shim.ChaincodeStubInterface, targetEventID string, xorID string) (error) {
+	targetEvent, _ := GetEvent(APIstub, targetEventID)
+	if targetEvent.Type == "task" {
+		targetEvent.XORtoken = append(targetEvent.XORtoken, xorID)
+		s.PutEvent(targetEvent)
+		return nil
+	} else if targetEvent.Type == "event" {
+		for _, childID := range targetEvent.Children {
+			s.PropagateXORToken(APIstub, childID, xorID)
+		}
+		return nil
+	} else {
+		// Unsupported
+		return errors.New("Attaching another gateway to an exclusive gateway is not supported.")
+	}
+}
 
 
 func (s *SmartContract) GetEvent(APIstub shim.ChaincodeStubInterface, eventID string) (Event, error) {
@@ -306,93 +397,60 @@ func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respons
 	// Retrieve the requested Smart Contract function and arguments
 	function, args := APIstub.GetFunctionAndParameters()
 
+	if function == "queryEvent" {
+		return s.queryEvent(APIstub, args)
+	} else if function == "queryAllEvents" {
+		return s.queryAllEvents(APIstub)
+	} else {
+		taskEvent, err := s.GetEvent(APIstub, function)
+		if err!=nil {
+			return shim.Error("Invalid function name")
+		}
 
+		caller, err := s.GetCaller(APIstub)
+		if err!=nil {
+			return shim.Error(err.Error())
+		}
 
-	// Route to the appropriate handler function to interact with the ledger appropriately
-	if !domain.hasAccess(function) {
-		return shim.Error(domain+" is not allowed to call "+function)
+		if s.CheckAccess(caller, taskEvent) {
+			success, err := s.DoTask(APIstub, taskEvent)
+			if err!=nil {
+				return shim.Error(err.Error())
+			} else if success {
+				return shim.Success(nil)
+			} else {
+				return shim.Error("Requested function does not follow the business logic.")
+			}
+		} else {
+			return shim.Error(caller+" do not have access to function "+function)
+		}
 	}
-
-	if function == "queryOrder" {
-		return s.queryOrder(APIstub, args)
-	} else if function == "initLedger" {
-		return s.initLedger(APIstub)
-	} else if function == "createOrder" {
-		return s.createOrder(APIstub, args)
-	} else if function == "queryAllOrders" {
-		return s.queryAllOrders(APIstub)
-	} else if function == "confirmOrder" {
-		return s.confirmOrder(APIstub, args)
-	} else if function == "cancelOrder" {
-		return s.cancelOrder(APIstub, args)
-	} else if function == "assignDeliverer" {
-		return s.assignDeliverer(APIstub, args)
-	} else if function == "deliverOrder" {
-		return s.deliverOrder(APIstub, args)
-	}
-
-	return shim.Error("Invalid Smart Contract function name.")
 }
 
-func (s *SmartContract) queryStatus(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
+
+func (s *SmartContract) queryEvent(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
 
 	if len(args) != 1 {
 		return shim.Error("Incorrect number of arguments. Expecting 1")
 	}
 
-	statusAsBytes, _ := APIstub.GetState(args[0])
+	eventAsBytes, err := APIstub.GetState(args[0])
+	if err!=nil {
+		return shim.Error(err.Error())
+	}
 	return shim.Success(statusAsBytes)
 }
 
-func (s *SmartContract) initLedger(APIstub shim.ChaincodeStubInterface) peer.Response {
-	taskStatus := []TaskStatus{
-		TaskStatus{TaskId: "ORDER0", Item: "Cheese Pizza", Customer: "Leo", Deliverer: "John", Status: "Delivered"},
-	}
 
-	i := 0
-	for i < len(orders) {
-		fmt.Println("i is ", i)
-		orderAsBytes, _ := json.Marshal(orders[i])
-		APIstub.PutState("ORDER"+strconv.Itoa(i), orderAsBytes)
-		fmt.Println("Added", orders[i])
-		i = i + 1
-	}
-
-	return shim.Success(nil)
-}
-
-func (s *SmartContract) createOrder(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
-	fmt.Println("creating! ");
-	if len(args) != 3 {
-		return shim.Error("Incorrect number of arguments. Expecting 3")
-	}
-
-	var order = Order{OrderId: args[0], Item: args[1], Customer: args[2], Deliverer: "N/A", Status: "Ordered"}
-
-	orderAsBytes, _ := json.Marshal(order)
-	APIstub.PutState(args[0], orderAsBytes)
-
-	return shim.Success(nil)
-}
-
-func (s *SmartContract) queryAllOrders(APIstub shim.ChaincodeStubInterface) peer.Response {
-
-	startKey := "ORDER0"
-	endKey := "ORDER999"
-
-	resultsIterator, err := APIstub.GetStateByRange(startKey, endKey)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-	defer resultsIterator.Close()
+func (s *SmartContract) queryAllEvents(APIstub shim.ChaincodeStubInterface) peer.Response {
 
 	// buffer is a JSON array containing QueryResults
 	var buffer bytes.Buffer
 	buffer.WriteString("[")
 
 	bArrayMemberAlreadyWritten := false
-	for resultsIterator.HasNext() {
-		queryResponse, err := resultsIterator.Next()
+	for eventID := range s.EventIDs {
+		eventAsBytes, err := APIstub.GetState(eventID)
 		if err != nil {
 			return shim.Error(err.Error())
 		}
@@ -402,108 +460,23 @@ func (s *SmartContract) queryAllOrders(APIstub shim.ChaincodeStubInterface) peer
 		}
 		buffer.WriteString("{\"Key\":")
 		buffer.WriteString("\"")
-		buffer.WriteString(queryResponse.Key)
+		buffer.WriteString(eventID)
 		buffer.WriteString("\"")
 
 		buffer.WriteString(", \"Record\":")
 		// Record is a JSON object, so we write as-is
-		buffer.WriteString(string(queryResponse.Value))
+		buffer.WriteString(string(eventAsBytes))
 		buffer.WriteString("}")
 		bArrayMemberAlreadyWritten = true
 	}
 	buffer.WriteString("]")
 
-	fmt.Printf("- queryAllOrders:\n%s\n", buffer.String())
+	fmt.Printf("- queryAllEvents:\n%s\n", buffer.String())
 
 	return shim.Success(buffer.Bytes())
 }
 
-func (s *SmartContract) confirmOrder(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
 
-	if len(args) != 1 {
-		return shim.Error("Incorrect number of arguments. Expecting 1")
-	}
-
-	orderAsBytes, _ := APIstub.GetState(args[0])
-	order := Order{}
-
-	json.Unmarshal(orderAsBytes, &order)
-	if order.Status != "Ordered" {
-		return shim.Error("This order cannot be confirmed")
-	}
-
-	order.Status = "Confirmed"
-
-	orderAsBytes, _ = json.Marshal(order)
-	APIstub.PutState(args[0], orderAsBytes)
-
-	return shim.Success(nil)
-}
-
-func (s *SmartContract) cancelOrder(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
-
-	if len(args) != 1 {
-		return shim.Error("Incorrect number of arguments. Expecting 1")
-	}
-
-	orderAsBytes, _ := APIstub.GetState(args[0])
-	order := Order{}
-
-	json.Unmarshal(orderAsBytes, &order)
-	if order.Status == "Delivered" {
-		return shim.Error("This order cannot be cancelled.")
-	}
-	
-	order.Status = "Cancelled"
-
-	orderAsBytes, _ = json.Marshal(order)
-	APIstub.PutState(args[0], orderAsBytes)
-
-	return shim.Success(nil)
-}
-func (s *SmartContract) assignDeliverer(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
-
-	if len(args) != 2 {
-		return shim.Error("Incorrect number of arguments. Expecting 2")
-	}
-
-	orderAsBytes, _ := APIstub.GetState(args[0])
-	order := Order{}
-
-	json.Unmarshal(orderAsBytes, &order)
-	if order.Status != "Confirmed" {
-		return shim.Error("Cannot assign deliverer to this order")
-	}
-	
-	order.Deliverer = args[1]
-	order.Status = "OutForDelivery"
-
-	orderAsBytes, _ = json.Marshal(order)
-	APIstub.PutState(args[0], orderAsBytes)
-
-	return shim.Success(nil)
-}
-func (s *SmartContract) deliverOrder(APIstub shim.ChaincodeStubInterface, args []string) peer.Response {
-
-	if len(args) != 1 {
-		return shim.Error("Incorrect number of arguments. Expecting 1")
-	}
-
-	orderAsBytes, _ := APIstub.GetState(args[0])
-	order := Order{}
-
-	json.Unmarshal(orderAsBytes, &order)
-	if order.Status != "OutForDelivery" {
-		return shim.Error("This order cannot be delivered")
-	}
-	
-	order.Status = "Delivered"
-
-	orderAsBytes, _ = json.Marshal(order)
-	APIstub.PutState(args[0], orderAsBytes)
-
-	return shim.Success(nil)
-}
 // The main function is only relevant in unit test mode. Only included here for completeness.
 func main() {
 
