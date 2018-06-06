@@ -58,14 +58,14 @@ func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response 
 	var eventAsBytes []byte
 	// start
 	event = Event{
-		Type: "start"
-		ID: "sta123"
-		Name: "Start"
-		Token: 1
-		XORtoken: []string {,}
-		ANDtoken: map[string]int {,}
-		Children []string {"cre123",}
-		Access map[string]bool {,}
+		Type: "start",
+		ID: "sta123",
+		Name: "Start",
+		Token: 1,
+		XORtoken: []string {},
+		ANDtoken: map[string]int {},
+		Children: []string {"cre123"},
+		Access map[string]bool {},
 	}
 	eventAsBytes, _ = json.Marshal(event)
 	APIstub.PutState(event.ID, eventAsBytes)
@@ -73,131 +73,139 @@ func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response 
 
 	// create order
 	event = Event{
-		Type: "task"
-		ID: "cre123"
-		Name: "Create Order"
-		Token: 0
-		XORtoken: []string {,}
-		ANDtoken: map[string]int {,}
-		Children: []string {"rec123",}
-		Access: map[string]bool {"customer.example.com":true,}
+		Type: "task",
+		ID: "cre123",
+		Name: "Create Order",
+		Token: 0,
+		XORtoken: []string {},
+		ANDtoken: map[string]int {},
+		Children: []string {"rec123"},
+		Access: map[string]bool {"customer.example.com":true},
 	}
 	eventAsBytes, _ = json.Marshal(event)
 	APIstub.PutState(event.ID, eventAsBytes)
 	s.EventIDs = append(s.EventIDs, event.ID)
 	// receive order
 	event = Event{
-		Type: "event"
-		ID: "rec123"
-		Name: "Receive Order"
-		XORtoken: []string {,}
-		ANDtoken: map[string]int {,}
-		Children: []string {"xor123",}
-		Access: map[string]bool {"restaurant.example.com":true,}
+		Type: "event",
+		ID: "rec123",
+		Name: "Receive Order",
+		Token: 0,
+		XORtoken: []string {},
+		ANDtoken: map[string]int {},
+		Children: []string {"xor123"},
+		Access: map[string]bool {"restaurant.example.com":true},
 	}
 	eventAsBytes, _ = json.Marshal(event)
 	APIstub.PutState(event.ID, eventAsBytes)
 	s.EventIDs = append(s.EventIDs, event.ID)
 	// XOR
 	event = Event{
-		Type: "XOR"
-		ID: "xor123"
-		Name: "Exclusive Gateway"
-		XORtoken: []string {,}
-		ANDtoken: map[string]int {,}
-		Children: []string {"con123","can123",}
-		Access: map[string]bool {,}
+		Type: "XOR",
+		ID: "xor123",
+		Name: "Exclusive Gateway",
+		Token: 0,
+		XORtoken: []string {},
+		ANDtoken: map[string]int {},
+		Children: []string {"con123","can123"},
+		Access: map[string]bool {},
 	}
 	eventAsBytes, _ = json.Marshal(event)
 	APIstub.PutState(event.ID, eventAsBytes)
 	s.EventIDs = append(s.EventIDs, event.ID)
 	// confirm order
 	event = Event{
-		Type: "task"
-		ID: "con123"
-		Name: "Confirm Order"
-		XORtoken: []string {,}
-		ANDtoken: map[string]int {,}
-		Children: []string {"ass123",}
-		Access: map[string]bool {"restaurant.example.com":true,}
+		Type: "task",
+		ID: "con123",
+		Name: "Confirm Order",
+		Token: 0,
+		XORtoken: []string {},
+		ANDtoken: map[string]int {},
+		Children: []string {"ass123"},
+		Access: map[string]bool {"restaurant.example.com":true},
 	}
 	eventAsBytes, _ = json.Marshal(event)
 	APIstub.PutState(event.ID, eventAsBytes)
 	s.EventIDs = append(s.EventIDs, event.ID)
 	// cancel order
 	event = Event{
-		Type: "task"
-		ID: "can123"
-		Name: "Cancel Order"
-		XORtoken: []string {,}
-		ANDtoken: map[string]int {,}
-		Children: []string {,}
-		Access: map[string]bool {"restaurant.example.com":true,}
+		Type: "task",
+		ID: "can123",
+		Name: "Cancel Order",
+		Token: 0,
+		XORtoken: []string {},
+		ANDtoken: map[string]int {},
+		Children: []string {},
+		Access: map[string]bool {"restaurant.example.com":true},
 	}
 	eventAsBytes, _ = json.Marshal(event)
 	APIstub.PutState(event.ID, eventAsBytes)
 	s.EventIDs = append(s.EventIDs, event.ID)
 	// assign deliverer
 	event = Event{
-		Type: "task"
-		ID: "ass123"
-		Name: "Assign Deliverer"
-		XORtoken: []string {,}
-		ANDtoken: map[string]int {,}
-		Children: []string {"enr123",}
-		Access: map[string]bool {"restaurant.example.com":true,}
+		Type: "task",
+		ID: "ass123",
+		Name: "Assign Deliverer",
+		Token: 0,
+		XORtoken: []string {},
+		ANDtoken: map[string]int {},
+		Children: []string {"enr123"},
+		Access: map[string]bool {"restaurant.example.com":true},
 	}
 	eventAsBytes, _ = json.Marshal(event)
 	APIstub.PutState(event.ID, eventAsBytes)
 	s.EventIDs = append(s.EventIDs, event.ID)
 	// delivery en route
 	event = Event{
-		Type: "event"
-		ID: "enr123"
-		Name: "Delivery En Route"
-		XORtoken: []string {,}
-		ANDtoken: map[string]int {,}
-		Children: []string {"del123",}
-		Access: map[string]bool {"deliverer.example.com":true,}
+		Type: "event",
+		ID: "enr123",
+		Name: "Delivery En Route",
+		Token: 0,
+		XORtoken: []string {},
+		ANDtoken: map[string]int {},
+		Children: []string {"del123"},
+		Access: map[string]bool {"deliverer.example.com":true},
 	}
 	eventAsBytes, _ = json.Marshal(event)
 	APIstub.PutState(event.ID, eventAsBytes)
 	s.EventIDs = append(s.EventIDs, event.ID)
 	// deliver order
 	event = Event{
-		Type: "task"
-		ID: "del123"
-		Name: "Deliver Order"
-		XORtoken: []string {,}
-		ANDtoken: map[string]int {,}
-		Children: []string {"and123",}
-		Access: map[string]bool {"deliverer.example.com":true,}
+		Type: "task",
+		ID: "del123",
+		Name: "Deliver Order",
+		Token: 0,
+		XORtoken: []string {},
+		ANDtoken: map[string]int {},
+		Children: []string {"and123"},
+		Access: map[string]bool {"deliverer.example.com":true},
 	}
 	eventAsBytes, _ = json.Marshal(event)
 	APIstub.PutState(event.ID, eventAsBytes)
 	s.EventIDs = append(s.EventIDs, event.ID)
 	// AND
 	event = Event{
-		Type: "AND"
-		ID: "and123"
-		Name: "Parellel Gateway"
-		XORtoken: []string {,}
-		ANDtoken: map[string]int {"del123":0,}
-		Children: []string {"pay123",}
-		Access: map[string]bool {,}
+		Type: "AND",
+		ID: "and123",
+		Name: "Parellel Gateway",
+		Token: 0,
+		XORtoken: []string {},
+		ANDtoken: map[string]int {"del123":0},
+		Children: []string {"pay123"},
+		Access: map[string]bool {},
 	}
 	eventAsBytes, _ = json.Marshal(event)
 	APIstub.PutState(event.ID, eventAsBytes)
 	s.EventIDs = append(s.EventIDs, event.ID)
 	// collect pizza and pay
 	event = Event{
-		Type: "event"
-		ID: "pay123"
-		Name: "Collect Pizza and Pay"
-		XORtoken: []string {,}
-		ANDtoken: map[string]int {,}
-		Children: []string {,}
-		Access: map[string]bool {"customer.example.com",}
+		Type: "event",
+		ID: "pay123",
+		Name: "Collect Pizza and Pay",
+		XORtoken: []string {},
+		ANDtoken: map[string]int {},
+		Children: []string {},
+		Access: map[string]bool {"customer.example.com"},
 	}
 	eventAsBytes, _ = json.Marshal(event)
 	APIstub.PutState(event.ID, eventAsBytes)
@@ -211,7 +219,7 @@ func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response 
 }
 
 func (s *SmartContract) StartEvent(APIstub shim.ChaincodeStubInterface, StartIDs []string) (error) {
-	for id := range StartIDs {
+	for _, id := range StartIDs {
 		startEvent, err := s.GetEvent(APIstub, id)
 		if err!=nil {
 			return err
@@ -254,7 +262,7 @@ func (s *SmartContract) DoTask(APIstub shim.ChaincodeStubInterface, targetEvent 
 				}
 			}
 			// delete all tested XOR tokens
-			targetEvent.XORtoken = []string {,}
+			targetEvent.XORtoken = []string {}
 			s.PutEvent(APIstub, targetEvent)
 			return false, nil
 		} else {
@@ -284,22 +292,22 @@ func (s *SmartContract) PropagateToken(APIstub shim.ChaincodeStubInterface, targ
 	} else if targetEvent.Type == "AND" {
 		// check all
 		targetEvent.ANDtoken[sourceID] += 1
-		minToken = targetEvent.ANDtoken[sourceID]
-		for parentID := range targetEvent.ANDtoken {
-			if targetEvent.ANDtoken[parentID]==0 {
-				minToken = 0
-				break
-			} else {
-				minToken = min(minToken, targetEvent.ANDtoken[parentID])
+		for _, token := range targetEvent.ANDtoken {
+			if token==0 {
+				s.PutEvent(APIstub,targetEvent)
+				return nil
 			}
 		}
-		if minToken>0 {
-			for parentID := range targetEvent.ANDtoken {
-				targetEvent.ANDtoken[parentID] -= minToken
-			}
-			targetEvent.Token += minToken
+		for parentID, _ := range targetEvent.ANDtoken {
+			targetEvent.ANDtoken[parentID] -= 1
 		}
 		s.PutEvent(APIstub, targetEvent)
+		for _, childID := range targetEvent.Children {
+			err = s.PropagateToken(APIstub, childID, targetEvent.ID)
+			if err!=nil {
+				return err
+			}
+		}
 		return nil
 	} else if targetEvent.Type == "XOR" {
 		if len(targetEvent.Children)<=1 {
@@ -375,7 +383,7 @@ func (s *SmartContract) GetCaller(APIstub shim.ChaincodeStubInterface) (string,e
     certText := creatorByte[certStart:]
     bl, _ := pem.Decode(certText)
     if bl == nil {
-       return nil,errors.New（"Could not decode the PEM structure"）
+       return nil, errors.New("Could not decode the PEM structure")
     }
 
     cert, err := x509.ParseCertificate(bl.Bytes)
