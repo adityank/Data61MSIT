@@ -178,4 +178,6 @@ function checkPath(domain,networkName) {
 //var orgs = ['Restaurant','Customer','Deliverer'];
 //var networkName = 'pizzanetwork';
 //var domain = 'example.com';
-generateYAML(['Deliverer','Customer','Restaurant'], 'pizzanetwork', 'example.com');
+//generateYAML(['Deliverer','Customer','Restaurant'], 'pizzanetwork', 'example.com');
+
+module.exports = generateYAML(orgs, networkName, domain);

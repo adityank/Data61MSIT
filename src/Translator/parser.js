@@ -25,6 +25,9 @@ var fs = require('fs');
 // module for element tree 
 var et = require('elementtree');
 
+//var generateYAML = require('./YAMLGenerator');
+//var generateCC = require('./ChaincodeGenerator');
+
 
 function getElementTree(filename){
     // In particular, tree for XML file
@@ -62,6 +65,7 @@ function insert(dep, key, value) {
         dep[key] = [];
     dep[key].push(value);
 }
+
 
 function getParents(flows){
     var dep = {};
@@ -137,6 +141,51 @@ function getOrgs(laneToTasks){
     return orgs;
 }
 
+// Returns if the task is intermediate
+function intermediate(task){
+    return task.toString().substring(0,12) == "Intermediate";
+}
+
+// Returns the first non-intermediate child task of the task  
+function getChild(task,outgoingMap){
+    while(intermediate(task)){
+        task = outgoingMap[task];
+    }
+    return task;
+}
+
+// Returns the first non-intermediate parent task of the task  
+function getParent(task,incomingMap){
+    while(intermediate(task)){
+        task = incomingMap[task];
+    }
+    return task;
+}
+
+// Updates the child or parent to the task after skipping the intermediate one
+function removeIntermediate(map){
+    for (var task in map){
+        var value = map[task].length;
+        var temp;
+        for (var iter=0;iter<value;iter++){
+            if(intermediate(map[task][iter])){
+                temp = map[task][iter];
+                map[task].splice(iter,1);
+                iter--;
+                map[task].push(getParent(temp,map));
+            }
+        }
+    }
+}
+
+// Removes intermediate tasks from the map
+function pruneMap(map){
+    for (var task in map){
+        if(intermediate(task))
+            delete map[task];
+    }
+}
+
 function parse(filename){
     var etree = getElementTree(filename);
 
@@ -145,11 +194,19 @@ function parse(filename){
     var incomingMap = getParents(flows);
     var outgoingMap = getChildren(flows);
     
+    removeIntermediate(incomingMap);
+    removeIntermediate(outgoingMap);
+    
+    pruneMap(incomingMap);
+    pruneMap(outgoingMap)
+
     //access control
     var taskMap = getTaskMapping(etree);
     var laneToTasks = getLaneAccess(etree);
     var orgs = getOrgs(laneToTasks);
 
+    //generateYAML(orgs, "pizzanetwork", "example.com");
+    //generateCC();
     /*
     // Print lanes and the tasks belonging to that lane
     for (var lane in laneToTasks){
@@ -159,8 +216,8 @@ function parse(filename){
             console.log(taskMap[value[y].text]+" ");
         }
         console.log('----');
-    }
-
+    }*/
+    console.log(".-.-..-.--.--.-.-..-.--.-.-");
     // Print all constructs and its dependancies
     for (var task in incomingMap){
         var value = incomingMap[task].length;
@@ -179,8 +236,11 @@ function parse(filename){
             child += outgoingMap[task][iter]+", ";
         }
         console.log(task + ': ' + child);
-    }*/
+    }
 
 }
 
 parse('../../bpmn_examples/pizza.bpmn');
+
+
+

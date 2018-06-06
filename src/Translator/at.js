@@ -1,13 +1,12 @@
-// initialize num1,num2
-// spawn bt.js and send num1 and num2 to it
+//module1.js
+var colors = require('colors');
 
-var t2 = require("./bt.js");
+function module1() {
+  console.log('module1 started doing its job!'.red);
 
-module.exports = {
-    do1: function() {
-    	var a = 10;
-    	var b = 20;
-        return t2.do2(a,b);
-    }
-};
+  setInterval(function () {
+    console.log(('module1 timer:' + new Date().getTime()).red);
+  }, 2000);
+}
 
+module.exports = module1;
