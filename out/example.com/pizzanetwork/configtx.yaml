@@ -43,8 +43,8 @@ Profiles:
                 Organizations:
                     # config-orgs.yaml content goes here
                     - *Restaurant
-                    - *Customer
                     - *Deliverer
+                    - *Customer
 
     pizzanetworkChannel:
         Consortium: SampleConsortium
@@ -53,8 +53,8 @@ Profiles:
             Organizations:
                 # configtx-orgs.yaml content goes here
                     - *Restaurant
-                    - *Customer
                     - *Deliverer
+                    - *Customer
 
             Capabilities:
                 <<: *ApplicationCapabilities
@@ -206,22 +206,6 @@ Application: &ApplicationDefaults
             # encoded in the genesis block in the Application section context
             - Host: peer0.restaurant.example.com
               Port: 7051
-    - &Customer
-        # DefaultOrg defines the organization which is used in the sampleconfig
-        # of the fabric.git development environment
-        Name: CustomerMSP
-
-        # ID to load the MSP definition as
-        ID: CustomerMSP
-
-        MSPDir: crypto-config/peerOrganizations/customer.example.com/msp
-
-        AnchorPeers:
-            # AnchorPeers defines the location of peers which can be used
-            # for cross org gossip communication.  Note, this value is only
-            # encoded in the genesis block in the Application section context
-            - Host: peer0.customer.example.com
-              Port: 7051
     - &Deliverer
         # DefaultOrg defines the organization which is used in the sampleconfig
         # of the fabric.git development environment
@@ -237,4 +221,20 @@ Application: &ApplicationDefaults
             # for cross org gossip communication.  Note, this value is only
             # encoded in the genesis block in the Application section context
             - Host: peer0.deliverer.example.com
+              Port: 7051
+    - &Customer
+        # DefaultOrg defines the organization which is used in the sampleconfig
+        # of the fabric.git development environment
+        Name: CustomerMSP
+
+        # ID to load the MSP definition as
+        ID: CustomerMSP
+
+        MSPDir: crypto-config/peerOrganizations/customer.example.com/msp
+
+        AnchorPeers:
+            # AnchorPeers defines the location of peers which can be used
+            # for cross org gossip communication.  Note, this value is only
+            # encoded in the genesis block in the Application section context
+            - Host: peer0.customer.example.com
               Port: 7051

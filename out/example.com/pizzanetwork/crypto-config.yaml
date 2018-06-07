@@ -96,15 +96,15 @@ PeerOrgs:
       Count: 1 # only peer0
     Users:
       Count: 1 # only Admin
-  - Name: Customer
-    Domain: customer.example.com
+  - Name: Deliverer
+    Domain: deliverer.example.com
     EnableNodeOUs: true
     Template:
       Count: 1 # only peer0
     Users:
       Count: 1 # only Admin
-  - Name: Deliverer
-    Domain: deliverer.example.com
+  - Name: Customer
+    Domain: customer.example.com
     EnableNodeOUs: true
     Template:
       Count: 1 # only peer0

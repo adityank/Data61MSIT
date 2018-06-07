@@ -23,3 +23,5 @@ function generateGo(tasks, args) {
 var tasks = ['createOrder','confirmOrder','cancelOrder'];
 var args = [1,1,1];
 generateGo(tasks, args);
+
+module.exports = generateGo(tasks,args);

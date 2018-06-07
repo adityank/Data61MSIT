@@ -4,8 +4,8 @@
 
 
 //index.js
-var module1 = require('./module1'),
-  	module2 = require('./module2');
+var module1 = require('./at'),
+  	module2 = require('./bt');
 
 module1();
 module2();

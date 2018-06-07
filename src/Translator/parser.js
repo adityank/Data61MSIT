@@ -4,14 +4,16 @@
 * Copyright: Team Unchained
 * Versions:
 *   
-*   26 May 2018 - Adity Kamble - Parsing of a BPMN file done to extract the tasks and lanes. A dependancy graph
+*   26 May 2018 - Aditya Kamble - Parsing of a BPMN file done to extract the tasks and lanes. A dependancy graph
 *   is created to identify dependancies between tasks. Tasks are mapped to lanes to identify access control logic. 
-*   04 June 2018 - Adity Kamble - Refactored by creating separate functions. Returning mainly 3 things:
+*   04 June 2018 - Aditya Kamble - Refactored by creating separate functions. Returning mainly 3 things:
 *   1. Incoming (parent) nodes for every construct.
 *   2. Outgoing (child) nodes for every construct.
 *   3. Access to tasks every lane has
+*   06 June 2018 - Aditya Kamble - Handled intermediate events and adjusted dependancies and dependants accordingly. 
+*    Started adding code to integrate with YAMLGenerator and ChaincodeGenerator.
 *
-* Description: This is the parser which takes in a BPMN file and stores the extracted information in different objects. 
+* Description: This is the parser which takes in a BPMN file and sends the extracted information to generators. 
 *
 * External Dependencies: 
 * 1. Path for existing BPMN file.
@@ -25,8 +27,10 @@ var fs = require('fs');
 // module for element tree 
 var et = require('elementtree');
 
-//var generateYAML = require('./YAMLGenerator');
+var generateYAML = require('./YAMLGenerator');
 //var generateCC = require('./ChaincodeGenerator');
+//var module1 = require('./at'),
+//    module2 = require('./bt');
 
 
 function getElementTree(filename){
@@ -238,9 +242,9 @@ function parse(filename){
         console.log(task + ': ' + child);
     }
 
+    generateYAML(orgs, 'pizzanetwork', 'example.com');
+    //generateCC(tasks,['createOrder','confirmOrder','cancelOrder'],[1,1,1])
+
 }
 
 parse('../../bpmn_examples/pizza.bpmn');
-
-
-

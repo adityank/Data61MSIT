@@ -145,7 +145,7 @@ function generatePeerBase(networkName) {
     console.log('---end generating peer-base.yaml---');
 }
 
-function generateYAML(orgs, networkName, domain) {
+module.exports = function generateYAML(orgs, networkName, domain) {
     console.log('---begin generating YAML files---');
     outpath = '../../out/'+domain+'/'+networkName+'/';
     checkPath(domain,networkName);
@@ -179,5 +179,3 @@ function checkPath(domain,networkName) {
 //var networkName = 'pizzanetwork';
 //var domain = 'example.com';
 //generateYAML(['Deliverer','Customer','Restaurant'], 'pizzanetwork', 'example.com');
-
-module.exports = generateYAML(orgs, networkName, domain);

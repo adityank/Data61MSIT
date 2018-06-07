@@ -65,24 +65,6 @@ services:
     ports:
       - 7251:7051
       - 7253:7053
-  peer0.customer.example.com:
-    container_name: peer0.customer.example.com
-    extends:
-      file: peer-base.yaml
-      service: peer-base
-    environment:
-      - CORE_PEER_ID=peer0.customer.example.com
-      - CORE_PEER_ADDRESS=peer0.customer.example.com:7051
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.customer.example.com:7051
-      - CORE_PEER_LOCALMSPID=CustomerMSP
-    volumes:
-        - /var/run/:/host/var/run/
-        - ../crypto-config/peerOrganizations/customer.example.com/peers/peer0.customer.example.com/msp:/etc/hyperledger/fabric/msp
-        - ../crypto-config/peerOrganizations/customer.example.com/peers/peer0.customer.example.com/tls:/etc/hyperledger/fabric/tls
-        - peer0.customer.example.com:/var/hyperledger/production
-    ports:
-      - 7151:7051
-      - 7153:7053
   peer0.deliverer.example.com:
     container_name: peer0.deliverer.example.com
     extends:
@@ -98,6 +80,24 @@ services:
         - ../crypto-config/peerOrganizations/deliverer.example.com/peers/peer0.deliverer.example.com/msp:/etc/hyperledger/fabric/msp
         - ../crypto-config/peerOrganizations/deliverer.example.com/peers/peer0.deliverer.example.com/tls:/etc/hyperledger/fabric/tls
         - peer0.deliverer.example.com:/var/hyperledger/production
+    ports:
+      - 7151:7051
+      - 7153:7053
+  peer0.customer.example.com:
+    container_name: peer0.customer.example.com
+    extends:
+      file: peer-base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer0.customer.example.com
+      - CORE_PEER_ADDRESS=peer0.customer.example.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.customer.example.com:7051
+      - CORE_PEER_LOCALMSPID=CustomerMSP
+    volumes:
+        - /var/run/:/host/var/run/
+        - ../crypto-config/peerOrganizations/customer.example.com/peers/peer0.customer.example.com/msp:/etc/hyperledger/fabric/msp
+        - ../crypto-config/peerOrganizations/customer.example.com/peers/peer0.customer.example.com/tls:/etc/hyperledger/fabric/tls
+        - peer0.customer.example.com:/var/hyperledger/production
     ports:
       - 7051:7051
       - 7053:7053
