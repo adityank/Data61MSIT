@@ -94,12 +94,12 @@ function getChildren(flows){
 }
 
 
-function getLaneAccess(etree){
+function getOrgsAndAccess(etree,orgs){
     // Get all participants(lanes)
     var childlanes,numchildlanes,laneName,accessible,childlane;
 
     // Stores mapping between the lane and the tasks(operations) restricted in that lane
-    var laneToTasks = {};
+    var tasksToLane = {};
     var lanes = etree.findall('./process/laneSet/lane');
     for(var iter=0; iter<lanes.length; iter++){
         (function(iter) {
@@ -109,32 +109,29 @@ function getLaneAccess(etree){
 
             // If no childlanes, map tasks to that lane
             if(numchildlanes == 0){
-                laneToTasks[laneName] = lanes[iter].findall('./flowNodeRef');
+                orgs.push(laneName);
+                var allTasks = lanes[iter].findall('./flowNodeRef');
+                var numTasks = allTasks.length;
+                for (var iter=0;iter<numTasks;iter++){
+                    if(allTasks[iter].text.substring(0,4)=="Task")
+                        tasksToLane[allTasks[iter].text] = laneName;
+                }
             }
             // else separately map tasks to childlanes
             while(numchildlanes>0){
                 childlane = childlanes[numchildlanes-1];
-                laneToTasks[childlane.get('name')] = childlane.findall('./flowNodeRef');
-                laneName += ", " + childlane.get('name');
+                orgs.push(childlane.get('name'));
+                var allTasks = childlane.findall('./flowNodeRef');
+                var numTasks = allTasks.length;
+                for (var iter=0;iter<numTasks;iter++){
+                    if(allTasks[iter].text.substring(0,4)=="Task")
+                        tasksToLane[allTasks[iter].text] = childlane.get('name');
+                }
                 numchildlanes--;
             }
         })(iter);
     }
-
-    // Filter out non-task nodes from the mapping, since we only need tasks
-    for (var lane in laneToTasks){
-        var value = laneToTasks[lane];
-        var numTasks = value.length;
-        for (var iter=0;iter<numTasks;iter++){
-            if(value[iter].text.substring(0,4)!="Task"){
-                laneToTasks[lane].splice(laneToTasks[lane].indexOf(value[iter]),1);
-                iter--;
-                numTasks--;
-            }
-        }
-    }
-    return laneToTasks;
-
+    return tasksToLane;
 }
 
 function getOrgs(laneToTasks){
@@ -206,21 +203,13 @@ function parse(filename){
 
     //access control
     var taskMap = getTaskMapping(etree);
-    var laneToTasks = getLaneAccess(etree);
-    var orgs = getOrgs(laneToTasks);
+    var orgs = [];
+    var tasksToLane = getOrgsAndAccess(etree,orgs);
 
-    //generateYAML(orgs, "pizzanetwork", "example.com");
-    //generateCC();
-    /*
-    // Print lanes and the tasks belonging to that lane
-    for (var lane in laneToTasks){
-        console.log(lane + ': ');
-        var value = laneToTasks[lane];
-        for (var y in value){
-            console.log(taskMap[value[y].text]+" ");
-        }
+    for (var t in tasksToLane){
+        console.log(t + ': ' + tasksToLane[t]);
         console.log('----');
-    }*/
+    }
     console.log(".-.-..-.--.--.-.-..-.--.-.-");
     // Print all constructs and its dependancies
     for (var task in incomingMap){
@@ -244,6 +233,8 @@ function parse(filename){
 
     generateYAML(orgs, 'pizzanetwork', 'example.com');
     //generateCC(tasks,['createOrder','confirmOrder','cancelOrder'],[1,1,1])
+    //1. list of components: type,id,name,children
+    //2. Access,parent
 
 }
 
