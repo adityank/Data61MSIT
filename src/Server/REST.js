@@ -6,7 +6,7 @@
 // require database
 var mysql   = require("mysql");
 var fs = require("fs");
-var parser = require("./parser.js");
+var parser = require("Translator/parser.js");
 
 
 function REST_ROUTER(router,connection) {
