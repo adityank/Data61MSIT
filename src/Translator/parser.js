@@ -184,7 +184,7 @@ function pruneMap(map){
     }
 }
 
-module.exports = function parse(filename){
+module.exports = function parse(filename,networkName,orgDomain){
     var etree = getElementTree(filename);
 
     //sequence
@@ -228,7 +228,7 @@ module.exports = function parse(filename){
         console.log(task + ': ' + child);
     }
 
-    generateYAML(orgs, 'pizzanetwork', 'example.com');
+    generateYAML(orgs, networkName, orgDomain);
 }
 
 //parse('../../bpmn_examples/pizza.bpmn');
