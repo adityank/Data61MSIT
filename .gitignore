@@ -1,8 +1,10 @@
 
 out/
+src/Server/node_modules/
 src/Translator/at.js
 src/Translator/bt.js
 src/Translator/main.js
 src/Translator/mt.js
 src/Translator/node_modules/
-src/Server/node_modules/
+src/Server/package-lock.json
+
