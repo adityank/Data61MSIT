@@ -6,7 +6,7 @@
 // require database
 var mysql   = require("mysql");
 var fs = require("fs");
-var parser = require("../Translator/parser.js");
+var parse = require("../Translator/parser.js");
 
 
 function REST_ROUTER(router,connection) {
@@ -52,7 +52,8 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         
         receive = {
           xmlModel:req.body.xmlModel,
-          processName:req.body.processName
+          processName:req.body.processName,
+          orgDomain:req.body.orgDomain
         };
         console.log(receive);
         filename = "tmp/" + receive.processName + ".bpmn";
@@ -61,7 +62,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
             if (err) {
                 console.log(err);
             }
-            parser.parse(filename);
+            parse(filename,receive.processName,receive.orgDomain);
         });
 
         response = {
