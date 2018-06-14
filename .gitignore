@@ -1,0 +1,7 @@
+
+out/
+src/Translator/at.js
+src/Translator/bt.js
+src/Translator/main.js
+src/Translator/mt.js
+src/Translator/node_modules/
