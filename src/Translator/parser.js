@@ -184,7 +184,7 @@ function pruneMap(map){
     }
 }
 
-function parse(filename){
+module.exports = function parse(filename){
     var etree = getElementTree(filename);
 
     //sequence
