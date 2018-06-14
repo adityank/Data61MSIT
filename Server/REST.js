@@ -5,6 +5,8 @@
 
 // require database
 var mysql   = require("mysql");
+var fs = require("fs");
+var parser = require("./parser.js");
 
 
 function REST_ROUTER(router,connection) {
@@ -47,11 +49,26 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     */
     router.post("/api/v1/translate",function(req,res){
         console.log("Translating the BPMN file" );
-        response = {
+        
+        receive = {
           xmlModel:req.body.xmlModel,
           processName:req.body.processName
         };
-        console.log(response);
+        console.log(receive);
+        filename = "tmp/" + receive.processName + ".bpmn";
+
+        fs.writeFile(filename, receive.xmlModel, function (err) {
+            if (err) {
+                console.log(err);
+            }
+            parser.parse(filename);
+        });
+
+        response = {
+            message:"Success"
+        }
+
+        // send response
         res.end(JSON.stringify(response));
     });
 }
