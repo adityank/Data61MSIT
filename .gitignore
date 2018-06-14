@@ -1,4 +1,4 @@
 Parser
-Server/node_modules
+src/Server/node_modules
 ./DS_Store
 .DS_Store
