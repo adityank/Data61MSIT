@@ -1,0 +1,7 @@
+  peer0.${peerDomainPrefix}.${domain}:
+    container_name: peer0.${peerDomainPrefix}.${domain}
+    extends:
+      file:  base/docker-compose-base.yaml
+      service: peer0.${peerDomainPrefix}.${domain}
+    networks:
+      - ${networkName}
