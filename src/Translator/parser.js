@@ -1,5 +1,5 @@
 /******************************************************************************************************************
-* File:parse5.go
+* File:parser.js
 * Project: MSIT-SE Studio Project (Data61)
 * Copyright: Team Unchained
 * Versions:
@@ -28,9 +28,6 @@ var fs = require('fs');
 var et = require('elementtree');
 
 var generateYAML = require('./YAMLGenerator');
-//var generateCC = require('./ChaincodeGenerator');
-//var module1 = require('./at'),
-//    module2 = require('./bt');
 
 
 function getElementTree(filename){
@@ -232,10 +229,6 @@ function parse(filename){
     }
 
     generateYAML(orgs, 'pizzanetwork', 'example.com');
-    //generateCC(tasks,['createOrder','confirmOrder','cancelOrder'],[1,1,1])
-    //1. list of components: type,id,name,children
-    //2. Access,parent
-
 }
 
-parse('../../bpmn_examples/pizza.bpmn');
+//parse('../../bpmn_examples/pizza.bpmn');
