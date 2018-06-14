@@ -6,7 +6,7 @@
   </collaboration> -->
   <process id="Process_1" name="main" isExecutable="false">
     <laneSet>
-      <lane id="Lane_0m0b03m" name="customer">
+      <lane id="Lane_0m0b03m" name="Customer">
         <flowNodeRef>StartEvent_0gg5eg0</flowNodeRef>
         <flowNodeRef>Task_15fwqr8</flowNodeRef>
         <flowNodeRef>EndEvent_1sx1pte</flowNodeRef>
@@ -32,7 +32,7 @@
             <flowNodeRef>IntermediateThrowEvent_1j85kmy</flowNodeRef>
             <flowNodeRef>EndEvent_127hkds</flowNodeRef>
           </lane>
-          <lane id="Lane_1aywhn0" name="Delivery service">
+          <lane id="Lane_1aywhn0" name="Deliverer">
             <flowNodeRef>IntermediateThrowEvent_1gdugs4</flowNodeRef>
             <flowNodeRef>Task_198078j</flowNodeRef>
             <flowNodeRef>EndEvent_1u2oj4d</flowNodeRef>
