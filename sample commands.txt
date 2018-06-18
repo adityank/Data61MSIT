@@ -1,0 +1,14 @@
+# To test build chaincode, inside the .go file folder
+go build --tags nopkcs11
+
+# To install a new version of chaincode
+peer chaincode install -n mycc -v 5.0 -p github.com/chaincode/pizza3/
+
+# To upgrade/re-instantiate a new version of chaincode
+peer chaincode upgrade -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C mychannel -n mycc -v 5.0 -c '{"Args":["init"]}' -P "AND ('RestaurantMSP.peer','CustomerMSP.peer','DelivererMSP.peer')"
+
+# To query
+peer chaincode query -C mychannel -n mycc -c '{"Args":["queryAllEvents"]}'
+
+# To invoke
+peer chaincode invoke -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C mychannel -n mycc -c '{"Args":["cre123"]}'
