@@ -272,7 +272,7 @@ function formArray(typeMap,nameMap,laneMap,incomingMap,outgoingMap){
     return array;
 }
 
-/*module.exports = */function parse(filename,networkName,orgDomain){
+module.exports = function parse(filename,networkName,orgDomain){
     var etree = getElementTree(filename);
 
     //sequence
@@ -334,7 +334,7 @@ function formArray(typeMap,nameMap,laneMap,incomingMap,outgoingMap){
     generateGo(orgDomain, networkName, taskObjArray);
 }
 
-parse("../../bpmn_examples/pizza.bpmn","pizza","example.com");
+//parse("../../bpmn_examples/pizza.bpmn","pizza","example.com");
 
 
 /*
