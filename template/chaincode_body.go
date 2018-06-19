@@ -1,3 +1,6 @@
+    EventIDsAsBytes, _ := json.Marshal(EventIDs)
+    APIstub.PutState("EventIDs", EventIDsAsBytes)
+
     err := s.StartEvent(APIstub, StartIDs)
     if err!= nil {
         return shim.Error(err.Error())

@@ -58,7 +58,7 @@ module.exports = function generateGo(domain, networkName, tasks) {
         if (task.Chilren!=null && task.Children.length>0) {
             Children = '"'+task.Children.join('","')+'"';
         }
-        var Access = '"'+task.Lane.toLowerCase()+'@'+domain+'":true'
+        var Access = '"'+task.Lane.toLowerCase()+'.'+domain+'":true'
         var start_event_control = '';
         if (Type=='"START"') {
             start_event_control = 'StartIDs = append(StartIDs, event.ID)\n'

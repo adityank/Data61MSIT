@@ -10,4 +10,5 @@
     }
     eventAsBytes, _ = json.Marshal(event)
     APIstub.PutState(event.ID, eventAsBytes)
+    EventIDs = append(EventIDs, event.ID)
     ${start_event_control}
