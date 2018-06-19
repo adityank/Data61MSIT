@@ -1,0 +1,167 @@
+#******************************************************************************************************************
+# File: docker-compose-base.yaml
+# Project: MSIT-SE Studio Project (Data61)
+# Copyright: CMU Team Unchained
+# Versions:
+#   1.0 March 2018 - Modified based on the template by Dongliang Zhou
+#
+# Description: This is the base file defining docker containers to simulate testing network for the pizza example.
+#
+# External Dependencies: Hyperledger fabric library
+#
+#*****************************************************************************************************************/
+
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+version: '2'
+
+services:
+
+  orderer.example.com:
+    container_name: orderer.example.com
+    image: hyperledger/fabric-orderer:$IMAGE_TAG
+    environment:
+      - ORDERER_GENERAL_LOGLEVEL=INFO
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      # enabled TLS
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: orderer
+    volumes:
+    - ../channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+    - ../crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp:/var/hyperledger/orderer/msp
+    - ../crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls/:/var/hyperledger/orderer/tls
+    - orderer.example.com:/var/hyperledger/production/orderer
+    ports:
+      - 7050:7050
+
+  peer0.restaurant.example.com:
+    container_name: peer0.restaurant.example.com
+    extends:
+      file: peer-base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer0.restaurant.example.com
+      - CORE_PEER_ADDRESS=peer0.restaurant.example.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.restaurant.example.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.restaurant.example.com:7051
+      - CORE_PEER_LOCALMSPID=RestaurantMSP
+    volumes:
+        - /var/run/:/host/var/run/
+        - ../crypto-config/peerOrganizations/restaurant.example.com/peers/peer0.restaurant.example.com/msp:/etc/hyperledger/fabric/msp
+        - ../crypto-config/peerOrganizations/restaurant.example.com/peers/peer0.restaurant.example.com/tls:/etc/hyperledger/fabric/tls
+        - peer0.restaurant.example.com:/var/hyperledger/production
+    ports:
+      - 7051:7051
+      - 7053:7053
+
+  peer1.restaurant.example.com:
+    container_name: peer1.restaurant.example.com
+    extends:
+      file: peer-base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer1.restaurant.example.com
+      - CORE_PEER_ADDRESS=peer1.restaurant.example.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.restaurant.example.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.restaurant.example.com:7051
+      - CORE_PEER_LOCALMSPID=RestaurantMSP
+    volumes:
+        - /var/run/:/host/var/run/
+        - ../crypto-config/peerOrganizations/restaurant.example.com/peers/peer1.restaurant.example.com/msp:/etc/hyperledger/fabric/msp
+        - ../crypto-config/peerOrganizations/restaurant.example.com/peers/peer1.restaurant.example.com/tls:/etc/hyperledger/fabric/tls
+        - peer1.restaurant.example.com:/var/hyperledger/production
+
+    ports:
+      - 8051:7051
+      - 8053:7053
+
+  peer0.customer.example.com:
+    container_name: peer0.customer.example.com
+    extends:
+      file: peer-base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer0.customer.example.com
+      - CORE_PEER_ADDRESS=peer0.customer.example.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.customer.example.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.customer.example.com:7051
+      - CORE_PEER_LOCALMSPID=CustomerMSP
+    volumes:
+        - /var/run/:/host/var/run/
+        - ../crypto-config/peerOrganizations/customer.example.com/peers/peer0.customer.example.com/msp:/etc/hyperledger/fabric/msp
+        - ../crypto-config/peerOrganizations/customer.example.com/peers/peer0.customer.example.com/tls:/etc/hyperledger/fabric/tls
+        - peer0.customer.example.com:/var/hyperledger/production
+    ports:
+      - 9051:7051
+      - 9053:7053
+
+  peer1.customer.example.com:
+    container_name: peer1.customer.example.com
+    extends:
+      file: peer-base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer1.customer.example.com
+      - CORE_PEER_ADDRESS=peer1.customer.example.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.customer.example.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.customer.example.com:7051
+      - CORE_PEER_LOCALMSPID=CustomerMSP
+    volumes:
+        - /var/run/:/host/var/run/
+        - ../crypto-config/peerOrganizations/customer.example.com/peers/peer1.customer.example.com/msp:/etc/hyperledger/fabric/msp
+        - ../crypto-config/peerOrganizations/customer.example.com/peers/peer1.customer.example.com/tls:/etc/hyperledger/fabric/tls
+        - peer1.customer.example.com:/var/hyperledger/production
+    ports:
+      - 10051:7051
+      - 10053:7053
+
+  peer0.deliverer.example.com:
+    container_name: peer0.customer.example.com
+    extends:
+      file: peer-base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer0.deliverer.example.com
+      - CORE_PEER_ADDRESS=peer0.deliverer.example.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.deliverer.example.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.deliverer.example.com:7051
+      - CORE_PEER_LOCALMSPID=DelivererMSP
+    volumes:
+        - /var/run/:/host/var/run/
+        - ../crypto-config/peerOrganizations/deliverer.example.com/peers/peer0.deliverer.example.com/msp:/etc/hyperledger/fabric/msp
+        - ../crypto-config/peerOrganizations/deliverer.example.com/peers/peer0.deliverer.example.com/tls:/etc/hyperledger/fabric/tls
+        - peer0.deliverer.example.com:/var/hyperledger/production
+    ports:
+      - 11051:7051
+      - 11053:7053
+
+  peer1.deliverer.example.com:
+    container_name: peer1.deliverer.example.com
+    extends:
+      file: peer-base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer1.deliverer.example.com
+      - CORE_PEER_ADDRESS=peer1.deliverer.example.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.deliverer.example.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.deliverer.example.com:7051
+      - CORE_PEER_LOCALMSPID=DelivererMSP
+    volumes:
+        - /var/run/:/host/var/run/
+        - ../crypto-config/peerOrganizations/deliverer.example.com/peers/peer1.deliverer.example.com/msp:/etc/hyperledger/fabric/msp
+        - ../crypto-config/peerOrganizations/deliverer.example.com/peers/peer1.deliverer.example.com/tls:/etc/hyperledger/fabric/tls
+        - peer1.deliverer.example.com:/var/hyperledger/production
+    ports:
+      - 12051:7051
+      - 12053:7053

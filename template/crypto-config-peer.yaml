@@ -1,0 +1,7 @@
+  - Name: ${peerName}
+    Domain: ${peerDomainPrefix}.${domain}
+    EnableNodeOUs: true
+    Template:
+      Count: 1 # only peer0
+    Users:
+      Count: 1 # only Admin
