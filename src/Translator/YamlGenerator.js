@@ -167,9 +167,6 @@ function checkPath(domain,networkName) {
     if (!fs.existsSync('../../out/'+domain+'/'+networkName)) {
         fs.mkdirSync('../../out/'+domain+'/'+networkName);
     }
-    if (!fs.existsSync('../../out/'+domain+'/'+networkName)) {
-        fs.mkdirSync('../../out/'+domain+'/'+networkName);
-    }
     if (!fs.existsSync('../../out/'+domain+'/'+networkName+'/base')) {
         fs.mkdirSync('../../out/'+domain+'/'+networkName+'/base');
     }

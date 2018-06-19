@@ -52,13 +52,13 @@ module.exports = function generateGo(domain, networkName, tasks) {
         var Token = 0;
         var AND_token = '';
         if (Type=='AND') {
-            AND_token = '"'+task.Parents.join('":0,')+'":0';
+            AND_token = '"'+task.Parents.join('":0,"')+'":0';
         }
         var Children = '';
-        if (task.Children.length>0) {
-            Children = '"'+task.Children.join('",')+'"';
+        if (task.Chilren!=null && task.Children.length>0) {
+            Children = '"'+task.Children.join('","')+'"';
         }
-        var Access = '"'+task.Lane+'":true'
+        var Access = '"'+task.Lane.toLowerCase()+'@'+domain+'":true'
         var start_event_control = '';
         if (Type=='"START"') {
             start_event_control = 'StartIDs = append(StartIDs, event.ID)\n'
