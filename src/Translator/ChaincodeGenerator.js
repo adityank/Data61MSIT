@@ -55,7 +55,7 @@ module.exports = function generateGo(domain, networkName, tasks) {
             AND_token = '"'+task.Parents.join('":0,"')+'":0';
         }
         var Children = '';
-        if (task.Chilren!=null && task.Children.length>0) {
+        if (task.Children!=null && task.Children.length>0) {
             Children = '"'+task.Children.join('","')+'"';
         }
         var Access = '"'+task.Lane.toLowerCase()+'.'+domain+'":true'
