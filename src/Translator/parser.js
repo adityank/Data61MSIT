@@ -79,7 +79,7 @@ function getNameAndTypeMappings(etree,typeMap,nameMap){
 
     for(var iter=0; iter<tasks.length; iter++){
         (function(iter) {
-            typeMap[tasks[iter].get('id')] = 'TASK';
+            typeMap[tasks[iter].get('id')] = 'task';
             nameMap[tasks[iter].get('id')] = tasks[iter].get('name');
         })(iter);
     }
