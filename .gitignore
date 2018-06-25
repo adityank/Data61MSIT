@@ -8,3 +8,4 @@ src/Translator/main.js
 src/Translator/mt.js
 src/Translator/node_modules/
 src/Server/package-lock.json
+src/Compiler/chaincode/
