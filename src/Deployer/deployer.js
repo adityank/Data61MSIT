@@ -14,42 +14,49 @@
 *
 ******************************************************************************************************************/
 
-var mainShell = require('shelljs');
+var shell = require('shelljs');
 
-function setupPeer(shell,peer,networkName,orgDomain,first){
-	shell.exec("docker exec -it " +	peer + "_cli bash");
+var logger = require('../Logger/logger')
 
-	shell.exec("export CHANNEL_NAME = " + networkName + "channel");
+var deploy_writer;
+
+function createJoinChannel(peer,networkName,orgDomain,first){
+
+	channelName = networkName + "channel";
+
 	if(first)
-		shell.exec("peer channel create -o orderer." + orgDomain + ":7050 -c $CHANNEL_NAME -f ./channel-artifacts/channel.tx --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/" + orgDomain +"/orderers/orderer." + orgDomain +"/msp/tlscacerts/tlsca." + orgDomain + "-cert.pem");
+		shell.exec("docker exec" + peer + "_cli bash /bin/sh -c 'peer channel create -o orderer." + orgDomain + ":7050 -c " + channelName + " -f ./channel-artifacts/channel.tx --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/" + orgDomain +"/orderers/orderer." + orgDomain +"/msp/tlscacerts/tlsca." + orgDomain + "-cert.pem'");
 	else
-		shell.exec("peer channel fetch newest ./" + networkName + "channel.block -o orderer." + orgDomain + ":7050 -c $CHANNEL_NAME --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/" + orgDomain + "/orderers/orderer." + orgDomain + "/msp/tlscacerts/tlsca." + orgDomain + "-cert.pem");
+		shell.exec("docker exec" + peer + "_cli bash /bin/sh -c 'peer channel fetch newest ./" + networkName + "channel.block -o orderer." + orgDomain + ":7050 -c " + channelName + " --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/" + orgDomain + "/orderers/orderer." + orgDomain + "/msp/tlscacerts/tlsca." + orgDomain + "-cert.pem'");
 
-	shell.exec("peer channel join -b "+ networkName + "channel.block");
+	shell.exec("docker exec" + peer + "_cli bash /bin/sh -c 'peer channel join -b "+ networkName + "channel.block'");
 
 }
 
-function setupNetwork(mainShell,networkName,orgDomain,peers){
-
-	console.log(mainShell.ls());
+function setupNetwork(networkName,orgDomain,peers){
 	
-	/*mainShell.mkdir ('channel-artifacts');
+	shell.mkdir ('channel-artifacts');
 
-	mainShell.cp( fabricSamplesPath + "first-network/.env", "./.env");
+	shell.cp( fabricSamplesPath + "first-network/.env", "./.env");
 
-	mainShell.exec(fabricSamplesPath + "bin/cryptogen  generate --config=./crypto-config.yaml");
+	shell.exec(fabricSamplesPath + "bin/cryptogen  generate --config=./crypto-config.yaml");
+	logger.log(deploy_writer,"==================\n Artifacts generated \n ==========================\n");
 
-	mainShell.exec("export FABRIC_CFG_PATH=$PWD");
+	shell.exec("export FABRIC_CFG_PATH=$PWD");
 
-	mainShell.exec(fabricSamplesPath + "bin/configtxgen -profile " + networkName + "Genesis -outputBlock ./channel-artifacts/genesis.block");
+	shell.exec(fabricSamplesPath + "bin/configtxgen -profile " + networkName + "Genesis -outputBlock ./channel-artifacts/genesis.block");
 
-	mainShell.exec("export CHANNEL_NAME=" + networkName + "channel  && " + fabricSamplesPath + "bin/configtxgen -profile " + networkName + "Channel -outputCreateChannelTx ./channel-artifacts/channel.tx -channelID $CHANNEL_NAME");
+	logger.log(deploy_writer,"==================\n Genesis block created!!\n ==========================\n");
+
+	shell.exec("export CHANNEL_NAME=" + networkName + "channel  && " + fabricSamplesPath + "bin/configtxgen -profile " + networkName + "Channel -outputCreateChannelTx ./channel-artifacts/channel.tx -channelID $CHANNEL_NAME");
+
+	logger.log(deploy_writer,"==================\n \n ==========================\n");
 
 	for (var peer in peers){
-		mainShell.exec(fabricSamplesPath + "bin/configtxgen -profile " + networkName + "channel -outputAnchorPeersUpdate ./channel-artifacts/" + peer +  "MSPanchors.tx -channelID $CHANNEL_NAME -asOrg " + peer + "MSP");
+		shell.exec(fabricSamplesPath + "bin/configtxgen -profile " + networkName + "channel -outputAnchorPeersUpdate ./channel-artifacts/" + peer +  "MSPanchors.tx -channelID $CHANNEL_NAME -asOrg " + peer + "MSP");
 	}
 
-	mainShell.exec("docker-compose -f docker-compose-cli.yaml up");*/
+	shell.exec("docker-compose -f docker-compose-cli.yaml up");
 
 }
 
@@ -58,33 +65,60 @@ function setupNetwork(mainShell,networkName,orgDomain,peers){
 function deploy(networkName,orgDomain,peers){
 
 	outPath = "../../out/" + orgDomain + "/" + networkName + "/";
-	fabricSamplesPath = "../../../../fabric-samples/";
+	fabricSamplesPath = "../../../../../fabric-samples/";
 
-	mainShell.echo('hello world');
+	deploy_writer = logger.getWriter('deployer',orgDomain,networkName);
 
-	if (!mainShell.which('docker')) {
-		mainShell.echo('Sorry, this script requires docker');
-		mainShell.exit(1);
+	if (!shell.which('docker')) {
+		shell.echo('Sorry, this script requires docker');
+		logger.log(deploy_writer,"Tried deploying without installing docker\n");
+		shell.exit(1);
 	}
 
-	if (!mainShell.which('docker-compose')) {
-		mainShell.echo('Sorry, this script requires docker-compose');
-		mainShell.exit(1);
+	if (!shell.which('docker-compose')) {
+		shell.echo('Sorry, this script requires docker-compose');
+		logger.log(deploy_writer,"Tried deploying without installing docker-compose\n");		
+		shell.exit(1);
 	}
 
-	mainShell.cd(outPath);
+	shell.cd(outPath);
 
-	setupNetwork(mainShell,networkName,orgDomain,peers);
+	// Setup the infrastructure and bring up the network
 
-	shell1 = require('shelljs');
 
-	console.log(shell1.ls());
+	logger.log(deploy_writer,"==================\n Starting to setup infra \n ==========================");
 
-	/*for(var peer in peers){
+	setupNetwork(networkName,orgDomain,peers);
 
-		setupPeers();
+	endorsers = "";
+	
+	var first = true;
 
-	}*/
+	for(var peer in peers){
+
+		createJoinChannel(peer,networkName,orgDomain,first);
+		logger.log(deploy_writer,"==================\n Channel for " + peer + " created and joined\n ==========================\n");
+
+		if(first == true){
+			first = false;
+		}
+		else{
+			endorsers += ",";
+		}
+		endorsers += "'" + peer + "MSP.peer'";
+
+	}
+
+	for(var peer in peers){
+
+		shell.exec("docker exec" + peer + "_cli bash /bin/sh -c 'peer chaincode install -n mycc -v 1.0 -p github.com/chaincode/" + networkName + "'");
+		logger.log(deploy_writer,"==================\n " + peer + " installed chaincode\n ==========================\n");
+		
+	}
+
+	shell.exec("docker exec" + peers[0] + "_cli bash /bin/sh -c 'peer chaincode instantiate -o orderer." + orgDomain + ":7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/" + orgDomain + "/orderers/orderer." + orgDomain + "/msp/tlscacerts/tlsca." + orgDomain + "-cert.pem -C " + channelName + " -n mycc -v 1.0 -c '{\"Args\":[\"init\"]}' -P \"OR (" + endorsers + ")\"'");
+	logger.log(deploy_writer,"==================\n Chaincode instantiated!\n ==========================\n");
+
 }
 
 
