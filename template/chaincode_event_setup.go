@@ -6,7 +6,10 @@
         XORtoken: []string {},
         ANDtoken: map[string]int {${AND_token}},
         Children: []string {${Children}},
-        Access: map[string]bool {${Access}},
+        Lane: string ${Lane},
+    }
+    if event.Type=='Task' {
+        Functions[event.Name]=event.ID
     }
     eventAsBytes, _ = json.Marshal(event)
     APIstub.PutState(event.ID, eventAsBytes)

@@ -45,7 +45,7 @@ type Event struct {
     XORtoken []string \`json:"xortoken"\`
     ANDtoken map[string]int \`json:"andtoken"\`
     Children []string \`json:"children"\`
-    Access map[string]bool \`json:"access"\`
+    Lane string \`json:"lane"\`
 }
 
 
@@ -55,5 +55,6 @@ type Event struct {
 func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response {
     var StartIDs []string
     var EventIDs []string
+    var Functions map[string]string
     var event Event
     var eventAsBytes []byte

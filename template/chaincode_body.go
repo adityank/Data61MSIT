@@ -2,6 +2,8 @@
     APIstub.PutState("EventIDs", EventIDsAsBytes)
     StartIDsAsBytes, _ := json.Marshal(StartIDs)
     APIstub.PutState("StartIDs", StartIDsAsBytes)
+    FunctionsAsBytes, _ := json.Marshal(Functions)
+    APIstub.PutState("Functions", FunctionsAsBytes)
     initAsBytes, _ := json.Marshal(0)
     APIstub.PutState("InitLedger", initAsBytes)
 
@@ -45,7 +47,7 @@ func (s *SmartContract) initLedger(APIstub shim.ChaincodeStubInterface) peer.Res
 
 
 func (s *SmartContract) CheckAccess(caller string, task Event) bool {
-    return task.Access[caller]
+    return task.Lane==caller
 }
 
 
@@ -256,13 +258,23 @@ func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respons
     } else if function == "resetLedger" { // This is for testing purpose only
         return s.Init(APIstub)
     } else {
-        taskEvent, err := s.GetEvent(APIstub, function)
+        FunctionsAsBytes, err := s.GetState(APIstub, "Functions")
         if err!=nil {
             return shim.Error(err.Error())
         }
-        if taskEvent.ID=="" {
+
+        Functions := map[string]string{}
+        json.Unmarshal(FunctionsAsBytes, &Functions)
+
+        if Functions[function]=="" {
             return shim.Error("Invalid function name.")
         }
+
+        taskEvent, err := s.GetEvent(APIstub, Functions[function])
+        if err!=nil {
+            return shim.Error(err.Error())
+        }
+
         // At the moment, we only care about the caller's domain
         _, caller, err := s.GetCaller(APIstub)
         if err!=nil {

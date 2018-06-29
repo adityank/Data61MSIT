@@ -5,6 +5,7 @@
 * Versions:
 *   
 * 1.0 March 2018 - Initial implementation by Dongliang Zhou
+* 2.0 June 2018 - Modified to use unique id. Dongliang Zhou
 *
 * Description: This is the generator that genereates chaincode in a .go file which implements the BPMN logic.
 *
@@ -16,27 +17,25 @@ var fs = require('fs'),
     readline = require('readline');
 
 
-function checkPath(domain,networkName) {
+function checkPath(unique_id) {
     if (!fs.existsSync('../../out')) {
         fs.mkdirSync('../../out');
     }
-    if (!fs.existsSync('../../out/'+domain)) {
-        fs.mkdirSync('../../out/'+domain);
+    if (!fs.existsSync('../../out/'+unique_id)) {
+        fs.mkdirSync('../../out/'+unique_id);
     }
-    if (!fs.existsSync('../../out/'+domain+'/'+networkName)) {
-        fs.mkdirSync('../../out/'+domain+'/'+networkName);
-    }
-    if (!fs.existsSync('../../out/'+domain+'/'+networkName+'/chaincode')) {
-        fs.mkdirSync('../../out/'+domain+'/'+networkName+'/chaincode');
+    if (!fs.existsSync('../../out/'+unique_id+'/chaincode')) {
+        fs.mkdirSync('../../out/'+unique_id+'/chaincode');
     }
 }
 
 
-module.exports = function generateGo(domain, networkName, tasks) {
+function generateGo(unique_id, tasks) {
     console.log('---begin generating Go chaincode---');
-    checkPath(domain, networkName)
-    var outpath = '../../out/'+domain+'/'+networkName+'/';
-    var writer = fs.createWriteStream(outpath+'chaincode/chaincode.go');
+    checkPath(unique_id)
+    var outpath = '../../out/'+unique_id+'/chaincode/';
+    var writer = fs.createWriteStream(outpath+'chaincode.go');
+    var domain = unique_id + '.com';
 
     var header_template = fs.readFileSync('../../template/chaincode_header.go', 'utf8');
     header_template.split(/\r?\n/).forEach(function(line){
@@ -58,7 +57,7 @@ module.exports = function generateGo(domain, networkName, tasks) {
         if (task.Children!=null && task.Children.length>0) {
             Children = '"'+task.Children.join('","')+'"';
         }
-        var Access = '"'+task.Lane.toLowerCase()+'.'+domain+'":true'
+        var Lane = '"'+task.Lane.toLowerCase()+'.'+domain+'"'
         var start_event_control = '';
         if (Type=='"START"') {
             start_event_control = 'StartIDs = append(StartIDs, event.ID)\n'
@@ -78,9 +77,8 @@ module.exports = function generateGo(domain, networkName, tasks) {
 }
 
 
-// var tasks = [{Type:'START', ID: 'sta123', Name:'Start', Parents:[], Children:['cre123'], Lane:'restaurant.example.com'},
-//          {Type:'task', ID: 'cre123', Name:'Creat Order', Parents:['sta123'], Children:['and123'], Lane:'customer.example.com'},
-//          {Type:'AND', ID: 'and123', Name:'Parellel Gateway', Parents:['cre123','cre666'], Children:[], Lane:'restaurant.example.com'}];
-// var domain = 'example.com';
-// var networkName = 'pizzanetwork';
-// generateGo(domain, networkName, tasks);
+var tasks = [{Type:'START', ID: 'sta123', Name:'Start', Parents:[], Children:['cre123'], Lane:'restaurant.example.com'},
+         {Type:'task', ID: 'cre123', Name:'Creat Order', Parents:['sta123'], Children:['and123'], Lane:'customer.example.com'},
+         {Type:'AND', ID: 'and123', Name:'Parellel Gateway', Parents:['cre123','cre666'], Children:[], Lane:'restaurant.example.com'}];
+var unique_id = '1';
+generateGo(unique_id, tasks);

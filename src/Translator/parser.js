@@ -272,7 +272,7 @@ function formArray(typeMap,nameMap,laneMap,incomingMap,outgoingMap){
     return array;
 }
 
-module.exports = function parse(filename,networkName,orgDomain){
+module.exports = function parse(filename,unique_id){
     var etree = getElementTree(filename);
 
     //sequence
@@ -329,9 +329,9 @@ module.exports = function parse(filename,networkName,orgDomain){
         console.log(task + ': ' + child);
     }*/
 
-    generateYAML(orgs, networkName, orgDomain);
+    generateYAML(orgs, unique_id);
     
-    generateGo(orgDomain, networkName, taskObjArray);
+    generateGo(unique_id, taskObjArray);
 }
 
 //parse("../../bpmn_examples/pizza.bpmn","pizza","example.com");

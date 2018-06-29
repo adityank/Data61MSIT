@@ -26,7 +26,7 @@ volumes:
 ${peerVolumes}
 
 networks:
-  ${networkName}:
+  ${unique_id}:
 
 services:
 
@@ -36,7 +36,7 @@ services:
       service: orderer.${domain}
     container_name: orderer.${domain}
     networks:
-      - ${networkName}
+      - ${unique_id}
 
   # docker-compose-cli-peer.yaml content goes here
   # docker-compose-cli-cli.yaml content goes here

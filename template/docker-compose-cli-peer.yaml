@@ -4,4 +4,4 @@
       file:  base/docker-compose-base.yaml
       service: peer0.${peerDomainPrefix}.${domain}
     networks:
-      - ${networkName}
+      - ${unique_id}
