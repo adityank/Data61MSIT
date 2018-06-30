@@ -258,7 +258,7 @@ func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respons
     } else if function == "resetLedger" { // This is for testing purpose only
         return s.Init(APIstub)
     } else {
-        FunctionsAsBytes, err := s.GetState(APIstub, "Functions")
+        FunctionsAsBytes, err := APIstub.GetState("Functions")
         if err!=nil {
             return shim.Error(err.Error())
         }
@@ -315,9 +315,12 @@ func (s *SmartContract) queryAllEvents(APIstub shim.ChaincodeStubInterface) peer
     var buffer bytes.Buffer
 
     var EventIDs []string
-    EventIDsAsBytes, _ := APIstub.GetState("EventIDs")
+    EventIDsAsBytes, err := APIstub.GetState("EventIDs")
+    if err!=nil {
+        return shim.Error(err.Error())
+    }
     json.Unmarshal(EventIDsAsBytes, &EventIDs)
-
+    buffer.WriteString("\\n")
     for _, eventID := range EventIDs {
         event, err := s.GetEvent(APIstub, eventID)
         if err != nil {

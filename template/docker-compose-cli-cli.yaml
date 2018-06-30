@@ -1,5 +1,5 @@
   ${peerDomainPrefix}_${unique_id}_cli:
-    container_name: ${peerDomainPrefix}_cli
+    container_name: ${peerDomainPrefix}_${unique_id}_cli
     image: hyperledger/fabric-tools:\$IMAGE_TAG
     tty: true
     stdin_open: true

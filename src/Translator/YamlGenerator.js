@@ -153,7 +153,7 @@ function generatePeerBase(unique_id) {
     console.log('---end generating peer-base.yaml---');
 }
 
-function generateYAML(orgs, unique_id) {
+module.exports = function generateYAML(orgs, unique_id) {
     console.log('---begin generating YAML files---');
     outpath = '../../out/'+unique_id+'/';
     checkPath(unique_id);
@@ -177,6 +177,6 @@ function checkPath(unique_id) {
     }
 }
 
-var orgs = ['Restaurant','Customer','Deliverer'];
-var unique_id = '1';
-generateYAML(['Deliverer','Customer','Restaurant'], unique_id);
+// var orgs = ['Restaurant','Customer','Deliverer'];
+// var unique_id = '1';
+// generateYAML(['Deliverer','Customer','Restaurant'], unique_id);

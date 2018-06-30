@@ -30,7 +30,7 @@ function checkPath(unique_id) {
 }
 
 
-function generateGo(unique_id, tasks) {
+module.exports = function generateGo(unique_id, tasks) {
     console.log('---begin generating Go chaincode---');
     checkPath(unique_id)
     var outpath = '../../out/'+unique_id+'/chaincode/';
@@ -59,8 +59,11 @@ function generateGo(unique_id, tasks) {
         }
         var Lane = '"'+task.Lane.toLowerCase()+'.'+domain+'"'
         var start_event_control = '';
+        var function_control = '';
         if (Type=='"START"') {
-            start_event_control = 'StartIDs = append(StartIDs, event.ID)\n'
+            start_event_control = 'StartIDs = append(StartIDs, event.ID)\n';
+        } else if (Type=='"task"') {
+            function_control = 'Functions[event.Name]=event.ID';
         }
         event_setup_template.split(/\r?\n/).forEach(function(line){
             writer.write(eval('`'+line+'\n`'));
@@ -77,8 +80,8 @@ function generateGo(unique_id, tasks) {
 }
 
 
-var tasks = [{Type:'START', ID: 'sta123', Name:'Start', Parents:[], Children:['cre123'], Lane:'restaurant.example.com'},
-         {Type:'task', ID: 'cre123', Name:'Creat Order', Parents:['sta123'], Children:['and123'], Lane:'customer.example.com'},
-         {Type:'AND', ID: 'and123', Name:'Parellel Gateway', Parents:['cre123','cre666'], Children:[], Lane:'restaurant.example.com'}];
-var unique_id = '1';
-generateGo(unique_id, tasks);
+// var tasks = [{Type:'START', ID: 'sta123', Name:'Start', Parents:[], Children:['cre123'], Lane:'restaurant.example.com'},
+//          {Type:'task', ID: 'cre123', Name:'Creat Order', Parents:['sta123'], Children:['and123'], Lane:'customer.example.com'},
+//          {Type:'AND', ID: 'and123', Name:'Parellel Gateway', Parents:['cre123','cre666'], Children:[], Lane:'restaurant.example.com'}];
+// var unique_id = '1';
+// generateGo(unique_id, tasks);

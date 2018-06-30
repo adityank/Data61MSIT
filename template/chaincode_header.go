@@ -55,6 +55,6 @@ type Event struct {
 func (s *SmartContract) Init(APIstub shim.ChaincodeStubInterface) peer.Response {
     var StartIDs []string
     var EventIDs []string
-    var Functions map[string]string
+    Functions := map[string]string {}
     var event Event
     var eventAsBytes []byte
