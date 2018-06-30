@@ -1,0 +1,13 @@
+{
+  "name": "deployer",
+  "version": "1.0.0",
+  "description": "Deploy the generated files in ../../out",
+  "main": "deployer.js",
+  "scripts": {
+    "test": "node deployer.js"
+  },
+  "author": "Aditya Kamble",
+  "license": "ISC",
+  "dependencies": {
+  }
+}
