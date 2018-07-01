@@ -9,5 +9,6 @@
   "author": "Aditya Kamble",
   "license": "ISC",
   "dependencies": {
+    "shelljs": "^0.8.2"
   }
 }

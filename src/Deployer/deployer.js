@@ -22,53 +22,58 @@ var logger = require('../Logger/logger');
 
 var obj;
 
-function createJoinChannel(peer,networkName,orgDomain,first){
+function createJoinChannel(peer,unique_id,first){
+    var orgDomain = unique_id + '.com';
 
-	channelName = networkName + "channel";
+	var channelName = unique_id + "Channel";
 
 	if(first == true){
 
 		obj = shell.exec("docker exec" + peer + "_cli bash /bin/sh -c 'peer channel create -o orderer." + orgDomain + ":7050 -c " + channelName + " -f ./channel-artifacts/channel.tx --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/" + orgDomain +"/orderers/orderer." + orgDomain +"/msp/tlscacerts/tlsca." + orgDomain + "-cert.pem'");
 		if(obj.code !== 0) {
-	        console.log('Channel creation failed!')
+	        console.log('Channel creation failed!');
 	        logger.log('deployer','Channel creation failed!');
+            logger.log('deployer',obj.stderr);
 			return false;			
 		}
 	    logger.log('deployer','=================Channel created successfully!================');
 	}
 	else{
-		obj = shell.exec("docker exec" + peer + "_cli bash /bin/sh -c 'peer channel fetch newest ./" + networkName + "channel.block -o orderer." + orgDomain + ":7050 -c " + channelName + " --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/" + orgDomain + "/orderers/orderer." + orgDomain + "/msp/tlscacerts/tlsca." + orgDomain + "-cert.pem'");
+		obj = shell.exec("docker exec" + peer + "_cli bash /bin/sh -c 'peer channel fetch newest ./" + channelName + ".block -o orderer." + orgDomain + ":7050 -c " + channelName + " --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/" + orgDomain + "/orderers/orderer." + orgDomain + "/msp/tlscacerts/tlsca." + orgDomain + "-cert.pem'");
 		if(obj.code !== 0) {
 	        // node couldn't execute the command
-	        console.log("Channel fetching failed for " + peer + "!")
+	        console.log("Channel fetching failed for " + peer + "!");
 	        logger.log('deployer',"Channel fetching failed for " + peer + "!");
+            logger.log('deployer',obj.stderr);
         	return false;
 	    }
 	    logger.log('deployer', '================' + peer + ' fetched channel successfully!=================');
 	}
 
-	obj = shell.exec("docker exec" + peer + "_cli bash /bin/sh -c 'peer channel join -b "+ networkName + "channel.block'");
+	obj = shell.exec("docker exec" + peer + "_cli bash /bin/sh -c 'peer channel join -b "+ channelName + ".block'");
 	if(obj.code !== 0) {
         // node couldn't execute the command
-        console.log("Channel joining failed for " + peer + "!")
+        console.log("Channel joining failed for " + peer + "!");
         logger.log('deployer',"Channel joining failed for " + peer + "!");
+        logger.log('deployer',obj.stderr);
         return false;
 	}
     logger.log('deployer', '===============' + peer + ' joined channel successfully!===============');
 	return true;
 }
 
-function setupNetwork(networkName,orgDomain,peers){
+function setupNetwork(unique_id,peers){
 	console.log("In setup network");
 	shell.mkdir ('channel-artifacts');
 
 	shell.cp( fabricSamplesPath + "first-network/.env", "./.env");
 
-	obj = shell.exec(fabricSamplesPath + "bin/cryptogen  generate --config=./crypto-config.yaml");
+	obj = shell.exec(fabricSamplesPath + "bin/cryptogen generate --config=./crypto-config.yaml");
 	if(obj.code !== 0) {
         // node couldn't execute the command
-        console.log("Artifacts generation failed!")
+        console.log("Artifacts generation failed!");
         logger.log('deployer',"Artifacts generation failed!");
+        logger.log('deployer',obj.stderr);
         return false;
     }
 
@@ -76,17 +81,18 @@ function setupNetwork(networkName,orgDomain,peers){
 
 	shell.exec("export FABRIC_CFG_PATH=$PWD");
 
-	obj = shell.exec(fabricSamplesPath + "bin/configtxgen -profile " + networkName + "Genesis -outputBlock ./channel-artifacts/genesis.block");
+	obj = shell.exec(fabricSamplesPath + "bin/configtxgen -profile " + unique_id + "Genesis -outputBlock ./channel-artifacts/genesis.block");
 	if(obj.code !== 0) {
         // node couldn't execute the command
         console.log("Genesis generation failed!")
         logger.log('deployer',"Genesis generation failed!");
+        logger.log('deployer',obj.stderr);
         return false;
     }
 
     logger.log('deployer', "==================  Genesis block created!!  ========================== ");
 
-	obj = shell.exec("export CHANNEL_NAME=" + networkName + "channel  && " + fabricSamplesPath + "bin/configtxgen -profile " + networkName + "Channel -outputCreateChannelTx ./channel-artifacts/channel.tx -channelID $CHANNEL_NAME");
+	obj = shell.exec("export CHANNEL_NAME=" + unique_id + "Channel  && " + fabricSamplesPath + "bin/configtxgen -profile " + unique_id + "Channel -outputCreateChannelTx ./channel-artifacts/channel.tx -channelID $CHANNEL_NAME");
 	if(obj.code !== 0) {
         // node couldn't execute the command
         /*
@@ -100,17 +106,19 @@ function setupNetwork(networkName,orgDomain,peers){
         
         console.log("Channel.tx generation failed!")
         logger.log('deployer',"Channel.tx generation failed!");
+        logger.log('deployer',obj.stderr);
         return false;
     }
 
     logger.log('deployer', "==================  Channel.tx generated!!  ========================== ");
 
 	for(var iter=0; iter<peers.length; iter++){
-		obj = shell.exec(fabricSamplesPath + "bin/configtxgen -profile " + networkName + "channel -outputAnchorPeersUpdate ./channel-artifacts/" + peers[iter] +  "MSPanchors.tx -channelID $CHANNEL_NAME -asOrg " + peers[iter] + "MSP");
+		obj = shell.exec(fabricSamplesPath + "bin/configtxgen -profile " + unique_id + "Channel -outputAnchorPeersUpdate ./channel-artifacts/" + peers[iter] +  "MSPanchors.tx -channelID $CHANNEL_NAME -asOrg " + peers[iter] + "MSP");
 		if(obj.code !== 0) {
 	    	// node couldn't execute the command
 	        console.log(peers[iter] + " generation failed!")
 	        logger.log('deployer',peers[iter] + " generation failed!");
+            logger.log('deployer',obj.stderr);
 	        return false;
 	    }
 	    logger.log('deployer', "==================  " + peers[iter] + " created!!  ======================= ");
@@ -119,12 +127,12 @@ function setupNetwork(networkName,orgDomain,peers){
 }
 
 
-function deploy(networkName,orgDomain,peers,status){
+function deploy(unique_id,peers,status){
 
-	outPath = "../../out/" + orgDomain + "/" + networkName + "/";
-	fabricSamplesPath = "../../../../../fabric-samples/";
+	outPath = "../../out/" + unique_id + "/";
+	fabricSamplesPath = "/home/dlzhou/fabric-samples/";
 
-	logger.init(orgDomain,networkName);
+	logger.init(unique_id);
 	
 	shell.cd(outPath);
 	var res = true;
@@ -148,11 +156,17 @@ function deploy(networkName,orgDomain,peers,status){
 
 	if(status == "new"){		
 		logger.log('deployer',"==================  Starting to setup infra   ==========================");
-		res = setupNetwork(networkName,orgDomain,peers);
+		res = setupNetwork(unique_id,peers);
 		//shell.exec('node deployNetwork.js', { async: true }, { async: true });
 		if(res == false)
 			return false;
 	}
+
+    // Status was up - Everything was setup. Done after bringing up the network.
+    if (status == 'up') {
+        logger.log('deployer',"Network is already up.");
+        return false;
+    }
 
 	//shell.exec('node deployPeer.js', { async: true }, { async: true });
 
@@ -162,9 +176,15 @@ function deploy(networkName,orgDomain,peers,status){
 	        // node couldn't execute the command
 	        console.log("Bringing up network failed!")
 	        logger.log('deployer',"Bringing up network failed!");
+            logger.log('deployer',obj.stderr);
 	        return false;
 	    }
     logger.log('deployer', "==================  Network up and running!!  ========================== ");
+
+    // Status was down - Everything was setup. Done after bringing up the network.
+    if (status == 'down') {
+        return true;
+    }
 
 	endorsers = "";
 	
@@ -172,7 +192,7 @@ function deploy(networkName,orgDomain,peers,status){
 	
 	for(var iter=0; iter<peers.length; iter++){
 
-		res = createJoinChannel(peers[iter],networkName,orgDomain,first);
+		res = createJoinChannel(peers[iter],unique_id,first);
 		if(res == false)
 			return false;
 		logger.log('deployer',"==================  Channel for " + peers[iter] + " created and joined  ========================== ");
@@ -189,30 +209,32 @@ function deploy(networkName,orgDomain,peers,status){
 
 	for(var iter=0; iter<peers.length; iter++){
 
-		obj = shell.exec("docker exec" + peers[iter] + "_cli bash /bin/sh -c 'peer chaincode install -n mycc -v 1.0 -p github.com/chaincode/" + networkName + "'");
+		obj = shell.exec("docker exec" + peers[iter] + "_" + unique_id + "_cli bash /bin/sh -c 'peer chaincode install -n mycc -v 1.0 -p github.com/chaincode/'");
 		if(obj.code !== 0) {
 	        // node couldn't execute the command
 	        console.log("Installing chaincode failed on " + peers[iter])
 	        logger.log("Installing chaincode failed on " + peers[iter]);
+            logger.log('deployer',obj.stderr);
 	        return false;
 	    }
 	    logger.log('deployer', "==================" + peers[iter] + " installed chaincode  ========================== ");
 	    return true;
 	}
 
-	obj = shell.exec("docker exec" + peers[0] + "_cli bash /bin/sh -c 'peer chaincode instantiate -o orderer." + orgDomain + ":7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/" + orgDomain + "/orderers/orderer." + orgDomain + "/msp/tlscacerts/tlsca." + orgDomain + "-cert.pem -C " + channelName + " -n mycc -v 1.0 -c '{\"Args\":[\"init\"]}' -P \"OR (" + endorsers + ")\"'");
+	obj = shell.exec("docker exec" + peers[0] + "_" + unique_id + "_cli bash /bin/sh -c 'peer chaincode instantiate -o orderer." + unique_id + ".com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/" + unique_id + ".com/orderers/orderer." + unique_id + ".com/msp/tlscacerts/tlsca." + unique_id + ".com-cert.pem -C " + channelName + " -n mycc -v 1.0 -c '{\"Args\":[\"init\"]}' -P \"OR (" + endorsers + ")\"'");
 	if(obj.code !== 0) {
         // node couldn't execute the command
         console.log("Instantiating chaincode failed")
         logger.log("Instantiating chaincode failed");
+        logger.log('deployer',obj.stderr);
         return false;
     }
     logger.log('deployer',"==================  Chaincode instantiated!  ========================== ");
     return true;
 }
 
-
-deploy("pizza","demo0625.com",['restaurant','customer','deliverer'],"new");
+// peer names need to be lower case
+deploy('test0630v3',['restaurant','customer','deliverer'],"new");
 
 //up
 //down

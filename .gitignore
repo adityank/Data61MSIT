@@ -1,6 +1,7 @@
 .idea/
 .DS_STORE
 out/
+logs/
 src/Server/node_modules/
 src/Translator/at.js
 src/Translator/bt.js
