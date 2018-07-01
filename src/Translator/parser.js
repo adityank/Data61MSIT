@@ -32,6 +32,7 @@ var et = require('elementtree');
 var generateYAML = require('./YAMLGenerator');
 var generateGo = require('./ChaincodeGenerator');
 
+var logger = require('../Logger/logger');
 
 function Task(id,name,type,lane,children,parents) {
     this.ID = id;
@@ -328,6 +329,11 @@ module.exports = function parse(filename,networkName,orgDomain){
         }
         console.log(task + ': ' + child);
     }*/
+
+
+    networkName = orgDomain.substring(0, orgDomain.indexOf('.'));
+
+    logger.init(orgDomain);
 
     generateYAML(orgs, networkName, orgDomain);
     
