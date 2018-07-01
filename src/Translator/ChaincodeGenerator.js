@@ -57,7 +57,7 @@ module.exports = function generateGo(unique_id, tasks) {
         if (task.Children!=null && task.Children.length>0) {
             Children = '"'+task.Children.join('","')+'"';
         }
-        var Lane = '"'+task.Lane.toLowerCase()+'.'+domain+'"'
+        var Lane = '"'+task.Lane+'.'+domain+'"'
         var start_event_control = '';
         var function_control = '';
         if (Type=='"START"') {

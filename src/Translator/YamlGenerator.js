@@ -17,7 +17,7 @@ function generateCryptoConfig(orgs, unique_id) {
     peer_template = fs.readFileSync('../../template/crypto-config-peer.yaml', 'utf8');
     for (var i = orgs.length -1; i >= 0; i--) {
         var peerName = orgs[i];
-        var peerDomainPrefix = peerName.toLowerCase();
+        var peerDomainPrefix = peerName;
         peer_template.split(/\r?\n/).forEach(function(line){
             writer.write(eval('`'+line+'\n`'));
         })
@@ -50,7 +50,7 @@ function generateConfigTX(orgs, unique_id) {
     msp_template = fs.readFileSync('../../template/configtx-orgs-msp.yaml', 'utf8');
     for (var i = orgs.length -1; i >= 0; i--) {
         var peerName = orgs[i];
-        var peerDomainPrefix = peerName.toLowerCase();
+        var peerDomainPrefix = peerName;
         msp_template.split(/\r?\n/).forEach(function(line){
             writer.write(eval('`'+line+'\n`'));
         });
@@ -70,7 +70,7 @@ function generateDockerComposeCli(orgs, unique_id) {
     // Generate peerVolumes
     var peerVolumes = '';
     for (var i = orgs.length -1; i >= 0; i--) {
-        var peerDomainPrefix = orgs[i].toLowerCase();
+        var peerDomainPrefix = orgs[i];
         volumes_template.split(/\r?\n/).forEach(function(line){
             peerVolumes+=eval('`'+line+'\n`');
         });
@@ -82,7 +82,7 @@ function generateDockerComposeCli(orgs, unique_id) {
     // Write peer part
     var peer_template = fs.readFileSync('../../template/docker-compose-cli-peer.yaml', 'utf8');
     for (var i = orgs.length -1; i >= 0; i--) {
-        var peerDomainPrefix = orgs[i].toLowerCase();
+        var peerDomainPrefix = orgs[i];
         peer_template.split(/\r?\n/).forEach(function(line){
             writer.write(eval('`'+line+'\n`'));
         });
@@ -91,7 +91,7 @@ function generateDockerComposeCli(orgs, unique_id) {
     var cliDependsOn = '';
     var dependson_template = fs.readFileSync('../../template/docker-compose-cli-depends-on.yaml', 'utf8');
     for (var i = orgs.length -1; i >= 0; i--) {
-        var peerDomainPrefix = orgs[i].toLowerCase();
+        var peerDomainPrefix = orgs[i];
         dependson_template.split(/\r?\n/).forEach(function(line){
             cliDependsOn+=eval('`'+line+'\n`');
         });
@@ -100,7 +100,7 @@ function generateDockerComposeCli(orgs, unique_id) {
     var cli_template = fs.readFileSync('../../template/docker-compose-cli-cli.yaml', 'utf8');
     for (var i = orgs.length -1; i >= 0; i--) {
         var peerName = orgs[i];
-        var peerDomainPrefix = peerName.toLowerCase();
+        var peerDomainPrefix = peerName;
         cli_template.split(/\r?\n/).forEach(function(line){
             writer.write(eval('`'+line+'\n`'));
         });
@@ -127,7 +127,7 @@ function generateDockerComposeBase(orgs, unique_id) {
 
     for (var i = orgs.length - 1; i >= 0; i--) {
         var peerName = orgs[i];
-        var peerDomainPrefix = peerName.toLowerCase();
+        var peerDomainPrefix = peerName;
         var peerPort7051 = 7051+i*100;
         var peerPort7053 = 7053+i*100;
         peer_template.split(/\r?\n/).forEach(function(line){
