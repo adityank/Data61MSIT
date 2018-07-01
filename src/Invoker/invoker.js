@@ -22,7 +22,7 @@ var logger = require('../Logger/logger');
 
 var obj;
 
-function invoke(orgDomain,peer,actionName,parameters){
+function invoke(unique_id,orgDomain,peer,actionName,parameters){
 
 	logger.init(orgDomain);
 
@@ -49,7 +49,7 @@ function invoke(orgDomain,peer,actionName,parameters){
 	}
 
 
-	obj = shell.exec("docker exec " + peer + "_cli bash /bin/sh -c 'invoke -o orderer." + orgDomain + ":7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/" + orgDomain + "/orderers/orderer."+ orgDomain + "/msp/tlscacerts/tlsca." + orgDomain + "-cert.pem -C " + channelName + " -n mycc -c '{\"Args\":[\"" + actionName + "\"" + paramString + "]}'");
+	obj = shell.exec("docker exec -t " + peer + "_" + unique_id + "_cli invoke -o orderer." + orgDomain + ":7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/" + orgDomain + "/orderers/orderer."+ orgDomain + "/msp/tlscacerts/tlsca." + orgDomain + "-cert.pem -C " + channelName + " -n mycc -c '{\"Args\":[\"" + actionName + "\"" + paramString + "]}");
 	if(obj.code !== 0) {
         // node couldn't execute the command
         console.log("Invoking function " + actionName + " with parameters " + paramString + " failed")
@@ -60,4 +60,4 @@ function invoke(orgDomain,peer,actionName,parameters){
 }
 
 
-invoke("demo0625.com","confirmOrder",{"ORDER4","Coke","Adi"});
+invoke("demo0625","demo0625.com","confirmOrder",{"ORDER4","Coke","Adi"});
