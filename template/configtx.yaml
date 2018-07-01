@@ -29,7 +29,7 @@
 ################################################################################
 Profiles:
 
-    ${networkName}Genesis:
+    ${unique_id}Genesis:
         Capabilities:
             <<: *ChannelCapabilities
         Orderer:
@@ -43,7 +43,7 @@ Profiles:
                 Organizations:
                     # config-orgs.yaml content goes here
 ${configtx_orgs}
-    ${networkName}Channel:
+    ${unique_id}Channel:
         Consortium: SampleConsortium
         Application:
             <<: *ApplicationDefaults

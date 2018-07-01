@@ -1,6 +1,7 @@
 .idea/
 .DS_STORE
 out/
+logs/
 src/Server/node_modules/
 src/Translator/at.js
 src/Translator/bt.js
@@ -9,3 +10,4 @@ src/Translator/mt.js
 src/Translator/node_modules/
 src/Server/package-lock.json
 src/Server/tmp
+src/Deployer/node_modules/
