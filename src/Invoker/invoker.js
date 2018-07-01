@@ -22,9 +22,11 @@ var logger = require('../Logger/logger');
 
 var obj;
 
-function invoke(unique_id,orgDomain,peer,actionName,parameters){
+function invoke(unique_id,peer,actionName,parameters){
 
-	logger.init(orgDomain);
+	logger.init(unique_id);
+	var orgDomain = unique_id + '.com';
+	var channelName = 'mychannel';
 
 	var paramString="";
 	
@@ -49,15 +51,15 @@ function invoke(unique_id,orgDomain,peer,actionName,parameters){
 	}
 
 
-	obj = shell.exec("docker exec -t " + peer + "_" + unique_id + "_cli invoke -o orderer." + orgDomain + ":7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/" + orgDomain + "/orderers/orderer."+ orgDomain + "/msp/tlscacerts/tlsca." + orgDomain + "-cert.pem -C " + channelName + " -n mycc -c '{\"Args\":[\"" + actionName + "\"" + paramString + "]}");
+	obj = shell.exec("docker exec -t " + peer + "_" + unique_id + "_cli peer chaincode invoke -o orderer." + orgDomain + ":7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/" + orgDomain + "/orderers/orderer."+ orgDomain + "/msp/tlscacerts/tlsca." + orgDomain + "-cert.pem -C " + channelName + " -n mycc -c '{\"Args\":[\"" + actionName + "\"" + paramString + "]}'");
 	if(obj.code !== 0) {
         // node couldn't execute the command
         console.log("Invoking function " + actionName + " with parameters " + paramString + " failed")
-        logger.log("Invoking function " + actionName + " with parameters " + paramString + " failed");
+        logger.log('invoker',"Invoking function " + actionName + " with parameters " + paramString + " failed");
     }
-    logger.log('deployer',"Successfully invoked function " + actionName + " with parameters " + paramString);
+    logger.log('invoker',"Successfully invoked function " + actionName + " with parameters " + paramString);
     return true;
 }
 
 
-invoke("demo0625","demo0625.com","confirmOrder",{"ORDER4","Coke","Adi"});
+invoke("test0701v1","Restaurant","initLedger",[]);
