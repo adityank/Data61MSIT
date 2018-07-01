@@ -24,7 +24,6 @@ var obj;
 
 function invoke(orgDomain,peer,actionName,parameters){
 
-
 	logger.init(orgDomain);
 
 	var paramString="";
@@ -46,7 +45,7 @@ function invoke(orgDomain,peer,actionName,parameters){
 	}
 
 	for(var iter = 0; iter<parameters.length;iter++){
-		paramString += ', '+parameters[iter];
+		paramString += ', \"'+parameters[iter] + '\"';
 	}
 
 
@@ -61,4 +60,4 @@ function invoke(orgDomain,peer,actionName,parameters){
 }
 
 
-invoke("pizza","demo0625.com",['restaurant','customer','deliverer'],"new");
+invoke("demo0625.com","confirmOrder",{"ORDER4","Coke","Adi"});
