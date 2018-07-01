@@ -14,7 +14,6 @@ exports.init = function(unique_id){
 	    fs.mkdirSync('../../logs/'+unique_id);
 	}
 	logPath = '../../logs/' + unique_id + '/';
-	
 }
 
 exports.log = function(type,text){

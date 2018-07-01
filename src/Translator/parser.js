@@ -32,6 +32,7 @@ var et = require('elementtree');
 var generateYAML = require('./YAMLGenerator');
 var generateGo = require('./ChaincodeGenerator');
 
+var logger = require('../Logger/logger');
 
 function Task(id,name,type,lane,children,parents) {
     this.ID = id;
@@ -328,6 +329,8 @@ module.exports = function parse(filename,unique_id){
         }
         console.log(task + ': ' + child);
     }*/
+
+    logger.init(unique_id);
 
     generateYAML(orgs, unique_id);
     

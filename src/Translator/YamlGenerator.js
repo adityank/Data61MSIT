@@ -2,8 +2,12 @@ var fs = require('fs'),
     readline = require('readline'),
     outpath = '';
 
+
+var logger = require('../Logger/logger');
+
 function generateCryptoConfig(orgs, unique_id) {
     console.log('---begin generating crypto-config.yaml---');
+    logger.log('translator','---begin generating crypto-config.yaml---');
     var writer = fs.createWriteStream(outpath+'crypto-config.yaml');
 
     var domain = unique_id + '.com';
@@ -24,10 +28,14 @@ function generateCryptoConfig(orgs, unique_id) {
     }
     writer.end();
     console.log('---end generating crypto-config.yaml---');
+    logger.log('translator','---end generating crypto-config.yaml---');
+
 }
 
 function generateConfigTX(orgs, unique_id) {
     console.log('---begin generating configtx.yaml---');
+    logger.log('translator','---begin generating configtx.yaml---');
+
     var writer = fs.createWriteStream(outpath+'configtx.yaml');
     var domain = unique_id + '.com';
 
@@ -56,11 +64,13 @@ function generateConfigTX(orgs, unique_id) {
         });
     }
     writer.end();
-    console.log('---end generating crypto-config.yaml---');
+    console.log('---end generating configtx.yaml---');
+    logger.log('translator','---end generating configtx.yaml---');    
 }
 
 function generateDockerComposeCli(orgs, unique_id) {    
     console.log('---begin generating docker-compose-cli.yaml---');
+    logger.log('translator','---begin generating docker-compose-cli.yaml---');        
     var writer = fs.createWriteStream(outpath+'docker-compose-cli.yaml');
 
     var domain = unique_id + '.com';
@@ -107,10 +117,13 @@ function generateDockerComposeCli(orgs, unique_id) {
     }
     writer.end();
     console.log('---end generating docker-compose-cli.yaml---');
+    logger.log('translator','---end generating docker-compose-cli.yaml---');            
 }
 
 function generateDockerComposeBase(orgs, unique_id) {
     console.log('---begin generating docker-compose-base.yaml---');
+    logger.log('translator','---begin generating docker-compose-base.yaml---');
+
     var writer = fs.createWriteStream(outpath+'base/docker-compose-base.yaml');
 
     var domain = unique_id + '.com';
@@ -137,10 +150,14 @@ function generateDockerComposeBase(orgs, unique_id) {
 
     writer.end();
     console.log('---end generating docker-compose-base.yaml---');
+    logger.log('translator','---end generating docker-compose-base.yaml---');
+
 }
 
 function generatePeerBase(unique_id) {
     console.log('---begin generating peer-base.yaml---');
+    logger.log('translator','---begin generating peer-base.yaml---');
+    
     var writer = fs.createWriteStream(outpath+'base/peer-base.yaml');
     var domain = unique_id + '.com';
 
@@ -151,10 +168,13 @@ function generatePeerBase(unique_id) {
         });
     writer.end();
     console.log('---end generating peer-base.yaml---');
+    logger.log('translator','---end generating peer-base.yaml---');
+    
 }
 
 module.exports = function generateYAML(orgs, unique_id) {
     console.log('---begin generating YAML files---');
+    logger.log('translator','---begin generating YAML files---');
     outpath = '../../out/'+unique_id+'/';
     checkPath(unique_id);
     generatePeerBase(unique_id);
@@ -163,6 +183,8 @@ module.exports = function generateYAML(orgs, unique_id) {
     generateConfigTX(orgs, unique_id);
     generateDockerComposeCli(orgs, unique_id);
     console.log('---end generating YAML files---');
+    logger.log('translator','---begin generating YAML files---');
+    
 }
 
 function checkPath(unique_id) {

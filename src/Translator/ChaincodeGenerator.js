@@ -15,6 +15,7 @@
 
 var fs = require('fs'),
     readline = require('readline');
+var logger = require('../Logger/logger');
 
 
 function checkPath(unique_id) {
@@ -32,6 +33,9 @@ function checkPath(unique_id) {
 
 module.exports = function generateGo(unique_id, tasks) {
     console.log('---begin generating Go chaincode---');
+
+    logger.log('translator','---begin generating Go chaincode---');
+    
     checkPath(unique_id)
     var outpath = '../../out/'+unique_id+'/chaincode/';
     var writer = fs.createWriteStream(outpath+'chaincode.go');
@@ -77,6 +81,8 @@ module.exports = function generateGo(unique_id, tasks) {
 
     writer.end();
     console.log('---end generating Go chaincode---');
+    logger.log('translator','---end generating Go chaincode---');
+    
 }
 
 

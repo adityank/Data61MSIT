@@ -8,5 +8,6 @@ src/Translator/bt.js
 src/Translator/main.js
 src/Translator/mt.js
 src/Translator/node_modules/
-src/Deployer/node_modules/
 src/Server/package-lock.json
+src/Server/tmp
+src/Deployer/node_modules/
