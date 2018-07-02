@@ -15,6 +15,7 @@
 *   14 June 2018 - Aditya Kamble - Integrated with YAMLGenerator and Server.
 *   19 June 2018 - Aditya Kamble - Added different mappings to integrate with ChaincodeGenerator.
 *   01 July 2018 - Aditya Kamble - Modified the tag format to <bpmn:
+*
 * Description: This is the parser which takes in a BPMN file path and sends the extracted information to generators. 
 *
 * External Dependencies: 
@@ -28,6 +29,9 @@ var fs = require('fs');
 
 // module for element tree 
 var et = require('elementtree');
+
+var HashSet = require('hashset');
+
 
 var generateYAML = require('./YAMLGenerator');
 var generateGo = require('./ChaincodeGenerator');
@@ -74,14 +78,28 @@ function getNameMapping(etree){
 
 // Get mappings from id to type
 function getNameAndTypeMappings(etree,typeMap,nameMap){
-
-    var tasks = etree.findall('./bpmn:process/bpmn:task');
     // A mapping between unique task_id and the corresponding task name
 
+    var tasks = etree.findall('./bpmn:process/bpmn:task');
+
+    var functionNames = new HashSet();
+
+
+
+
+    // Check here if taskname is unique
     for(var iter=0; iter<tasks.length; iter++){
         (function(iter) {
             typeMap[tasks[iter].get('id')] = 'task';
-            nameMap[tasks[iter].get('id')] = tasks[iter].get('name');
+            if(functionNames.contains(tasks[iter].get('name'))){
+                //****************TODO*****************Send message back to server
+                console.log("non-unique");
+            }
+            else{
+                nameMap[tasks[iter].get('id')] = tasks[iter].get('name');
+                functionNames.add(tasks[iter].get('name'));
+            }
+
         })(iter);
     }
 
@@ -273,7 +291,7 @@ function formArray(typeMap,nameMap,laneMap,incomingMap,outgoingMap){
     return array;
 }
 
-module.exports = function parse(filename,unique_id){
+function parse(filename,unique_id){
     var etree = getElementTree(filename);
 
     //sequence
@@ -337,7 +355,7 @@ module.exports = function parse(filename,unique_id){
     generateGo(unique_id, taskObjArray);
 }
 
-//parse("../../bpmn_examples/incident_management.bpmn","incident");
+parse("../../bpmn_examples/pizza.bpmn","incident");
 
 
 /*

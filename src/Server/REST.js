@@ -62,7 +62,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
             if (err) {
                 console.log(err);
             }
-            parse(filename,receive.processName,receive.orgDomain);
+            parse(filename,receive.orgDomain);
         });
 
         response = {
