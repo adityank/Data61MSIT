@@ -32,6 +32,7 @@ function sleep(milliseconds) {
       break;
     }
   }
+  return true;
 }
 
 function createJoinChannel(peer,unique_id,first){
@@ -90,7 +91,7 @@ function cryptogen(unique_id) {
 function channel_artifacts_gen(unique_id,peers){
 	shell.mkdir ('channel-artifacts');
 
-	shell.cp( fabricSamplesPath + ".env", "./.env");
+	//shell.cp( fabricSamplesPath + ".env", "./.env");
 
 	obj = shell.exec("export FABRIC_CFG_PATH=$PWD && "+fabricSamplesPath + "bin/configtxgen -profile " + unique_id + "Genesis -outputBlock ./channel-artifacts/genesis.block");
 	if(obj.code !== 0) {
@@ -182,7 +183,9 @@ function deploy(unique_id,peers,stage){
 		logger.log('deployer',"==================  Stage 2: Bring Up Network  ==========================");
 		shell.exec("docker-compose -f docker-compose-cli.yaml up", {silent: true, async:true})
 		
-		sleep(10000);
+		var wait = sleep(10000);
+
+		logger.log('deployer', wait);
 
 	    logger.log('deployer', "==================  Network up and running!!  ========================== ");
 		stage = 3;
@@ -245,8 +248,11 @@ function deploy(unique_id,peers,stage){
 }
 
 // peer names need to be lower case
-stage = deploy('test0701v1',['Restaurant','Customer','Deliverer'],6);
+stage = deploy('test0702v1',['Restaurant','Customer','Deliverer'],2);
 logger.log('deployer', "******* Final Stage Reached: " + stage.toString() + " ************")
-
+console.log('======================v1done========================')
+stage = deploy('test0702v2',['Restaurant','Customer','Deliverer'],2);
+logger.log('deployer', "******* Final Stage Reached: " + stage.toString() + " ************")
+console.log('======================v2done========================')
 //up
 //down

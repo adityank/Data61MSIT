@@ -130,7 +130,7 @@ function generateDockerComposeBase(orgs, unique_id) {
 
     var template = fs.readFileSync('../../template/base/docker-compose-base.yaml', 'utf8');
     
-    var ordererPort = 7050;
+    var ordererPort = "$port0";
 
     template.split(/\r?\n/).forEach(function(line){
             writer.write(eval('`'+line+'\n`'));
@@ -141,8 +141,8 @@ function generateDockerComposeBase(orgs, unique_id) {
     for (var i = orgs.length - 1; i >= 0; i--) {
         var peerName = orgs[i];
         var peerDomainPrefix = peerName;
-        var peerPort7051 = 7051+i*100;
-        var peerPort7053 = 7053+i*100;
+        var peerPort7051 = "$port"+(2*i+1).toString();
+        var peerPort7053 = "$port"+(2*i+2).toString();
         peer_template.split(/\r?\n/).forEach(function(line){
             writer.write(eval('`'+line+'\n`'));
         });
