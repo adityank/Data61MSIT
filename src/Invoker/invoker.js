@@ -50,14 +50,17 @@ module.exports = function invoke(unique_id,peer,actionName,parameters){
 	}
 
 
-	obj = shell.exec("docker exec -t " + peer + "_" + unique_id + "_cli peer chaincode invoke -o orderer." + orgDomain + ":7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/" + orgDomain + "/orderers/orderer."+ orgDomain + "/msp/tlscacerts/tlsca." + orgDomain + "-cert.pem -C " + channelName + " -n mycc -c '{\"Args\":[\"" + actionName + "\"" + paramString + "]}'");
+	obj = shell.exec("docker exec -t " + peer + "_" + unique_id + "_cli peer chaincode invoke -o orderer." + orgDomain + ":7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/" + orgDomain + "/orderers/orderer."+ orgDomain + "/msp/tlscacerts/tlsca." + orgDomain + "-cert.pem -C " + channelName + " -n mycc -c '{\"Args\":[\"" + actionName + "\"" + paramString + "]}'", {silent:true});
 	if(obj.code !== 0) {
         // node couldn't execute the command
         console.log("Invoking function " + actionName + " with parameters " + paramString + " failed")
         logger.log('invoker',"Invoking function " + actionName + " with parameters " + paramString + " failed");
-        return obj.stderr;
+        logger.log('invoker',obj.stderr);
+        console.log(obj.stdout);
+        return obj.stdout;
     }
     logger.log('invoker',"Successfully invoked function " + actionName + " with parameters " + paramString);
+    logger.log('invoker',obj.stdout);
     return obj.stdout;
 }
 

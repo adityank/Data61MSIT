@@ -44,7 +44,8 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                                 translate_results: "N/A",
                                 compile_results: "N/A",
                                 deploy_results: "N/A",
-                                invoke_results: "N/A"
+                                invoke_results: "N/A",
+                                translated_chaincode: "N/A"
             });
         });        
         //res.sendFile( __dirname + "/public/index.html" );
@@ -94,7 +95,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         console.log(receive);
 
 
-        var unique_id = uniqueString();
+        var unique_id = uniqueString().substring(0,5);
         console.log("unique_id created: " + unique_id); 
         filename = "tmp/" + unique_id + ".bpmn";
 
@@ -131,7 +132,8 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                                 translate_results: translate_results.result,
                                 compile_results: "N/A",
                                 deploy_results: "N/A",
-                                invoke_results: "N/A"
+                                invoke_results: "N/A",
+                                translated_chaincode: translate_results.chaincode
                 });
             });
         });
@@ -180,7 +182,8 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                                 translate_results: "N/A",
                                 compile_results: compile_status,
                                 deploy_results: "N/A",
-                                invoke_results: "N/A"
+                                invoke_results: "N/A",
+                                translated_chaincode: "N/A"
                 });
             });
         });
@@ -247,7 +250,8 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                                 translate_results: "N/A",
                                 compile_results: "N/A",
                                 deploy_results: deploy_results.message,
-                                invoke_results: "N/A"
+                                invoke_results: "N/A",
+                                translated_chaincode: "N/A"
 
                 });
             });
@@ -290,7 +294,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
             parameters = [];
         console.log(parameters);
         var invoke = require("../Invoker/invoker.js");
-        invoke_results = invoke(receive.unique_id, receive.peer, receive.function_name, parameters);     
+        var invoke_results = invoke(receive.unique_id, receive.peer, receive.function_name, parameters);     
 
         // send response
         res.render('index',{
@@ -298,9 +302,9 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                                 all_networks: "N/A",
                             translate_results: "N/A",
                             compile_results: "N/A",
-                            deploy_results: deploy_results,
-                            invoke_results: "N/A"
-
+                            deploy_results: "N/A",
+                            invoke_results: invoke_results,
+                            translated_chaincode: "N/A"
             });
         });
 };

@@ -31,11 +31,12 @@
       </form>   
       <b>Translate Results</b>
       <p id="translate_results"><%= translate_results %></p>
+      <textarea name="translated_chaincode" rows="30" cols="200" white-space="pre-wrap"><%= translated_chaincode %></textarea><br>
       <b>Compile Results</b>
       <p id="compile_results"><%= compile_results %></p>  
-      <b>Deploy Results</b>
-      <p id="deploy_results"><%= deploy_results %></p>  
-      <b>Invoke Results</b>
-      <p id="invoke_results"><%= invoke_results %></p>    
+      <b>Deploy Results</b><br>
+      <textarea name="deploy_results" rows="30" cols="200" white-space="pre-wrap"><%= deploy_results %></textarea><br>
+      <b>Invoke Results</b><br>
+      <textarea name="invoke_results" rows="30" cols="200" white-space="pre-wrap"><%= invoke_results %></textarea><br>
    </body>
 </html>
