@@ -1,0 +1,14 @@
+{
+  "name": "compiler",
+  "version": "1.0.0",
+  "description": "Compile the generated files in ../../out",
+  "main": "compiler.js",
+  "scripts": {
+    "test": "node compiler.js"
+  },
+  "author": "Aditya Kamble",
+  "license": "ISC",
+  "dependencies": {
+    "shelljs": "^0.8.2"
+  }
+}

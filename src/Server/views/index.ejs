@@ -1,5 +1,7 @@
 <html>
    <body>
+      <b>Uniqle_id</b>
+      <p id="uniqle_id"><%= uniqle_id %></p>
    	<b>List All Networks</b>
       <p id="all_networks"><%= all_networks %></p>  
       <form action = "http://127.0.0.1:3000/api/v1/list" method = "POST">
@@ -14,11 +16,12 @@
       <b>Compile</b>
       <form action = "http://127.0.0.1:3000/api/v1/compile" method = "POST">
          uniqle_id: <input type = "text" name = "uniqle_id"><br>
-         chaincode: <input type = "text" name = "chaincode"><br>
+         <!-- chaincode: <input type = "text" name = "chaincode"><br> -->
+         <textarea name="chaincode" rows="10" cols="100" white-space="pre-wrap">input your chaincode</textarea>
          <input type = "submit" value = "Submit">
       </form>
       <b>Deploy</b> 
-      <form action = "http://127.0.0.1:3000/api/v1/deploy" method = s"POST">
+      <form action = "http://127.0.0.1:3000/api/v1/deploy" method = "POST">
          uniqle_id: <input type = "text" name = "uniqle_id"><br>
          chaincode: <input type = "text" name = "chaincode"><br>
          <input type = "submit" value = "Submit">

@@ -14,6 +14,7 @@ const getPortSync = require('get-port-sync');
 var num_peers;
 
 
+
 function REST_ROUTER(router,connection) {
     var self = this;
     self.handleRoutes(router,connection);
@@ -101,7 +102,19 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 console.log(err);
             }
 
+
             num_peers = parse(filename,uniqle_id);
+
+            translate_results = parse(filename,uniqle_id);
+
+            query = "INSERT INTO bpmn (uniqle_id, status) VALUES (?,?)";
+            table = [uniqle_id,0];
+            query = mysql.format(query,table);
+            connection.query(query, function (err, result) {
+                if (err) throw err;
+                console.log("Adding new entries");
+            });
+
 
             query = "SELECT * FROM bpmn";
             connection.query(query, function (err, result) {
@@ -141,14 +154,16 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
           chaincode:req.body.chaincode
         };
         console.log(receive);
-        filename = "../../out/" + receive.uniqle_id + ".go";
+        filename = "../../out/" + receive.uniqle_id + "/chaincode/chaincode.go";
 
         // save in out/uniqle_id/chaincode/*.go
         fs.writeFile(filename, receive.chaincode, function (err) {
             if (err) {
                 console.log(err);
             }
-            var status = compile(filename,receive.uniqle_id);
+
+            var compile = require("../Compiler/compiler.js");
+            var compile_status = compile(filename);
 
             query = "SELECT * FROM bpmn";
             connection.query(query, function (err, result) {
@@ -159,7 +174,8 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                                 uniqle_id: receive.uniqle_id,
                                 all_networks: result,
                                 translate_results: "translate_results",
-                                compile_results: "N/A",
+
+                                compile_results: compile_status,
                                 deploy_results: "N/A",
                                 invoke_results: "N/A"
                 });
@@ -192,30 +208,36 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
           chaincode:req.body.chaincode
         };
         console.log(receive);
-        filename = "../../out/" + receive.uniqle_id + ".go";
+ 
+        var status;
+        query = "SELECT * FROM bpmn WHERE uniqle_id=?";
+        table = [receive.uniqle_id];
+        query = mysql.format(query,table);
+        connection.query(query, function (err, result) {
+            if (err) throw err;
+            console.log("Querying new status");
+            console.log(result[0].status);
+            status = result[0].status;
+        });
+        // parameters: uniqle_id and status
+        deploy_results = deploy(receive.uniqle_id,status,ports);
 
-        // save in out/uniqle_id/chaincode/*.go
-        fs.writeFile(filename, receive.chaincode, function (err) {
-            if (err) {
-                console.log(err);
-            }
-            var status = deploy(filename,receive.uniqle_id,ports);
+        query = "SELECT * FROM bpmn";
+        connection.query(query, function (err, result) {
+            if (err) throw err;
+            console.log("Query all networks");
+            // send response
+            res.render('index',{
+                            uniqle_id: receive.uniqle_id,
+                            all_networks: result,
+                            translate_results: "N/A",
+                            compile_results: "N/A",
+                            deploy_results: deploy_results,
+                            invoke_results: "N/A"
 
-            query = "SELECT * FROM bpmn";
-            connection.query(query, function (err, result) {
-                if (err) throw err;
-                console.log("Query all networks");
-                // send response
-                res.render('index',{
-                                uniqle_id: receive.uniqle_id,
-                                all_networks: result,
-                                translate_results: "translate_results",
-                                compile_results: "N/A",
-                                deploy_results: "N/A",
-                                invoke_results: "N/A"
-                });
             });
         });
+
         //res.end(JSON.stringify(response));
     });
 
@@ -244,16 +266,17 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
 
         console.log(receive);
         
-        var status = deploy(filename,receive.uniqle_id);     
+        invoke_results = invoke(receive.uniqle_id, function_name, parameters);     
 
         // send response
         res.render('index',{
                                 uniqle_id: receive.uniqle_id,
                                 all_networks: result,
-                                translate_results: "translate_results",
+
+                                translate_results: "N/A",
                                 compile_results: "N/A",
                                 deploy_results: "N/A",
-                                invoke_results: "N/A"
+                                invoke_results: invoke_results
                 });
         //res.end(JSON.stringify(response));
     });

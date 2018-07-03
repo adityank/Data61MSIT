@@ -291,6 +291,7 @@ function formArray(typeMap,nameMap,laneMap,incomingMap,outgoingMap){
     return array;
 }
 
+
 module.exports = function parse(filename,unique_id){
     var etree = getElementTree(filename);
 
