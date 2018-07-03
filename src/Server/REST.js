@@ -97,6 +97,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
             if (err) {
                 console.log(err);
             }
+
             //translate_results = parse(filename);
 
             parse(filename, function (err, translate_results) {

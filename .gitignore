@@ -1,10 +1,11 @@
 .idea/
 .DS_STORE
 out/
-src/Server/node_modules/
+logs/
+src/*/node_modules/
 src/Translator/at.js
 src/Translator/bt.js
 src/Translator/main.js
 src/Translator/mt.js
-src/Translator/node_modules/
-src/Server/package-lock.json
+src/*/package-lock.json
+src/Server/tmp
