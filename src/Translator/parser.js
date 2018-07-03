@@ -291,7 +291,8 @@ function formArray(typeMap,nameMap,laneMap,incomingMap,outgoingMap){
     return array;
 }
 
-function parse(filename,unique_id){
+
+module.exports = function parse(filename,unique_id){
     var etree = getElementTree(filename);
 
     //sequence
@@ -353,11 +354,13 @@ function parse(filename,unique_id){
     generateYAML(orgs, unique_id);
     
     generateGo(unique_id, taskObjArray);
+
+    return "Success";
 }
 
 
-parse("../../bpmn_examples/pizza.bpmn","test0702v1");
-parse("../../bpmn_examples/pizza.bpmn","test0702v2");
+//parse("../../bpmn_examples/pizza.bpmn","test0702v1");
+//parse("../../bpmn_examples/pizza.bpmn","test0702v2");
 
 /*
 START

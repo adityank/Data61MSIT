@@ -36,11 +36,12 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
             if (err) throw err;
             console.log("Query all networks");
             res.render('index',{
-                            all_networks: result,
-                            translate_results: "N/A",
-                            compile_results: "N/A",
-                            deploy_results: "N/A",
-                            invoke_results: "N/A"
+                                uniqle_id: "N/A",
+                                all_networks: result,
+                                translate_results: "N/A",
+                                compile_results: "N/A",
+                                deploy_results: "N/A",
+                                invoke_results: "N/A"
             });
         });        
         //res.sendFile( __dirname + "/public/index.html" );
@@ -89,7 +90,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         };
         console.log(receive);
 
-        var uniqle_id = crypto.createHash('md5').update(receive.xmlModel).digest('hex');
+        var uniqle_id = crypto.createHash('md5').update(receive.xmlModel).digest('hex').substring(0, 5);
         console.log("uniqle_id created: " + uniqle_id); 
         filename = "tmp/" + uniqle_id + ".bpmn";
 
@@ -98,26 +99,22 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 console.log(err);
             }
 
-            //translate_results = parse(filename);
+            translate_results = parse(filename,uniqle_id);
 
-            parse(filename, function (err, translate_results) {
-                if (err) {
-                    console.log(err);
-                }
-                query = "SELECT * FROM bpmn";
-                connection.query(query, function (err, result) {
-                    if (err) throw err;
-                    console.log("Query all networks");
-                    // send response
-                    res.render('index',{
-                                    all_networks: result,
-                                    translate_results: translate_results,
-                                    compile_results: "N/A",
-                                    deploy_results: "N/A",
-                                    invoke_results: "N/A"
-                    });
-                }); 
-            });       
+            query = "SELECT * FROM bpmn";
+            connection.query(query, function (err, result) {
+                if (err) throw err;
+                console.log("Query all networks");
+                // send response
+                res.render('index',{
+                                uniqle_id: uniqle_id,
+                                all_networks: result,
+                                translate_results: translate_results,
+                                compile_results: "N/A",
+                                deploy_results: "N/A",
+                                invoke_results: "N/A"
+                });
+            });
         });
         //res.end(JSON.stringify(response));
     });
@@ -157,8 +154,9 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 console.log("Query all networks");
                 // send response
                 res.render('index',{
+                                uniqle_id: receive.uniqle_id,
                                 all_networks: result,
-                                translate_results: translate_results,
+                                translate_results: "translate_results",
                                 compile_results: "N/A",
                                 deploy_results: "N/A",
                                 invoke_results: "N/A"
@@ -203,8 +201,9 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 console.log("Query all networks");
                 // send response
                 res.render('index',{
+                                uniqle_id: receive.uniqle_id,
                                 all_networks: result,
-                                translate_results: translate_results,
+                                translate_results: "translate_results",
                                 compile_results: "N/A",
                                 deploy_results: "N/A",
                                 invoke_results: "N/A"
@@ -243,12 +242,13 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
 
         // send response
         res.render('index',{
-                            all_networks: "N/A",
-                            translate_results: "N/A",
-                            compile_results: "N/A",
-                            deploy_results: "N/A",
-                            invoke_results: "N/A"
-        });
+                                uniqle_id: receive.uniqle_id,
+                                all_networks: result,
+                                translate_results: "translate_results",
+                                compile_results: "N/A",
+                                deploy_results: "N/A",
+                                invoke_results: "N/A"
+                });
         //res.end(JSON.stringify(response));
     });
 }
