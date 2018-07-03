@@ -176,8 +176,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 res.render('index',{
                                 unique_id: receive.unique_id,
                                 all_networks: result,
-                                translate_results: "translate_results",
-
+                                translate_results: "N/A",
                                 compile_results: compile_status,
                                 deploy_results: "N/A",
                                 invoke_results: "N/A"
@@ -216,14 +215,9 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         query = "SELECT * FROM bpmn WHERE unique_id=?";
         table = [receive.unique_id];
         query = mysql.format(query,table);
-        connection.query(query, function (err, result) {
-            if (err) throw err;
-            console.log("Querying status");
-            console.log(result[0].status);
-            status = result[0].status;
-        });
-        // parameters: unique_id and status
-        status = deploy(receive.unique_id,status,ports);
+
+        status = connection.query(query)[0].status;
+        status = deploy(receive.uniqle_id,status,ports);
 
         query = "UPDATE bpmn SET status = ? WHERE unique_id = ?";
         table = [status,receive.unique_id];
