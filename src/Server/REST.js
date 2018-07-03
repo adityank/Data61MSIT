@@ -9,7 +9,9 @@ var fs = require("fs");
 var crypto = require('crypto');
 var parse = require("../Translator/parser.js");
 
+const getPortSync = require('get-port-sync');
 
+var num_peers;
 
 
 
@@ -100,6 +102,9 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 console.log(err);
             }
 
+
+            num_peers = parse(filename,uniqle_id);
+
             translate_results = parse(filename,uniqle_id);
 
             query = "INSERT INTO bpmn (uniqle_id, status) VALUES (?,?)";
@@ -109,6 +114,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 if (err) throw err;
                 console.log("Adding new entries");
             });
+
 
             query = "SELECT * FROM bpmn";
             connection.query(query, function (err, result) {
@@ -168,6 +174,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                                 uniqle_id: receive.uniqle_id,
                                 all_networks: result,
                                 translate_results: "translate_results",
+
                                 compile_results: compile_status,
                                 deploy_results: "N/A",
                                 invoke_results: "N/A"
@@ -191,13 +198,17 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     */
     router.post("/api/v1/deploy",function(req,res){
         console.log("Deploying Smart Contract" );
-        
+        var ports = [];
+        for(var iter=0;iter<2*num_peers + 1;iter++){
+            ports.push(getPortSync());
+        }
+
         receive = {
           uniqle_id:req.body.uniqle_id,
           chaincode:req.body.chaincode
         };
         console.log(receive);
-            
+ 
         var status;
         query = "SELECT * FROM bpmn WHERE uniqle_id=?";
         table = [receive.uniqle_id];
@@ -209,7 +220,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
             status = result[0].status;
         });
         // parameters: uniqle_id and status
-        deploy_results = deploy(receive.uniqle_id,status);
+        deploy_results = deploy(receive.uniqle_id,status,ports);
 
         query = "SELECT * FROM bpmn";
         connection.query(query, function (err, result) {
@@ -223,6 +234,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                             compile_results: "N/A",
                             deploy_results: deploy_results,
                             invoke_results: "N/A"
+
             });
         });
 
@@ -260,6 +272,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         res.render('index',{
                                 uniqle_id: receive.uniqle_id,
                                 all_networks: result,
+
                                 translate_results: "N/A",
                                 compile_results: "N/A",
                                 deploy_results: "N/A",

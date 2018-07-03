@@ -17,6 +17,8 @@
 ******************************************************************************************************************/
 
 var shell = require('shelljs');
+// module for file-system
+var fs = require('fs');
 
 var logger = require('../Logger/logger');
 
@@ -130,19 +132,49 @@ function channel_artifacts_gen(unique_id,peers){
 }
 
 
-function deploy(unique_id,peers,stage){
+function createEnv(unique_id,ports){
+	
+	file = "../../out/" + unique_id + "/.env";
+
+	fs.writeFileSync(file, "COMPOSE_PROJECT_NAME=net\nIMAGE_TAG=latest\n", function (err) {
+    if (err)
+        throw err;
+    });
+    for(var iter=0;iter<ports.length;iter++){
+		fs.appendFileSync(file, "port" + iter.toString() + "=" + ports[iter] + "\n", function (err) {
+	    if (err) 
+	        throw err;
+	    });
+    }
+}
+
+function getPeers(unique_id){
+	file = "../../out/" + unique_id + "/peers.txt";
+	peers = fs.readFileSync(file, 'utf-8').split('\n').filter(Boolean);
+	return peers;
+}
+
+function deploy(unique_id,stage,ports){
 
 	channelProfile = unique_id + "Channel";
 	channelName = "mychannel";
 	deploymentPath = "../../out/" + unique_id + "/";
 	fabricSamplesPath = "/Users/DLZHOU/Documents/Github/Unchained/";
 
-	logger.init(unique_id);
-	
-	shell.cd(deploymentPath);
-	var res = true;
 	logger.log('deployer',"........----------------Starting to log deployment-----------------.............");	
 	logger.log('deployer', "******* Start Stage: " + stage.toString() + " ************")
+
+	logger.init(unique_id);
+		
+	createEnv(unique_id,ports);
+	logger.log('deployer', "******* Created .env file with " + ports.length + " ports ************")
+	
+	var peers = getPeers(unique_id);
+	console.log(peers.length);
+
+	shell.cd(deploymentPath);
+	var res = true;
+	
 
 	if (!shell.which('docker')) {
 		shell.echo('Sorry, this script requires docker');
@@ -160,6 +192,7 @@ function deploy(unique_id,peers,stage){
 
 	// Setup the infrastructure and bring up the network
 	if(stage == 0){		
+
 		logger.log('deployer',"==================  Stage 0: Crytogen  ==========================");
 		res = cryptogen(unique_id);
 		//shell.exec('node deployNetwork.js', { async: true }, { async: true });
@@ -248,11 +281,11 @@ function deploy(unique_id,peers,stage){
 }
 
 // peer names need to be lower case
-stage = deploy('test0702v1',['Restaurant','Customer','Deliverer'],2);
+stage = deploy('test0702v1',['Restaurant','Customer','Deliverer'],0,[7010,7011,7012,7013,7014,7015,7016]);
 logger.log('deployer', "******* Final Stage Reached: " + stage.toString() + " ************")
-console.log('======================v1done========================')
+/*console.log('======================v1done========================')
 stage = deploy('test0702v2',['Restaurant','Customer','Deliverer'],2);
 logger.log('deployer', "******* Final Stage Reached: " + stage.toString() + " ************")
-console.log('======================v2done========================')
+console.log('======================v2done========================')*/
 //up
 //down

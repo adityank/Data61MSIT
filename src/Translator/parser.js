@@ -355,7 +355,17 @@ module.exports = function parse(filename,unique_id){
     
     generateGo(unique_id, taskObjArray);
 
-    return "Success";
+    file = "../../out/" + unique_id + "/peers.txt"
+
+    for(var iter=0;iter<orgs.length;iter++){
+            fs.appendFile(file, orgs[iter]+"\n", function (err) {
+            if (err) 
+                throw err;
+            });
+    }
+
+    return orgs.length;
+    
 }
 
 
