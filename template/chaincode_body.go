@@ -1,28 +1,46 @@
     EventIDsAsBytes, _ := json.Marshal(EventIDs)
     APIstub.PutState("EventIDs", EventIDsAsBytes)
+    StartIDsAsBytes, _ := json.Marshal(StartIDs)
+    APIstub.PutState("StartIDs", StartIDsAsBytes)
+    initAsBytes, _ := json.Marshal(0)
+    APIstub.PutState("InitLedger", initAsBytes)
 
-    err := s.StartEvent(APIstub, StartIDs)
-    if err!= nil {
-        return shim.Error(err.Error())
-    }
     return shim.Success(nil)
 }
 
 
-func (s *SmartContract) StartEvent(APIstub shim.ChaincodeStubInterface, StartIDs []string) (error) {
+func (s *SmartContract) initLedger(APIstub shim.ChaincodeStubInterface) peer.Response {
+    initAsBytes, _ := APIstub.GetState("InitLedger")
+    init := 0
+    json.Unmarshal(initAsBytes, &init)
+
+    if init==1 {
+        return shim.Error("Ledger has already been initialized.")
+    }
+
+    StartIDsAsBytes, err := APIstub.GetState("StartIDs")
+    if err!=nil {
+        return shim.Error(err.Error())
+    }
+    StartIDs := []string {}
+    json.Unmarshal(StartIDsAsBytes, &StartIDs)
+
     for _, id := range StartIDs {
         startEvent, err := s.GetEvent(APIstub, id)
         if err!=nil {
-            return err
+            return shim.Error(err.Error())
         }
         for _, childID := range startEvent.Children {
             err =s.PropagateToken(APIstub, childID, id)
             if err!=nil {
-                return err
+                return shim.Error(err.Error())
             }
         }
     }
-    return nil
+
+    initAsBytes, _ = json.Marshal(1)
+    APIstub.PutState("InitLedger", initAsBytes)
+    return shim.Success(nil)
 }
 
 
@@ -49,21 +67,30 @@ func (s *SmartContract) DoTask(APIstub shim.ChaincodeStubInterface, targetEvent 
                     return false, err
                 }
                 if xor.Token>0 { // found a usable XOR token
-                    s.ConsumeToken(APIstub, xor)
                     // delete tested XOR tokens
                     targetEvent.XORtoken = targetEvent.XORtoken[i+1:]
-                    s.PutEvent(APIstub, targetEvent)
+                    err = s.PutEvent(APIstub, targetEvent)
+                    if err!=nil {
+                        return false, err
+                    }
+                    err = s.ConsumeToken(APIstub, xor)
+                    if err!=nil {
+                        return false, err
+                    }
                     // Propagate a token to all children
                     for _, childID := range targetEvent.Children {
-                        s.PropagateToken(APIstub, childID, targetEvent.ID)
+                        err = s.PropagateToken(APIstub, childID, targetEvent.ID)
+                        if err!=nil {
+                            return false, err
+                        }
                     }
                     return true, nil
                 }
             }
             // delete all tested XOR tokens
             targetEvent.XORtoken = []string {}
-            s.PutEvent(APIstub, targetEvent)
-            return false, nil
+            err := s.PutEvent(APIstub, targetEvent)
+            return false, err
         } else {
             return false, nil
         }
@@ -73,9 +100,9 @@ func (s *SmartContract) DoTask(APIstub shim.ChaincodeStubInterface, targetEvent 
 }
 
 
-func (s *SmartContract) ConsumeToken(APIstub shim.ChaincodeStubInterface, event Event) {
+func (s *SmartContract) ConsumeToken(APIstub shim.ChaincodeStubInterface, event Event) (error) {
     event.Token -= 1
-    s.PutEvent(APIstub, event)
+    return s.PutEvent(APIstub, event)
 }
 
 
@@ -87,21 +114,22 @@ func (s *SmartContract) PropagateToken(APIstub shim.ChaincodeStubInterface, targ
 
     if targetEvent.Type == "task" {
         targetEvent.Token += 1
-        s.PutEvent(APIstub, targetEvent)
-        return nil
+        return s.PutEvent(APIstub, targetEvent)
     } else if targetEvent.Type == "AND" {
         // check all
         targetEvent.ANDtoken[sourceID] += 1
         for _, token := range targetEvent.ANDtoken {
             if token==0 {
-                s.PutEvent(APIstub,targetEvent)
-                return nil
+                return s.PutEvent(APIstub,targetEvent)
             }
         }
         for parentID, _ := range targetEvent.ANDtoken {
             targetEvent.ANDtoken[parentID] -= 1
         }
-        s.PutEvent(APIstub, targetEvent)
+        err = s.PutEvent(APIstub, targetEvent)
+        if err!=nil {
+            return err
+        }
         for _, childID := range targetEvent.Children {
             err = s.PropagateToken(APIstub, childID, targetEvent.ID)
             if err!=nil {
@@ -120,7 +148,10 @@ func (s *SmartContract) PropagateToken(APIstub shim.ChaincodeStubInterface, targ
             return nil
         } else {
             targetEvent.Token += 1
-            s.PutEvent(APIstub, targetEvent)
+            err = s.PutEvent(APIstub, targetEvent)
+            if err!=nil {
+                return err
+            }
             for _, childID := range targetEvent.Children {
                 err = s.PropagateXORToken(APIstub, childID, targetEvent.ID)
                 if err!=nil {
@@ -142,14 +173,19 @@ func (s *SmartContract) PropagateToken(APIstub shim.ChaincodeStubInterface, targ
 
 
 func (s *SmartContract) PropagateXORToken(APIstub shim.ChaincodeStubInterface, targetEventID string, xorID string) (error) {
-    targetEvent, _ := s.GetEvent(APIstub, targetEventID)
+    targetEvent, err := s.GetEvent(APIstub, targetEventID)
+    if err!=nil {
+        return err
+    }
     if targetEvent.Type == "task" {
         targetEvent.XORtoken = append(targetEvent.XORtoken, xorID)
-        s.PutEvent(APIstub, targetEvent)
-        return nil
+        return s.PutEvent(APIstub, targetEvent)
     } else if targetEvent.Type == "event" {
         for _, childID := range targetEvent.Children {
-            s.PropagateXORToken(APIstub, childID, xorID)
+            err = s.PropagateXORToken(APIstub, childID, xorID)
+            if err!=nil {
+                return err
+            }
         }
         return nil
     } else {
@@ -170,9 +206,9 @@ func (s *SmartContract) GetEvent(APIstub shim.ChaincodeStubInterface, eventID st
 }
 
 
-func (s *SmartContract) PutEvent(APIstub shim.ChaincodeStubInterface, event Event) {
+func (s *SmartContract) PutEvent(APIstub shim.ChaincodeStubInterface, event Event) (error) {
     eventAsBytes,_ := json.Marshal(event)
-    APIstub.PutState(event.ID, eventAsBytes)
+    return APIstub.PutState(event.ID, eventAsBytes)
 }
 
 
@@ -215,10 +251,17 @@ func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respons
         return s.queryEvent(APIstub, args)
     } else if function == "queryAllEvents" {
         return s.queryAllEvents(APIstub)
+    } else if function == "initLedger" {
+        return s.initLedger(APIstub)
+    } else if function == "resetLedger" { // This is for testing purpose only
+        return s.Init(APIstub)
     } else {
         taskEvent, err := s.GetEvent(APIstub, function)
         if err!=nil {
-            return shim.Error("Invalid function name")
+            return shim.Error(err.Error())
+        }
+        if taskEvent.ID=="" {
+            return shim.Error("Invalid function name.")
         }
         // At the moment, we only care about the caller's domain
         _, caller, err := s.GetCaller(APIstub)
@@ -235,7 +278,7 @@ func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respons
                 return shim.Error("Requested function does not follow the business logic.")
             }
         } else {
-            return shim.Error(caller+" do not have access to function "+function)
+            return shim.Error(caller+" does not have access to function "+function)
         }
     }
 }
@@ -258,31 +301,34 @@ func (s *SmartContract) queryAllEvents(APIstub shim.ChaincodeStubInterface) peer
 
     // buffer is a JSON array containing QueryResults
     var buffer bytes.Buffer
-    buffer.WriteString("[")
+
     var EventIDs []string
     EventIDsAsBytes, _ := APIstub.GetState("EventIDs")
     json.Unmarshal(EventIDsAsBytes, &EventIDs)
-    bArrayMemberAlreadyWritten := false
+
     for _, eventID := range EventIDs {
-        eventAsBytes, err := APIstub.GetState(eventID)
+        event, err := s.GetEvent(APIstub, eventID)
         if err != nil {
             return shim.Error(err.Error())
         }
         // Add a comma before array members, suppress it for the first array member
-        if bArrayMemberAlreadyWritten == true {
-            buffer.WriteString(",")
+        buffer.WriteString("{Event ID: ")
+        buffer.WriteString(event.ID)
+        buffer.WriteString(", Name: ")
+        buffer.WriteString(event.Name)
+        buffer.WriteString(", Token: ")
+        buffer.WriteString(strconv.Itoa(event.Token))
+        if len(event.XORtoken)>0 {
+            buffer.WriteString(", XORtoken: [")
+            for _, xortoken := range event.XORtoken {
+                buffer.WriteString(xortoken)
+                buffer.WriteString(",")
+            }
+            buffer.WriteString("]")
         }
-        buffer.WriteString("{\\"Key\\":")
-        buffer.WriteString("\\"")
-        buffer.WriteString(eventID)
-        buffer.WriteString("\\"")
-        buffer.WriteString(", \\"Record\\":")
-        // Record is a JSON object, so we write as-is
-        buffer.WriteString(string(eventAsBytes))
-        buffer.WriteString("}")
-        bArrayMemberAlreadyWritten = true
+        buffer.WriteString("}\\n")
     }
-    buffer.WriteString("]")
+
     fmt.Printf("- queryAllEvents:\\n%s\\n", buffer.String())
     return shim.Success(buffer.Bytes())
 }

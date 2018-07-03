@@ -1,14 +1,23 @@
 # To test build chaincode, inside the .go file folder
 go build --tags nopkcs11
 
+# To create a channel
+peer channel create -o orderer.test2.com:7050 -c mychannel -f ./channel-artifacts/channel.tx --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/test2.com/orderers/orderer.test2.com/msp/tlscacerts/tlsca.test2.com-cert.pem
+
+# To fetch a channel
+peer channel fetch newest -o orderer.test2.com:7050 ./mychannel.block -c mychannel --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/test2.com/orderers/orderer.test2.com/msp/tlscacerts/tlsca.test2.com-cert.pem
+
 # To install a new version of chaincode
 peer chaincode install -n mycc -v 5.0 -p github.com/chaincode/pizza3/
 
+# To instantiate a chaincode
+peer chaincode instantiate -o orderer.test2.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/test2.com/orderers/orderer.test2.com/msp/tlscacerts/tlsca.test2.com-cert.pem -C mychannel -n mycc -v 1.0 -c '{"Args":["init"]}' -P "OR ('RestaurantMSP.peer','CustomerMSP.peer','DelivererMSP.peer')"
+
 # To upgrade/re-instantiate a new version of chaincode
-peer chaincode upgrade -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C mychannel -n mycc -v 5.0 -c '{"Args":["init"]}' -P "AND ('RestaurantMSP.peer','CustomerMSP.peer','DelivererMSP.peer')"
+peer chaincode upgrade -o orderer.test2.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/test2.com/orderers/orderer.test2.com/msp/tlscacerts/tlsca.test2.com-cert.pem -C mychannel -n mycc -v 1.1 -c '{"Args":["init"]}' -P "OR ('RestaurantMSP.peer','CustomerMSP.peer','DelivererMSP.peer')"
 
 # To query
-peer chaincode query -C mychannel -n mycc -c '{"Args":["queryAllEvents"]}'
+peer chaincode query -C mychannel -n newcc -c '{"Args":["queryAllEvents"]}'
 
 # To invoke
-peer chaincode invoke -o orderer.example.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C mychannel -n mycc -c '{"Args":["cre123"]}'
+peer chaincode invoke -o orderer.test2.com:7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/test2.com/orderers/orderer.test2.com/msp/tlscacerts/tlsca.test2.com-cert.pem -C mychannel -n mycc -c '{"Args":["cre123"]}'

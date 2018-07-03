@@ -1,0 +1,42 @@
+Sat Jun 30 2018 21:48:48 GMT-0400 (Eastern Daylight Time):: ---begin generating YAML files---
+Sat Jun 30 2018 21:48:48 GMT-0400 (Eastern Daylight Time):: ---begin generating peer-base.yaml---
+Sat Jun 30 2018 21:48:48 GMT-0400 (Eastern Daylight Time):: ---end generating peer-base.yaml---
+Sat Jun 30 2018 21:48:48 GMT-0400 (Eastern Daylight Time):: ---begin generating docker-compose-base.yaml---
+Sat Jun 30 2018 21:48:48 GMT-0400 (Eastern Daylight Time):: ---end generating docker-compose-base.yaml---
+Sat Jun 30 2018 21:48:48 GMT-0400 (Eastern Daylight Time):: ---begin generating crypto-config.yaml---
+Sat Jun 30 2018 21:48:48 GMT-0400 (Eastern Daylight Time):: ---end generating configtx.yaml---
+Sat Jun 30 2018 21:48:48 GMT-0400 (Eastern Daylight Time):: ---begin generating configtx.yaml---
+Sat Jun 30 2018 21:48:48 GMT-0400 (Eastern Daylight Time):: ---begin generating docker-compose-cli.yaml---
+Sat Jun 30 2018 21:48:48 GMT-0400 (Eastern Daylight Time):: ---end generating docker-compose-cli.yaml---
+Sat Jun 30 2018 21:48:48 GMT-0400 (Eastern Daylight Time):: ---end generating crypto-config.yaml---
+Sat Jun 30 2018 21:48:48 GMT-0400 (Eastern Daylight Time):: ---begin generating YAML files---
+Sat Jun 30 2018 21:48:48 GMT-0400 (Eastern Daylight Time):: ---begin generating Go chaincode---
+Sat Jun 30 2018 21:48:48 GMT-0400 (Eastern Daylight Time):: ---end generating Go chaincode---
+Sat Jun 30 2018 21:51:58 GMT-0400 (Eastern Daylight Time):: ---begin generating YAML files---
+Sat Jun 30 2018 21:51:58 GMT-0400 (Eastern Daylight Time):: ---begin generating peer-base.yaml---
+Sat Jun 30 2018 21:51:58 GMT-0400 (Eastern Daylight Time):: ---end generating peer-base.yaml---
+Sat Jun 30 2018 21:51:58 GMT-0400 (Eastern Daylight Time):: ---begin generating docker-compose-base.yaml---
+Sat Jun 30 2018 21:51:58 GMT-0400 (Eastern Daylight Time):: ---end generating docker-compose-base.yaml---
+Sat Jun 30 2018 21:51:58 GMT-0400 (Eastern Daylight Time):: ---begin generating crypto-config.yaml---
+Sat Jun 30 2018 21:51:58 GMT-0400 (Eastern Daylight Time):: ---end generating crypto-config.yaml---
+Sat Jun 30 2018 21:51:58 GMT-0400 (Eastern Daylight Time):: ---begin generating configtx.yaml---
+Sat Jun 30 2018 21:51:58 GMT-0400 (Eastern Daylight Time):: ---end generating configtx.yaml---
+Sat Jun 30 2018 21:51:58 GMT-0400 (Eastern Daylight Time):: ---begin generating docker-compose-cli.yaml---
+Sat Jun 30 2018 21:51:58 GMT-0400 (Eastern Daylight Time):: ---end generating docker-compose-cli.yaml---
+Sat Jun 30 2018 21:51:58 GMT-0400 (Eastern Daylight Time):: ---begin generating YAML files---
+Sat Jun 30 2018 21:51:58 GMT-0400 (Eastern Daylight Time):: ---begin generating Go chaincode---
+Sat Jun 30 2018 21:51:58 GMT-0400 (Eastern Daylight Time):: ---end generating Go chaincode---
+Sat Jun 30 2018 21:55:51 GMT-0400 (Eastern Daylight Time):: ---begin generating YAML files---
+Sat Jun 30 2018 21:55:51 GMT-0400 (Eastern Daylight Time):: ---begin generating peer-base.yaml---
+Sat Jun 30 2018 21:55:51 GMT-0400 (Eastern Daylight Time):: ---end generating peer-base.yaml---
+Sat Jun 30 2018 21:55:51 GMT-0400 (Eastern Daylight Time):: ---begin generating docker-compose-base.yaml---
+Sat Jun 30 2018 21:55:51 GMT-0400 (Eastern Daylight Time):: ---end generating docker-compose-base.yaml---
+Sat Jun 30 2018 21:55:51 GMT-0400 (Eastern Daylight Time):: ---begin generating crypto-config.yaml---
+Sat Jun 30 2018 21:55:51 GMT-0400 (Eastern Daylight Time):: ---end generating crypto-config.yaml---
+Sat Jun 30 2018 21:55:51 GMT-0400 (Eastern Daylight Time):: ---begin generating configtx.yaml---
+Sat Jun 30 2018 21:55:51 GMT-0400 (Eastern Daylight Time):: ---end generating configtx.yaml---
+Sat Jun 30 2018 21:55:51 GMT-0400 (Eastern Daylight Time):: ---begin generating docker-compose-cli.yaml---
+Sat Jun 30 2018 21:55:51 GMT-0400 (Eastern Daylight Time):: ---end generating docker-compose-cli.yaml---
+Sat Jun 30 2018 21:55:51 GMT-0400 (Eastern Daylight Time):: ---begin generating YAML files---
+Sat Jun 30 2018 21:55:51 GMT-0400 (Eastern Daylight Time):: ---begin generating Go chaincode---
+Sat Jun 30 2018 21:55:51 GMT-0400 (Eastern Daylight Time):: ---end generating Go chaincode---

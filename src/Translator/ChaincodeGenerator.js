@@ -14,28 +14,31 @@
 
 var fs = require('fs'),
     readline = require('readline');
+var logger = require('../Logger/logger');
 
 
-function checkPath(domain,networkName) {
+function checkPath(domain) {
     if (!fs.existsSync('../../out')) {
         fs.mkdirSync('../../out');
     }
     if (!fs.existsSync('../../out/'+domain)) {
         fs.mkdirSync('../../out/'+domain);
     }
-    if (!fs.existsSync('../../out/'+domain+'/'+networkName)) {
-        fs.mkdirSync('../../out/'+domain+'/'+networkName);
+    if (!fs.existsSync('../../out/'+domain)) {
+        fs.mkdirSync('../../out/'+domain);
     }
-    if (!fs.existsSync('../../out/'+domain+'/'+networkName+'/chaincode')) {
-        fs.mkdirSync('../../out/'+domain+'/'+networkName+'/chaincode');
+    if (!fs.existsSync('../../out/'+domain+'/chaincode')) {
+        fs.mkdirSync('../../out/'+domain+'/chaincode');
     }
 }
 
 
 module.exports = function generateGo(domain, networkName, tasks) {
     console.log('---begin generating Go chaincode---');
-    checkPath(domain, networkName)
-    var outpath = '../../out/'+domain+'/'+networkName+'/';
+    logger.log('translator','---begin generating Go chaincode---');
+    
+    checkPath(domain)
+    var outpath = '../../out/'+domain+'/';
     var writer = fs.createWriteStream(outpath+'chaincode/chaincode.go');
 
     var header_template = fs.readFileSync('../../template/chaincode_header.go', 'utf8');
@@ -75,6 +78,8 @@ module.exports = function generateGo(domain, networkName, tasks) {
 
     writer.end();
     console.log('---end generating Go chaincode---');
+    logger.log('translator','---end generating Go chaincode---');
+    
 }
 
 

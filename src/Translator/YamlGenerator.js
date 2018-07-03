@@ -2,8 +2,11 @@ var fs = require('fs'),
     readline = require('readline'),
     outpath = '';
 
+var logger = require('../Logger/logger');
+
 function generateCryptoConfig(orgs, networkName, domain) {
     console.log('---begin generating crypto-config.yaml---');
+    logger.log('translator','---begin generating crypto-config.yaml---');
     var writer = fs.createWriteStream(outpath+'crypto-config.yaml');
 
     var template = fs.readFileSync('../../template/crypto-config.yaml', 'utf8');
@@ -22,10 +25,14 @@ function generateCryptoConfig(orgs, networkName, domain) {
     }
     writer.end();
     console.log('---end generating crypto-config.yaml---');
+    logger.log('translator','---end generating crypto-config.yaml---');
+
 }
 
 function generateConfigTX(orgs, networkName, domain) {
     console.log('---begin generating configtx.yaml---');
+    logger.log('translator','---begin generating configtx.yaml---');
+
     var writer = fs.createWriteStream(outpath+'configtx.yaml');
 
     // Generate ${configtx-orgs}
@@ -53,11 +60,13 @@ function generateConfigTX(orgs, networkName, domain) {
         });
     }
     writer.end();
-    console.log('---end generating crypto-config.yaml---');
+    console.log('---end generating configtx.yaml---');
+    logger.log('translator','---end generating configtx.yaml---');    
 }
 
 function generateDockerComposeCli(orgs, networkName, domain) {    
     console.log('---begin generating docker-compose-cli.yaml---');
+    logger.log('translator','---begin generating docker-compose-cli.yaml---');        
     var writer = fs.createWriteStream(outpath+'docker-compose-cli.yaml');
 
     var template = fs.readFileSync('../../template/docker-compose-cli.yaml', 'utf8');
@@ -102,10 +111,13 @@ function generateDockerComposeCli(orgs, networkName, domain) {
     }
     writer.end();
     console.log('---end generating docker-compose-cli.yaml---');
+    logger.log('translator','---end generating docker-compose-cli.yaml---');            
 }
 
 function generateDockerComposeBase(orgs, networkName, domain) {
     console.log('---begin generating docker-compose-base.yaml---');
+    logger.log('translator','---begin generating docker-compose-base.yaml---');
+
     var writer = fs.createWriteStream(outpath+'base/docker-compose-base.yaml');
 
     var template = fs.readFileSync('../../template/base/docker-compose-base.yaml', 'utf8');
@@ -130,10 +142,14 @@ function generateDockerComposeBase(orgs, networkName, domain) {
 
     writer.end();
     console.log('---end generating docker-compose-base.yaml---');
+    logger.log('translator','---end generating docker-compose-base.yaml---');
+
 }
 
 function generatePeerBase(networkName) {
     console.log('---begin generating peer-base.yaml---');
+    logger.log('translator','---begin generating peer-base.yaml---');
+    
     var writer = fs.createWriteStream(outpath+'base/peer-base.yaml');
 
     var template = fs.readFileSync('../../template/base/peer-base.yaml', 'utf8');
@@ -143,11 +159,15 @@ function generatePeerBase(networkName) {
         });
     writer.end();
     console.log('---end generating peer-base.yaml---');
+    logger.log('translator','---end generating peer-base.yaml---');
+    
 }
 
 module.exports = function generateYAML(orgs, networkName, domain) {
     console.log('---begin generating YAML files---');
-    outpath = '../../out/'+domain+'/'+networkName+'/';
+    logger.log('translator','---begin generating YAML files---');
+    
+    outpath = '../../out/'+domain+'/';
     checkPath(domain,networkName);
     generatePeerBase(networkName);
     generateDockerComposeBase(orgs, networkName, domain);
@@ -155,6 +175,8 @@ module.exports = function generateYAML(orgs, networkName, domain) {
     generateConfigTX(orgs, networkName, domain);
     generateDockerComposeCli(orgs, networkName, domain);
     console.log('---end generating YAML files---');
+    logger.log('translator','---begin generating YAML files---');
+    
 }
 
 function checkPath(domain,networkName) {
@@ -164,11 +186,11 @@ function checkPath(domain,networkName) {
     if (!fs.existsSync('../../out/'+domain)) {
         fs.mkdirSync('../../out/'+domain);
     }
-    if (!fs.existsSync('../../out/'+domain+'/'+networkName)) {
-        fs.mkdirSync('../../out/'+domain+'/'+networkName);
+    if (!fs.existsSync('../../out/'+domain)) {
+        fs.mkdirSync('../../out/'+domain);
     }
-    if (!fs.existsSync('../../out/'+domain+'/'+networkName+'/base')) {
-        fs.mkdirSync('../../out/'+domain+'/'+networkName+'/base');
+    if (!fs.existsSync('../../out/'+domain+'/base')) {
+        fs.mkdirSync('../../out/'+domain+'/base');
     }
 }
 
