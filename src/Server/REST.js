@@ -303,6 +303,6 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
 
             });
         });
-
+};
 // Makes this module available
 module.exports = REST_ROUTER;
