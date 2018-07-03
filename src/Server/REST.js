@@ -301,7 +301,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                             translate_results: "N/A",
                             compile_results: "N/A",
                             deploy_results: deploy_results,
-                            invoke_results: "N/A"
+                            invoke_results: invoke_results
 
             });
         });
