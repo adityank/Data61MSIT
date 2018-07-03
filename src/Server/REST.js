@@ -300,7 +300,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                                 all_networks: "N/A",
                             translate_results: "N/A",
                             compile_results: "N/A",
-                            deploy_results: deploy_results,
+                            deploy_results: "N/A",
                             invoke_results: invoke_results
 
             });
