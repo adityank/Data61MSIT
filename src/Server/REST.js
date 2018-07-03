@@ -12,6 +12,7 @@ var parse = require("../Translator/parser.js");
 
 
 
+
 function REST_ROUTER(router,connection) {
     var self = this;
     self.handleRoutes(router,connection);
@@ -150,11 +151,10 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         filename = "../../out/" + receive.uniqle_id + "/chaincode/chaincode.go";
 
         // save in out/uniqle_id/chaincode/*.go
-        fs.writeFile(filename, receive.chaincode, function (err) {
-            if (err) {
-                console.log(err);
-            }
-            compile_results = compile(filename,receive.uniqle_id);
+
+
+            var compile = require("../Compiler/compiler.js");
+            var compile_status = compile(filename);
 
             query = "SELECT * FROM bpmn";
             connection.query(query, function (err, result) {
@@ -164,15 +164,15 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 res.render('index',{
                                 uniqle_id: receive.uniqle_id,
                                 all_networks: result,
-                                translate_results: "N/A",
-                                compile_results: compile_results,
+                                translate_results: "translate_results",
+                                compile_results: compile_status,
                                 deploy_results: "N/A",
                                 invoke_results: "N/A"
                 });
             });
         });
         //res.end(JSON.stringify(response));
-    });
+    // });
 
     //POST /api/v1/deploy
     // req paramdter is the request object
