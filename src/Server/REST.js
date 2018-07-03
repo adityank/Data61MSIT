@@ -269,19 +269,25 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         
         receive = {
           uniqle_id:req.body.uniqle_id,
+          peer:req.body.peer,
           function_name:req.body.function_name,
           parameters:req.body.parameters
         };
 
         console.log(receive);
-        
+        var parameters;
+        if (receive.parameters!="")
+            parameters = receive.parameters.split(',');
+        else
+            parameters = [];
+        console.log(parameters);
         var invoke = require("../Invoker/invoker.js");
-        invoke_results = invoke(receive.uniqle_id, function_name, parameters);     
+        invoke_results = invoke(receive.uniqle_id, receive.peer, receive.function_name, parameters);     
 
         // send response
         res.render('index',{
                                 uniqle_id: receive.uniqle_id,
-                                all_networks: result,
+                                all_networks: "N/A",
 
                                 translate_results: "N/A",
                                 compile_results: "N/A",

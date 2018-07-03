@@ -2,13 +2,7 @@
    <body>
       <b>Uniqle_id</b>
       <p id="uniqle_id"><%= uniqle_id %></p>
-   	<b>List All Networks</b>
-      <p id="all_networks"><%= all_networks %></p>  
-      <form action = "/api/v1/list" method = "POST">
-         xmlModel: <input type = "text" name = "xmlModel"><br>
-         <input type = "submit" value = "Submit">
-      </form> 
-   	  <b>Translate</b>
+   	<b>Translate</b>
       <form action = "/api/v1/translate" method = "POST">
          xmlModel: <!--input type = "text" name = "xmlModel"><br> -->
          <textarea name="xmlModel" rows="10" cols="100" white-space="pre-wrap">input your xmlModel</textarea>
@@ -30,6 +24,7 @@
       <b>Invoke</b>
       <form action = "/api/v1/invoke" method = "POST">
          uniqle_id: <input type = "text" name = "uniqle_id"><br>
+         peer: <input type = "text" name = "peer"><br>
          function_name: <input type = "text" name = "function_name"><br>
          parameters: <input type = "text" name = "parameters"><br>
          <input type = "submit" value = "Submit">
