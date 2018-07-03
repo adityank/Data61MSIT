@@ -11,9 +11,6 @@ var parse = require("../Translator/parser.js");
 
 const getPortSync = require('get-port-sync');
 
-var num_peers;
-
-
 
 function REST_ROUTER(router,connection) {
     var self = this;
@@ -93,7 +90,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         };
         console.log(receive);
 
-        var uniqle_id = crypto.createHash('md5').update(receive.xmlModel).digest('hex').substring(0, 5);
+        var uniqle_id = crypto.createHash('md5').update(receive.xmlModel).digest('hex').substring(0, 8);
         console.log("uniqle_id created: " + uniqle_id); 
         filename = "tmp/" + uniqle_id + ".bpmn";
 
@@ -102,13 +99,13 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 console.log(err);
             }
 
-
-            num_peers = parse(filename,uniqle_id);
-
+            var translate_results;
             translate_results = parse(filename,uniqle_id);
+            console.log(translate_results.result);
+            console.log(translate_results.num_peers);
 
-            query = "INSERT INTO bpmn (uniqle_id, status) VALUES (?,?)";
-            table = [uniqle_id,0];
+            query = "INSERT INTO bpmn (uniqle_id, status, num_peers) VALUES (?,?,?)";
+            table = [uniqle_id,0,translate_results.num_peers];
             query = mysql.format(query,table);
             connection.query(query, function (err, result) {
                 if (err) throw err;
@@ -124,7 +121,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 res.render('index',{
                                 uniqle_id: uniqle_id,
                                 all_networks: result,
-                                translate_results: translate_results,
+                                translate_results: translate_results.result,
                                 compile_results: "N/A",
                                 deploy_results: "N/A",
                                 invoke_results: "N/A"
@@ -198,18 +195,13 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     */
     router.post("/api/v1/deploy",function(req,res){
         console.log("Deploying Smart Contract" );
-        var ports = [];
-        for(var iter=0;iter<2*num_peers + 1;iter++){
-            ports.push(getPortSync());
-        }
-
+        
         receive = {
           uniqle_id:req.body.uniqle_id,
           chaincode:req.body.chaincode
         };
         console.log(receive);
  
-        var status;
         query = "SELECT * FROM bpmn WHERE uniqle_id=?";
         table = [receive.uniqle_id];
         query = mysql.format(query,table);
@@ -217,26 +209,43 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
             if (err) throw err;
             console.log("Querying new status");
             console.log(result[0].status);
-            status = result[0].status;
-        });
-        // parameters: uniqle_id and status
-        deploy_results = deploy(receive.uniqle_id,status,ports);
+            var status = result[0].status;
+            var num_peers = result[0].num_peers;
 
-        query = "SELECT * FROM bpmn";
-        connection.query(query, function (err, result) {
-            if (err) throw err;
-            console.log("Query all networks");
-            // send response
-            res.render('index',{
-                            uniqle_id: receive.uniqle_id,
-                            all_networks: result,
-                            translate_results: "N/A",
-                            compile_results: "N/A",
-                            deploy_results: deploy_results,
-                            invoke_results: "N/A"
+            var ports = [];
+            for(var iter=0;iter<2*num_peers + 1;iter++){
+                ports.push(getPortSync());
+            }
 
+            var deploy = require("../Deployer/deployer.js");
+            // parameters: uniqle_id and status
+            console.log('status:'+status);
+            deploy_results = deploy(receive.uniqle_id,status,ports);
+            query = "UPDATE bpmn SET status=? WHERE uniqle_id=?";
+            table = [deploy_results.result, receive.uniqle_id];
+            query = mysql.format(query,table);
+            connection.query(query, function (err, result) {
+                if (err) throw err;
+                console.log("Updating deployment status");
+            });
+
+            query = "SELECT * FROM bpmn";
+            connection.query(query, function (err, result) {
+                if (err) throw err;
+                console.log("Query all networks");
+                // send response
+                res.render('index',{
+                                uniqle_id: receive.uniqle_id,
+                                all_networks: result,
+                                translate_results: "N/A",
+                                compile_results: "N/A",
+                                deploy_results: deploy_results.message,
+                                invoke_results: "N/A"
+
+                });
             });
         });
+        
 
         //res.end(JSON.stringify(response));
     });
@@ -266,6 +275,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
 
         console.log(receive);
         
+        var invoke = require("../Invoker/invoker.js");
         invoke_results = invoke(receive.uniqle_id, function_name, parameters);     
 
         // send response
