@@ -105,7 +105,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
 
             num_peers = parse(filename,uniqle_id);
 
-            translate_results = parse(filename,uniqle_id);
+            translate_results = fs.readFileSync(filename);
 
             query = "INSERT INTO bpmn (uniqle_id, status) VALUES (?,?)";
             table = [uniqle_id,0];
@@ -215,12 +215,20 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         query = mysql.format(query,table);
         connection.query(query, function (err, result) {
             if (err) throw err;
-            console.log("Querying new status");
+            console.log("Querying status");
             console.log(result[0].status);
             status = result[0].status;
         });
         // parameters: uniqle_id and status
-        deploy_results = deploy(receive.uniqle_id,status,ports);
+        status = deploy(receive.uniqle_id,status,ports);
+
+        query = "UPDATE bpmn SET status = ? WHERE uniqle_id = ?";
+        table = [status,receive.uniqle_id];
+        query = mysql.format(query,table);
+        connection.query(query, function (err, result) {
+            if (err) throw err;
+            console.log("Update new status");
+        });
 
         query = "SELECT * FROM bpmn";
         connection.query(query, function (err, result) {
