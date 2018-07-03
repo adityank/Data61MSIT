@@ -28,8 +28,39 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
 
     // Index page used for testing
     router.get("/index",function(req,res){
-        res.sendFile( __dirname + "/public/index.html" );
+        query = "SELECT * FROM bpmn";
+        connection.query(query, function (err, result) {
+            if (err) throw err;
+            console.log("Query all networks");
+            res.render('index',{
+                            all_networks: result,
+                            translate_results: "N/A",
+                            compile_results: "N/A",
+                            deploy_results: "N/A",
+                            invoke_results: "N/A"
+            });
+        });        
+        //res.sendFile( __dirname + "/public/index.html" );
     });
+    
+    /*
+    // list all created or deployed networks
+    router.get("/api/v1/list",function(req,res){
+        var query = "SELECT * FROM bpmn";
+        connection.query(query, function (err, result) {
+            
+            console.log("Query all networks");
+        });
+        res.render('index',{
+                            all_networks: "N/A",
+                            translate_results: "N/A",
+                            compile_results: "N/A",
+                            deploy_results: "N/A",
+                            invoke_results: "N/A"
+        });
+    });
+    */
+
 
     
     // POST /api/v1/translate
@@ -52,25 +83,165 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         
         receive = {
           xmlModel:req.body.xmlModel,
-          processName:req.body.processName,
-          orgDomain:req.body.orgDomain
         };
         console.log(receive);
-        filename = "tmp/" + receive.processName + ".bpmn";
+        filename = "tmp/" + receive.uniqle_id + ".bpmn";
 
         fs.writeFile(filename, receive.xmlModel, function (err) {
             if (err) {
                 console.log(err);
             }
-            parse(filename,receive.processName,receive.orgDomain);
+            translate_results = parse(filename);
+            
+            query = "SELECT * FROM bpmn";
+            connection.query(query, function (err, result) {
+                if (err) throw err;
+                console.log("Query all networks");
+                // send response
+                res.render('index',{
+                                all_networks: result,
+                                translate_results: translate_results,
+                                compile_results: "N/A",
+                                deploy_results: "N/A",
+                                invoke_results: "N/A"
+                });
+            });        
+
+        });
+
+        //res.end(JSON.stringify(response));
+    });
+
+    //POST /api/v1/compile
+    // req paramdter is the request object
+    // res parameter is the response object
+    /*
+    POST format
+    {
+        // The only uniqle_id
+        "uniqle_id": 
+        // The chaincode
+        "chaincode":     
+    }
+    */
+    router.post("/api/v1/compile",function(req,res){
+        console.log("Deploying Smart Contract" );
+        
+        receive = {
+          uniqle_id:req.body.uniqle_id,
+          chaincode:req.body.chaincode
+        };
+        console.log(receive);
+        filename = "../../out/" + receive.uniqle_id + ".go";
+
+        // save in out/uniqle_id/chaincode/*.go
+        fs.writeFile(filename, receive.chaincode, function (err) {
+            if (err) {
+                console.log(err);
+            }
+            var status = compile(filename,receive.uniqle_id);
         });
 
         response = {
-            message:"Success"
+            message:result
         }
 
         // send response
-        res.end(JSON.stringify(response));
+        res.render('index',{
+                            all_networks: "N/A",
+                            translate_results: "N/A",
+                            compile_results: "N/A",
+                            deploy_results: "N/A",
+                            invoke_results: "N/A"
+        });
+        //res.end(JSON.stringify(response));
+    });
+
+    //POST /api/v1/deploy
+    // req paramdter is the request object
+    // res parameter is the response object
+    /*
+    POST format
+    {
+        // The only uniqle_id
+        "uniqle_id": 
+        // The chaincode
+        "chaincode":     
+    }
+    */
+    router.post("/api/v1/deploy",function(req,res){
+        console.log("Deploying Smart Contract" );
+        
+        receive = {
+          uniqle_id:req.body.uniqle_id,
+          chaincode:req.body.chaincode
+        };
+        console.log(receive);
+        filename = "../../out/" + receive.uniqle_id + ".go";
+
+        // save in out/uniqle_id/chaincode/*.go
+        fs.writeFile(filename, receive.chaincode, function (err) {
+            if (err) {
+                console.log(err);
+            }
+            var status = deploy(filename,receive.uniqle_id);
+        });
+
+        response = {
+            message:result
+        }
+
+        // send response
+        res.render('index',{
+                            all_networks: "N/A",
+                            translate_results: "N/A",
+                            compile_results: "N/A",
+                            deploy_results: "N/A",
+                            invoke_results: "N/A"
+        });
+        //res.end(JSON.stringify(response));
+    });
+
+    //POST /api/v1/invoke
+    // req paramdter is the request object
+    // res parameter is the response object
+    /*
+    POST format
+    {
+        // The only uniqle_id
+        "uniqle_id": 
+        // The chaincode
+        "function_name":
+        // The parameters, a list of parameters
+        "parameters"    
+    }
+    */
+    router.post("/api/v1/invoke",function(req,res){
+        console.log("Invoking Smart Contract: function " + req.body.function_name);
+        
+        receive = {
+          uniqle_id:req.body.uniqle_id,
+          function_name:req.body.function_name,
+          parameters:req.body.parameters
+        };
+
+        console.log(receive);
+        
+        var status = deploy(filename,receive.uniqle_id);     
+
+        response = {
+            message:result
+        }
+
+        // send response
+        res.render('index',{
+                            all_networks: "N/A",
+                            translate_results: "N/A",
+                            compile_results: "N/A",
+                            deploy_results: "N/A",
+                            invoke_results: "N/A"
+        });
+        //res.end(JSON.stringify(response));
     });
 }
 
