@@ -276,17 +276,21 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         
         invoke_results = invoke(receive.uniqle_id, function_name, parameters);     
 
-        // send response
-        res.render('index',{
-                                uniqle_id: receive.uniqle_id,
-                                all_networks: result,
+        query = "SELECT * FROM bpmn";
+        connection.query(query, function (err, result) {
+            if (err) throw err;
+            console.log("Query all networks");
+            // send response
+            res.render('index',{
+                            uniqle_id: receive.uniqle_id,
+                            all_networks: result,
+                            translate_results: "N/A",
+                            compile_results: "N/A",
+                            deploy_results: deploy_results,
+                            invoke_results: "N/A"
 
-                                translate_results: "N/A",
-                                compile_results: "N/A",
-                                deploy_results: "N/A",
-                                invoke_results: invoke_results
-                });
-        //res.end(JSON.stringify(response));
+            });
+        });
     });
 }
 
