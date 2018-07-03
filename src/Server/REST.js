@@ -97,24 +97,27 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
             if (err) {
                 console.log(err);
             }
-            translate_results = parse(filename);
-            
-            query = "SELECT * FROM bpmn";
-            connection.query(query, function (err, result) {
-                if (err) throw err;
-                console.log("Query all networks");
-                // send response
-                res.render('index',{
-                                all_networks: result,
-                                translate_results: translate_results,
-                                compile_results: "N/A",
-                                deploy_results: "N/A",
-                                invoke_results: "N/A"
-                });
-            });        
+            //translate_results = parse(filename);
 
+            parse(filename, function (err, translate_results) {
+                if (err) {
+                    console.log(err);
+                }
+                query = "SELECT * FROM bpmn";
+                connection.query(query, function (err, result) {
+                    if (err) throw err;
+                    console.log("Query all networks");
+                    // send response
+                    res.render('index',{
+                                    all_networks: result,
+                                    translate_results: translate_results,
+                                    compile_results: "N/A",
+                                    deploy_results: "N/A",
+                                    invoke_results: "N/A"
+                    });
+                }); 
+            });       
         });
-
         //res.end(JSON.stringify(response));
     });
 
@@ -146,19 +149,20 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 console.log(err);
             }
             var status = compile(filename,receive.uniqle_id);
-        });
 
-        response = {
-            message:result
-        }
-
-        // send response
-        res.render('index',{
-                            all_networks: "N/A",
-                            translate_results: "N/A",
-                            compile_results: "N/A",
-                            deploy_results: "N/A",
-                            invoke_results: "N/A"
+            query = "SELECT * FROM bpmn";
+            connection.query(query, function (err, result) {
+                if (err) throw err;
+                console.log("Query all networks");
+                // send response
+                res.render('index',{
+                                all_networks: result,
+                                translate_results: translate_results,
+                                compile_results: "N/A",
+                                deploy_results: "N/A",
+                                invoke_results: "N/A"
+                });
+            });
         });
         //res.end(JSON.stringify(response));
     });
@@ -191,19 +195,20 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 console.log(err);
             }
             var status = deploy(filename,receive.uniqle_id);
-        });
 
-        response = {
-            message:result
-        }
-
-        // send response
-        res.render('index',{
-                            all_networks: "N/A",
-                            translate_results: "N/A",
-                            compile_results: "N/A",
-                            deploy_results: "N/A",
-                            invoke_results: "N/A"
+            query = "SELECT * FROM bpmn";
+            connection.query(query, function (err, result) {
+                if (err) throw err;
+                console.log("Query all networks");
+                // send response
+                res.render('index',{
+                                all_networks: result,
+                                translate_results: translate_results,
+                                compile_results: "N/A",
+                                deploy_results: "N/A",
+                                invoke_results: "N/A"
+                });
+            });
         });
         //res.end(JSON.stringify(response));
     });
@@ -234,10 +239,6 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         console.log(receive);
         
         var status = deploy(filename,receive.uniqle_id);     
-
-        response = {
-            message:result
-        }
 
         // send response
         res.render('index',{
