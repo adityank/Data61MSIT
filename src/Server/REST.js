@@ -173,8 +173,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 res.render('index',{
                                 uniqle_id: receive.uniqle_id,
                                 all_networks: result,
-                                translate_results: "translate_results",
-
+                                translate_results: "N/A",
                                 compile_results: compile_status,
                                 deploy_results: "N/A",
                                 invoke_results: "N/A"
@@ -213,13 +212,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         query = "SELECT * FROM bpmn WHERE uniqle_id=?";
         table = [receive.uniqle_id];
         query = mysql.format(query,table);
-        connection.query(query, function (err, result) {
-            if (err) throw err;
-            console.log("Querying status");
-            console.log(result[0].status);
-            status = result[0].status;
-        });
-        // parameters: uniqle_id and status
+        status = connection.query(query)[0].status;
         status = deploy(receive.uniqle_id,status,ports);
 
         query = "UPDATE bpmn SET status = ? WHERE uniqle_id = ?";
