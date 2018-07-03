@@ -197,40 +197,35 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
           chaincode:req.body.chaincode
         };
         console.log(receive);
-        filename = "../../out/" + receive.uniqle_id + "/chaincode/chaincode.go";
-
-        // save in out/uniqle_id/chaincode/*.go
-        fs.writeFile(filename, receive.chaincode, function (err) {
-            if (err) {
-                console.log(err);
-            }
             
-            var status;
-            query = "SELECT * FROM bpmn WHERE uniqle_id=?";
-            table = [receive.uniqle_id];
-            query = mysql.format(query,table);
-            connection.query(query, function (err, result) {
-                if (err) throw err;
-                console.log("Querying new status");
-            });
-            // parameters: uniqle_id and status
-            deploy_results = deploy(receive.uniqle_id,status);
+        var status;
+        query = "SELECT * FROM bpmn WHERE uniqle_id=?";
+        table = [receive.uniqle_id];
+        query = mysql.format(query,table);
+        connection.query(query, function (err, result) {
+            if (err) throw err;
+            console.log("Querying new status");
+            console.log(result[0].status);
+            status = result[0].status;
+        });
+        // parameters: uniqle_id and status
+        deploy_results = deploy(receive.uniqle_id,status);
 
-            query = "SELECT * FROM bpmn";
-            connection.query(query, function (err, result) {
-                if (err) throw err;
-                console.log("Query all networks");
-                // send response
-                res.render('index',{
-                                uniqle_id: receive.uniqle_id,
-                                all_networks: result,
-                                translate_results: "N/A",
-                                compile_results: "N/A",
-                                deploy_results: deploy_results,
-                                invoke_results: "N/A"
-                });
+        query = "SELECT * FROM bpmn";
+        connection.query(query, function (err, result) {
+            if (err) throw err;
+            console.log("Query all networks");
+            // send response
+            res.render('index',{
+                            uniqle_id: receive.uniqle_id,
+                            all_networks: result,
+                            translate_results: "N/A",
+                            compile_results: "N/A",
+                            deploy_results: deploy_results,
+                            invoke_results: "N/A"
             });
         });
+
         //res.end(JSON.stringify(response));
     });
 
