@@ -130,7 +130,7 @@ function channel_artifacts_gen(unique_id,peers){
 }
 
 
-function deploy(unique_id,peers,stage){
+function deploy(unique_id,peers,stage,ports){
 
 	channelProfile = unique_id + "Channel";
 	channelName = "mychannel";

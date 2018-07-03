@@ -9,3 +9,4 @@ src/Translator/main.js
 src/Translator/mt.js
 src/*/package-lock.json
 src/Server/tmp
+src/Server/testing.js
