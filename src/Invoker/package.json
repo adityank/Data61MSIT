@@ -1,0 +1,14 @@
+{
+  "name": "invoker",
+  "version": "1.0.0",
+  "description": "Invoke in ../../out",
+  "main": "deployer.js",
+  "scripts": {
+    "test": "node invoker.js"
+  },
+  "author": "Aditya Kamble",
+  "license": "ISC",
+  "dependencies": {
+    "shelljs": "^0.8.2"
+  }
+}

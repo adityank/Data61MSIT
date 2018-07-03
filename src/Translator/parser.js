@@ -12,8 +12,11 @@
 *   3. Access to tasks every lane has
 *   06 June 2018 - Aditya Kamble - Handled intermediate events and adjusted dependancies and dependants accordingly. 
 *    Started adding code to integrate with YAMLGenerator and ChaincodeGenerator.
+*   14 June 2018 - Aditya Kamble - Integrated with YAMLGenerator and Server.
+*   19 June 2018 - Aditya Kamble - Added different mappings to integrate with ChaincodeGenerator.
+*   01 July 2018 - Aditya Kamble - Modified the tag format to <bpmn:
 *
-* Description: This is the parser which takes in a BPMN file and sends the extracted information to generators. 
+* Description: This is the parser which takes in a BPMN file path and sends the extracted information to generators. 
 *
 * External Dependencies: 
 * 1. Path for existing BPMN file.
@@ -27,8 +30,28 @@ var fs = require('fs');
 // module for element tree 
 var et = require('elementtree');
 
-var generateYAML = require('./YAMLGenerator');
+var HashSet = require('hashset');
 
+
+var generateYAML = require('./YAMLGenerator');
+var generateGo = require('./ChaincodeGenerator');
+
+var logger = require('../Logger/logger');
+
+function Task(id,name,type,lane,children,parents) {
+    this.ID = id;
+    this.Name = name;
+    this.Type = type;
+    this.Lane = lane;
+    if(children)
+        this.Children = children;
+    else
+        this.Children = [];
+    if(parents)
+        this.Parents = parents;
+    else
+        this.Parents = []; 
+}
 
 function getElementTree(filename){
     // In particular, tree for XML file
@@ -40,22 +63,97 @@ function getElementTree(filename){
     return et.parse(data);
 }
 
-// Get all tasks
-function getTaskMapping(etree){
+/*// Get all tasks
+function getNameMapping(etree){
     var tasks = etree.findall('./process/task');
     // A mapping between unique task_id and the corresponding task name
-    var taskMap = {};
+    var nameMap = {};
     for(var iter=0; iter<tasks.length; iter++){
         (function(iter) {
-            taskMap[tasks[iter].get('id')] = tasks[iter].get('name');
+            nameMap[tasks[iter].get('id')] = tasks[iter].get('name');
         })(iter);
     }
-    return taskMap;
+    return nameMap;
+}*/
+
+// Get mappings from id to type
+function getNameAndTypeMappings(etree,typeMap,nameMap){
+    // A mapping between unique task_id and the corresponding task name
+
+    var tasks = etree.findall('./bpmn:process/bpmn:task');
+
+    var functionNames = new HashSet();
+
+
+
+
+    // Check here if taskname is unique
+    for(var iter=0; iter<tasks.length; iter++){
+        (function(iter) {
+            typeMap[tasks[iter].get('id')] = 'task';
+            if(functionNames.contains(tasks[iter].get('name'))){
+                //****************TODO*****************Send message back to server
+                console.log("non-unique");
+            }
+            else{
+                nameMap[tasks[iter].get('id')] = tasks[iter].get('name');
+                functionNames.add(tasks[iter].get('name'));
+            }
+
+        })(iter);
+    }
+
+    var starts = etree.findall('./bpmn:process/bpmn:startEvent');
+    // A mapping between unique task_id and the corresponding task name
+    for(var iter=0; iter<starts.length; iter++){
+        (function(iter) {
+            typeMap[starts[iter].get('id')] = 'START';
+            nameMap[starts[iter].get('id')] = starts[iter].get('name');
+        })(iter);
+    }
+
+    var events = etree.findall('./bpmn:process/bpmn:intermediateThrowEvent');
+    // A mapping between unique task_id and the corresponding task name
+    for(var iter=0; iter<events.length; iter++){
+        (function(iter) {
+            typeMap[events[iter].get('id')] = 'event';
+            nameMap[events[iter].get('id')] = events[iter].get('name');            
+        })(iter);
+    }
+
+    var xors = etree.findall('./bpmn:process/bpmn:exclusiveGateway');
+    // A mapping between unique task_id and the corresponding task name
+    for(var iter=0; iter<xors.length; iter++){
+        (function(iter) {
+            typeMap[xors[iter].get('id')] = 'XOR';
+            nameMap[xors[iter].get('id')] = xors[iter].get('name');            
+        })(iter);
+    }
+
+    var ors = etree.findall('./bpmn:process/bpmn:parallelGateway');
+    // A mapping between unique task_id and the corresponding task name
+    for(var iter=0; iter<ors.length; iter++){
+        (function(iter) {
+            typeMap[ors[iter].get('id')] = 'OR';
+            nameMap[ors[iter].get('id')] = ors[iter].get('name');            
+        })(iter);
+    }
+
+    var ends = etree.findall('./bpmn:process/bpmn:endEvent');
+    // A mapping between unique task_id and the corresponding task name
+    for(var iter=0; iter<ors.length; iter++){
+        (function(iter) {
+            typeMap[ends[iter].get('id')] = 'END';
+            nameMap[ends[iter].get('id')] = ends[iter].get('name');            
+        })(iter);
+    }
+    
 }
 
 
+
 function getFlows(etree){
-    return etree.findall('./process/sequenceFlow');
+    return etree.findall('./bpmn:process/bpmn:sequenceFlow');
 }
 
 
@@ -96,39 +194,39 @@ function getOrgsAndAccess(etree,orgs){
     var childlanes,numchildlanes,laneName,accessible,childlane;
 
     // Stores mapping between the lane and the tasks(operations) restricted in that lane
-    var tasksToLane = {};
-    var lanes = etree.findall('./process/laneSet/lane');
+    var laneMap = {};
+    var lanes = etree.findall('./bpmn:process/bpmn:laneSet/bpmn:lane');
     for(var iter=0; iter<lanes.length; iter++){
         (function(iter) {
             laneName = lanes[iter].get('name');
-            childlanes = lanes[iter].findall('./childLaneSet/lane');
+            childlanes = lanes[iter].findall('./bpmn:childLaneSet/bpmn:lane');
             numchildlanes = childlanes.length;
 
             // If no childlanes, map tasks to that lane
             if(numchildlanes == 0){
                 orgs.push(laneName);
-                var allTasks = lanes[iter].findall('./flowNodeRef');
+                var allTasks = lanes[iter].findall('./bpmn:flowNodeRef');
                 var numTasks = allTasks.length;
                 for (var iter=0;iter<numTasks;iter++){
-                    if(allTasks[iter].text.substring(0,4)=="Task")
-                        tasksToLane[allTasks[iter].text] = laneName;
+                    //if(allTasks[iter].text.substring(0,4)=="Task")
+                    laneMap[allTasks[iter].text] = laneName;
                 }
             }
             // else separately map tasks to childlanes
             while(numchildlanes>0){
                 childlane = childlanes[numchildlanes-1];
                 orgs.push(childlane.get('name'));
-                var allTasks = childlane.findall('./flowNodeRef');
+                var allTasks = childlane.findall('./bpmn:flowNodeRef');
                 var numTasks = allTasks.length;
                 for (var iter=0;iter<numTasks;iter++){
-                    if(allTasks[iter].text.substring(0,4)=="Task")
-                        tasksToLane[allTasks[iter].text] = childlane.get('name');
+                    //if(allTasks[iter].text.substring(0,4)=="Task")
+                    laneMap[allTasks[iter].text] = childlane.get('name');
                 }
                 numchildlanes--;
             }
         })(iter);
     }
-    return tasksToLane;
+    return laneMap;
 }
 
 function getOrgs(laneToTasks){
@@ -184,7 +282,17 @@ function pruneMap(map){
     }
 }
 
-module.exports = function parse(filename,networkName,orgDomain){
+function formArray(typeMap,nameMap,laneMap,incomingMap,outgoingMap){
+    var array = [];
+    for (var ids in typeMap){
+        //console.log(ids + ', ' + typeMap[ids] + ', ' + nameMap[ids] + ', ' + laneMap[ids]);
+        array.push(new Task(ids,typeMap[ids],nameMap[ids],laneMap[ids],outgoingMap[ids],incomingMap[ids]));
+    }
+    return array;
+}
+
+
+module.exports = function parse(filename,unique_id){
     var etree = getElementTree(filename);
 
     //sequence
@@ -192,19 +300,32 @@ module.exports = function parse(filename,networkName,orgDomain){
     var incomingMap = getParents(flows);
     var outgoingMap = getChildren(flows);
     
-    removeIntermediate(incomingMap);
-    removeIntermediate(outgoingMap);
+    //removeIntermediate(incomingMap);
+    //removeIntermediate(outgoingMap);
     
-    pruneMap(incomingMap);
-    pruneMap(outgoingMap)
+    //pruneMap(incomingMap);
+    //pruneMap(outgoingMap);
+
+    var nameMap = {};
+    var typeMap = {};
+    getNameAndTypeMappings(etree,nameMap,typeMap);
 
     //access control
-    var taskMap = getTaskMapping(etree);
-    var orgs = [];
-    var tasksToLane = getOrgsAndAccess(etree,orgs);
+    //var nameMap = getTaskMapping(etree);
 
-    for (var t in tasksToLane){
-        console.log(t + ': ' + tasksToLane[t]);
+    var orgs = [];
+    var laneMap = getOrgsAndAccess(etree,orgs);
+
+    taskObjArray = formArray(typeMap,nameMap,laneMap,incomingMap,outgoingMap);
+    //console.log(taskObjArray);
+
+/*    for (t in taskObjArray){
+        console.log(taskObjArray[t].ID + ', ' + taskObjArray[t].Type + ', ' + taskObjArray[t].Name + ', ' + taskObjArray[t].Lane);
+        console.log(taskObjArray[t].Children.length + ', ' + taskObjArray[t].Parents.length);
+    }
+
+    for (var t in laneMap){
+        console.log(t + ': ' + laneMap[t]);
         console.log('----');
     }
     console.log(".-.-..-.--.--.-.-..-.--.-.-");
@@ -226,9 +347,34 @@ module.exports = function parse(filename,networkName,orgDomain){
             child += outgoingMap[task][iter]+", ";
         }
         console.log(task + ': ' + child);
-    }
+    }*/
 
-    generateYAML(orgs, networkName, orgDomain);
+    logger.init(unique_id);
+
+    generateYAML(orgs, unique_id);
+    
+    generateGo(unique_id, taskObjArray);
+
+    return "Success";
 }
 
-//parse('../../bpmn_examples/pizza.bpmn');
+
+//parse("../../bpmn_examples/pizza.bpmn","test0702v1");
+//parse("../../bpmn_examples/pizza.bpmn","test0702v2");
+
+/*
+START
+EVENT
+TASK
+AND
+XOR
+OR
+END
+
+*/
+
+
+// var tasks = [{Type:'START', ID: 'sta123', Name:'Start', Parents:[], Children:['cre123'], Lane:'restaurant.example.com'},
+//          {Type:'task', ID: 'cre123', Name:'Creat Order', Parents:['sta123'], Children:['and123'], Lane:'customer.example.com'},
+//          {Type:'AND', ID: 'and123', Name:'Parellel Gateway', Parents:['cre123','cre666'], Children:[], Lane:'restaurant.example.com'}];
+

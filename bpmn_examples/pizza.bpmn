@@ -1,114 +1,114 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="sid-38422fae-e03e-43a3-bef4-bd33b32041b2" targetNamespace="http://bpmn.io/bpmn" exporter="http://bpmn.io" exporterVersion="0.10.1">
-  <!-- <collaboration id="Collaboration_081k84w" name="Pizza Service">
-  <collaboration name="Pizza Service">
-    <participant id="Participant_1gtgp0y" name="Pizza Service" processRef="Process_1" />
+  <!-- <bpmn:collaboration id="Collaboration_081k84w" name="Pizza Service">
+  <bpmn:collaboration name="Pizza Service">
+    <bpmn:participant id="Participant_1gtgp0y" name="Pizza Service" processRef="Process_1" />
   </collaboration> -->
-  <process id="Process_1" name="main" isExecutable="false">
-    <laneSet>
-      <lane id="Lane_0m0b03m" name="Customer">
-        <flowNodeRef>StartEvent_0gg5eg0</flowNodeRef>
-        <flowNodeRef>Task_15fwqr8</flowNodeRef>
-        <flowNodeRef>EndEvent_1sx1pte</flowNodeRef>
-        <flowNodeRef>IntermediateThrowEvent_0n6k3k9</flowNodeRef>
-      </lane>
-      <lane id="Lane_0pb3lhz" name="Supplier">
-        <flowNodeRef>Task_1n0u060</flowNodeRef>
-        <flowNodeRef>Task_0gdc5s6</flowNodeRef>
-        <flowNodeRef>Task_01t0j4q</flowNodeRef>
-        <flowNodeRef>IntermediateThrowEvent_1gdugs4</flowNodeRef>
-        <flowNodeRef>Task_198078j</flowNodeRef>
-        <flowNodeRef>ExclusiveGateway_001gvx5</flowNodeRef>
-        <flowNodeRef>IntermediateThrowEvent_1j85kmy</flowNodeRef>
-        <flowNodeRef>EndEvent_1u2oj4d</flowNodeRef>
-        <flowNodeRef>ExclusiveGateway_1xp01ve</flowNodeRef>
-        <flowNodeRef>EndEvent_127hkds</flowNodeRef>
-        <childLaneSet>
-          <lane id="Lane_099w8lp" name="Restaurant">
-            <flowNodeRef>Task_1n0u060</flowNodeRef>
-            <flowNodeRef>Task_0gdc5s6</flowNodeRef>
-            <flowNodeRef>Task_01t0j4q</flowNodeRef>
-            <flowNodeRef>ExclusiveGateway_001gvx5</flowNodeRef>
-            <flowNodeRef>IntermediateThrowEvent_1j85kmy</flowNodeRef>
-            <flowNodeRef>EndEvent_127hkds</flowNodeRef>
-          </lane>
-          <lane id="Lane_1aywhn0" name="Deliverer">
-            <flowNodeRef>IntermediateThrowEvent_1gdugs4</flowNodeRef>
-            <flowNodeRef>Task_198078j</flowNodeRef>
-            <flowNodeRef>EndEvent_1u2oj4d</flowNodeRef>
-            <flowNodeRef>ExclusiveGateway_1xp01ve</flowNodeRef>
-          </lane>
-        </childLaneSet>
-      </lane>
-    </laneSet>
-    <startEvent id="StartEvent_0gg5eg0">
-      <outgoing>SequenceFlow_1xcftc6</outgoing>
-    </startEvent>
-    <sequenceFlow id="SequenceFlow_1xcftc6" sourceRef="StartEvent_0gg5eg0" targetRef="Task_15fwqr8" />
-    <task id="Task_15fwqr8" name="Create Order">
-      <incoming>SequenceFlow_1xcftc6</incoming>
-      <outgoing>SequenceFlow_0iz4m9e</outgoing>
-    </task>
-    <sequenceFlow id="SequenceFlow_0wkcmye" sourceRef="Task_0gdc5s6" targetRef="Task_1n0u060" />
-    <task id="Task_1n0u060" name="Assign Deliverer">
-      <incoming>SequenceFlow_0wkcmye</incoming>
-      <outgoing>SequenceFlow_0b93c4m</outgoing>
-    </task>
-    <task id="Task_0gdc5s6" name="Confirm Order">
-      <incoming>SequenceFlow_1wskcv0</incoming>
-      <outgoing>SequenceFlow_0wkcmye</outgoing>
-    </task>
-    <task id="Task_01t0j4q" name="Cancel Order">
-      <incoming>SequenceFlow_0usbbz7</incoming>
-      <outgoing>SequenceFlow_070ymcw</outgoing>
-    </task>
-    <sequenceFlow id="SequenceFlow_1jon5iz" sourceRef="Task_198078j" targetRef="ExclusiveGateway_1xp01ve" />
-    <intermediateThrowEvent id="IntermediateThrowEvent_1gdugs4" name="Delivery en route">
-      <incoming>SequenceFlow_0b93c4m</incoming>
-      <outgoing>SequenceFlow_0dbv7tv</outgoing>
-    </intermediateThrowEvent>
-    <task id="Task_198078j" name="Deliver Order">
-      <incoming>SequenceFlow_0dbv7tv</incoming>
-      <outgoing>SequenceFlow_1jon5iz</outgoing>
-    </task>
-    <sequenceFlow id="SequenceFlow_0dbv7tv" sourceRef="IntermediateThrowEvent_1gdugs4" targetRef="Task_198078j" />
-    <sequenceFlow id="SequenceFlow_0xnmz9t" sourceRef="IntermediateThrowEvent_0n6k3k9" targetRef="EndEvent_1sx1pte" />
-    <sequenceFlow id="SequenceFlow_0b93c4m" sourceRef="Task_1n0u060" targetRef="IntermediateThrowEvent_1gdugs4" />
-    <sequenceFlow id="SequenceFlow_0iz4m9e" sourceRef="Task_15fwqr8" targetRef="IntermediateThrowEvent_1j85kmy" />
-    <sequenceFlow id="SequenceFlow_0yaqrcb" sourceRef="IntermediateThrowEvent_1j85kmy" targetRef="ExclusiveGateway_001gvx5" />
-    <sequenceFlow id="SequenceFlow_1wskcv0" sourceRef="ExclusiveGateway_001gvx5" targetRef="Task_0gdc5s6" />
-    <sequenceFlow id="SequenceFlow_0usbbz7" sourceRef="ExclusiveGateway_001gvx5" targetRef="Task_01t0j4q" />
-    <exclusiveGateway id="ExclusiveGateway_001gvx5">
-      <incoming>SequenceFlow_0yaqrcb</incoming>
-      <outgoing>SequenceFlow_1wskcv0</outgoing>
-      <outgoing>SequenceFlow_0usbbz7</outgoing>
-    </exclusiveGateway>
-    <intermediateThrowEvent id="IntermediateThrowEvent_1j85kmy" name="Receive order">
-      <incoming>SequenceFlow_0iz4m9e</incoming>
-      <outgoing>SequenceFlow_0yaqrcb</outgoing>
-    </intermediateThrowEvent>
-    <endEvent id="EndEvent_1u2oj4d" name="end">
-      <incoming>SequenceFlow_0uzxcil</incoming>
-    </endEvent>
-    <endEvent id="EndEvent_1sx1pte" name="Eat pizza">
-      <incoming>SequenceFlow_0xnmz9t</incoming>
-    </endEvent>
-    <intermediateThrowEvent id="IntermediateThrowEvent_0n6k3k9" name="Collect pizza and pay">
-      <incoming>SequenceFlow_14bo37u</incoming>
-      <outgoing>SequenceFlow_0xnmz9t</outgoing>
-    </intermediateThrowEvent>
-    <sequenceFlow id="SequenceFlow_0uzxcil" sourceRef="ExclusiveGateway_1xp01ve" targetRef="EndEvent_1u2oj4d" />
-    <sequenceFlow id="SequenceFlow_14bo37u" sourceRef="ExclusiveGateway_1xp01ve" targetRef="IntermediateThrowEvent_0n6k3k9" />
-    <parallelGateway id="ExclusiveGateway_1xp01ve">
-      <incoming>SequenceFlow_1jon5iz</incoming>
-      <outgoing>SequenceFlow_0uzxcil</outgoing>
-      <outgoing>SequenceFlow_14bo37u</outgoing>
-    </parallelGateway>
-    <sequenceFlow id="SequenceFlow_070ymcw" sourceRef="Task_01t0j4q" targetRef="EndEvent_127hkds" />
-    <endEvent id="EndEvent_127hkds">
-      <incoming>SequenceFlow_070ymcw</incoming>
-    </endEvent>
-  </process>
+  <bpmn:process id="Process_1" name="main" isExecutable="false">
+    <bpmn:laneSet>
+      <bpmn:lane id="Lane_0m0b03m" name="Customer">
+        <bpmn:flowNodeRef>StartEvent_0gg5eg0</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_15fwqr8</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_1sx1pte</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>IntermediateThrowEvent_0n6k3k9</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_0pb3lhz" name="Supplier">
+        <bpmn:flowNodeRef>Task_1n0u060</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_0gdc5s6</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_01t0j4q</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>IntermediateThrowEvent_1gdugs4</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_198078j</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ExclusiveGateway_001gvx5</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>IntermediateThrowEvent_1j85kmy</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_1u2oj4d</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ExclusiveGateway_1xp01ve</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_127hkds</bpmn:flowNodeRef>
+        <bpmn:childLaneSet>
+          <bpmn:lane id="Lane_099w8lp" name="Restaurant">
+            <bpmn:flowNodeRef>Task_1n0u060</bpmn:flowNodeRef>
+            <bpmn:flowNodeRef>Task_0gdc5s6</bpmn:flowNodeRef>
+            <bpmn:flowNodeRef>Task_01t0j4q</bpmn:flowNodeRef>
+            <bpmn:flowNodeRef>ExclusiveGateway_001gvx5</bpmn:flowNodeRef>
+            <bpmn:flowNodeRef>IntermediateThrowEvent_1j85kmy</bpmn:flowNodeRef>
+            <bpmn:flowNodeRef>EndEvent_127hkds</bpmn:flowNodeRef>
+          </bpmn:lane>
+          <bpmn:lane id="Lane_1aywhn0" name="Deliverer">
+            <bpmn:flowNodeRef>IntermediateThrowEvent_1gdugs4</bpmn:flowNodeRef>
+            <bpmn:flowNodeRef>Task_198078j</bpmn:flowNodeRef>
+            <bpmn:flowNodeRef>EndEvent_1u2oj4d</bpmn:flowNodeRef>
+            <bpmn:flowNodeRef>ExclusiveGateway_1xp01ve</bpmn:flowNodeRef>
+          </bpmn:lane>
+        </bpmn:childLaneSet>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="StartEvent_0gg5eg0">
+      <bpmn:outgoing>SequenceFlow_1xcftc6</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_1xcftc6" sourceRef="StartEvent_0gg5eg0" targetRef="Task_15fwqr8" />
+    <bpmn:task id="Task_15fwqr8" name="Create Order">
+      <bpmn:incoming>SequenceFlow_1xcftc6</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0iz4m9e</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="SequenceFlow_0wkcmye" sourceRef="Task_0gdc5s6" targetRef="Task_1n0u060" />
+    <bpmn:task id="Task_1n0u060" name="Assign Deliverer">
+      <bpmn:incoming>SequenceFlow_0wkcmye</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0b93c4m</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_0gdc5s6" name="Confirm Order">
+      <bpmn:incoming>SequenceFlow_1wskcv0</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0wkcmye</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_01t0j4q" name="Cancel Order">
+      <bpmn:incoming>SequenceFlow_0usbbz7</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_070ymcw</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="SequenceFlow_1jon5iz" sourceRef="Task_198078j" targetRef="ExclusiveGateway_1xp01ve" />
+    <bpmn:intermediateThrowEvent id="IntermediateThrowEvent_1gdugs4" name="Delivery en route">
+      <bpmn:incoming>SequenceFlow_0b93c4m</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0dbv7tv</bpmn:outgoing>
+    </bpmn:intermediateThrowEvent>
+    <bpmn:task id="Task_198078j" name="Deliver Order">
+      <bpmn:incoming>SequenceFlow_0dbv7tv</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1jon5iz</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="SequenceFlow_0dbv7tv" sourceRef="IntermediateThrowEvent_1gdugs4" targetRef="Task_198078j" />
+    <bpmn:sequenceFlow id="SequenceFlow_0xnmz9t" sourceRef="IntermediateThrowEvent_0n6k3k9" targetRef="EndEvent_1sx1pte" />
+    <bpmn:sequenceFlow id="SequenceFlow_0b93c4m" sourceRef="Task_1n0u060" targetRef="IntermediateThrowEvent_1gdugs4" />
+    <bpmn:sequenceFlow id="SequenceFlow_0iz4m9e" sourceRef="Task_15fwqr8" targetRef="IntermediateThrowEvent_1j85kmy" />
+    <bpmn:sequenceFlow id="SequenceFlow_0yaqrcb" sourceRef="IntermediateThrowEvent_1j85kmy" targetRef="ExclusiveGateway_001gvx5" />
+    <bpmn:sequenceFlow id="SequenceFlow_1wskcv0" sourceRef="ExclusiveGateway_001gvx5" targetRef="Task_0gdc5s6" />
+    <bpmn:sequenceFlow id="SequenceFlow_0usbbz7" sourceRef="ExclusiveGateway_001gvx5" targetRef="Task_01t0j4q" />
+    <bpmn:exclusiveGateway id="ExclusiveGateway_001gvx5">
+      <bpmn:incoming>SequenceFlow_0yaqrcb</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1wskcv0</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_0usbbz7</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:intermediateThrowEvent id="IntermediateThrowEvent_1j85kmy" name="Receive order">
+      <bpmn:incoming>SequenceFlow_0iz4m9e</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0yaqrcb</bpmn:outgoing>
+    </bpmn:intermediateThrowEvent>
+    <bpmn:endEvent id="EndEvent_1u2oj4d" name="end">
+      <bpmn:incoming>SequenceFlow_0uzxcil</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndEvent_1sx1pte" name="Eat pizza">
+      <bpmn:incoming>SequenceFlow_0xnmz9t</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:intermediateThrowEvent id="IntermediateThrowEvent_0n6k3k9" name="Collect pizza and pay">
+      <bpmn:incoming>SequenceFlow_14bo37u</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0xnmz9t</bpmn:outgoing>
+    </bpmn:intermediateThrowEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_0uzxcil" sourceRef="ExclusiveGateway_1xp01ve" targetRef="EndEvent_1u2oj4d" />
+    <bpmn:sequenceFlow id="SequenceFlow_14bo37u" sourceRef="ExclusiveGateway_1xp01ve" targetRef="IntermediateThrowEvent_0n6k3k9" />
+    <bpmn:parallelGateway id="ExclusiveGateway_1xp01ve">
+      <bpmn:incoming>SequenceFlow_1jon5iz</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0uzxcil</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_14bo37u</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:sequenceFlow id="SequenceFlow_070ymcw" sourceRef="Task_01t0j4q" targetRef="EndEvent_127hkds" />
+    <bpmn:endEvent id="EndEvent_127hkds">
+      <bpmn:incoming>SequenceFlow_070ymcw</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
   <bpmndi:BPMNDiagram id="BpmnDiagram_1">
     <bpmndi:BPMNPlane id="BpmnPlane_1" bpmnElement="Collaboration_081k84w">
       <bpmndi:BPMNShape id="Participant_1gtgp0y_di" bpmnElement="Participant_1gtgp0y">
