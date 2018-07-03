@@ -151,7 +151,10 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         filename = "../../out/" + receive.uniqle_id + "/chaincode/chaincode.go";
 
         // save in out/uniqle_id/chaincode/*.go
-
+        fs.writeFile(filename, receive.chaincode, function (err) {
+            if (err) {
+                console.log(err);
+            }
 
             var compile = require("../Compiler/compiler.js");
             var compile_status = compile(filename);
@@ -172,7 +175,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
             });
         });
         //res.end(JSON.stringify(response));
-    // });
+    });
 
     //POST /api/v1/deploy
     // req paramdter is the request object
