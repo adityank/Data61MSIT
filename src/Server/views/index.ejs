@@ -1,7 +1,7 @@
 <html>
    <body>
       <b>Uniqle_id</b>
-      <p id="uniqle_id"><%= uniqle_id %></p>
+      <p id="unique_id"><%= unique_id %></p>
    	<b>Translate</b>
       <form action = "/api/v1/translate" method = "POST">
          xmlModel: <!--input type = "text" name = "xmlModel"><br> -->
@@ -10,20 +10,20 @@
       </form> 
       <b>Compile</b>
       <form action = "/api/v1/compile" method = "POST">
-         uniqle_id: <input type = "text" name = "uniqle_id"><br>
+         unique_id: <input type = "text" name = "unique_id"><br>
          <!-- chaincode: <input type = "text" name = "chaincode"><br> -->
          <textarea name="chaincode" rows="10" cols="100" white-space="pre-wrap">input your chaincode</textarea>
          <input type = "submit" value = "Submit">
       </form>
       <b>Deploy</b> 
       <form action = "/api/v1/deploy" method = "POST">
-         uniqle_id: <input type = "text" name = "uniqle_id"><br>
+         unique_id: <input type = "text" name = "unique_id"><br>
          chaincode: <input type = "text" name = "chaincode"><br>
          <input type = "submit" value = "Submit">
       </form>
       <b>Invoke</b>
       <form action = "/api/v1/invoke" method = "POST">
-         uniqle_id: <input type = "text" name = "uniqle_id"><br>
+         unique_id: <input type = "text" name = "unique_id"><br>
          peer: <input type = "text" name = "peer"><br>
          function_name: <input type = "text" name = "function_name"><br>
          parameters: <input type = "text" name = "parameters"><br>
