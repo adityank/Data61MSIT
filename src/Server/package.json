@@ -11,7 +11,8 @@
     "get-port-sync": "^1.0.0",
     "hashset": "0.0.6",
     "mysql": "^2.15.0",
-    "nodemon": "^1.17.5"
+    "nodemon": "^1.17.5",
+    "shorthash": "0.0.2"
   },
   "main": "REST.js",
   "author": "",

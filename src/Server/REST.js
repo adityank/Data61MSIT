@@ -10,6 +10,8 @@ var crypto = require('crypto');
 
 const uniqueString = require('unique-string');
 
+var sh = require("shorthash");
+
 var parse = require("../Translator/parser.js");
 
 const getPortSync = require('get-port-sync');
@@ -94,7 +96,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         console.log(receive);
 
 
-        var unique_id = uniqueString();
+        var unique_id = sh.unique(uniqueString());
         console.log("unique_id created: " + unique_id); 
         filename = "tmp/" + unique_id + ".bpmn";
 
