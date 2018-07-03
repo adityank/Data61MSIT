@@ -10,6 +10,8 @@ var crypto = require('crypto');
 var parse = require("../Translator/parser.js");
 
 
+
+
 function REST_ROUTER(router,connection) {
     var self = this;
     self.handleRoutes(router,connection);
@@ -86,7 +88,10 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
           xmlModel:req.body.xmlModel,
         };
         console.log(receive);
-        filename = "tmp/" + receive.uniqle_id + ".bpmn";
+
+        var uniqle_id = crypto.createHash('md5').update(receive.xmlModel).digest('hex');
+        console.log("uniqle_id created: " + uniqle_id); 
+        filename = "tmp/" + uniqle_id + ".bpmn";
 
         fs.writeFile(filename, receive.xmlModel, function (err) {
             if (err) {
