@@ -16,24 +16,25 @@
 
 // module for file-system
 var fs = require('fs');
-const { exec } = require('child_process');
+var shell = require('shelljs');
+var logger = require('../Logger/logger');
 
-
-function compile(filename) {
+module.exports = function compile(filename) {
     console.log('Start compiling...')
     // Careful with GOPATH, set back?
     // Hyperledger Fabric library location TBD
     // Output folder TBD
-    exec('export GOPATH=$(cd ../../;pwd) & go build --tags nopkcs11 ./chaincode/'+filename, (err, stdout, stderr) => {
-    if (err) {
-        // node couldn't execute the command
-        console.log('Compilation failed!')
-        console.log(stderr);
-        return;
+    // export GOPATH=$(cd ../../;pwd) & 
+    obj = shell.exec('export GOPATH=$HOME/go & go build --tags nopkcs11 '+filename);
+    if(obj.code !== 0) {
+        console.log('Channel creation failed!');
+        logger.log('deployer','Channel creation failed!');
+        logger.log('deployer',obj.stderr);
+        return obj.stderr;           
     }
 
     console.log('Successfully compiled!');
-    });
+    return "Success";
 }
 
-compile('badcc');
+//compile('badcc');
