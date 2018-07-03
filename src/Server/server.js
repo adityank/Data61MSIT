@@ -24,11 +24,21 @@ REST.prototype.connectMysql = function() {
         debug    :  false
     });
 
-    // Here make the connection to the bpmn database
+    // Here make the connection to the bpmn database and create table
     pool.getConnection(function(err,connection) {
-        if(err) {
+        if (err) {
           self.stop(err);
-        } else {
+        } 
+        else {
+          var query = "DROP TABLE bpmn";
+          connection.query(query, function (err, result) {
+            console.log("Table deleted");
+          });
+          query = "CREATE TABLE bpmn (id INT AUTO_INCREMENT PRIMARY KEY, uniqle_id VARCHAR(255), domain_name VARCHAR(255), status VARCHAR(255))";
+          connection.query(query,function(err,result){
+              if (err) throw err;
+              console.log("Table created");
+          });
           self.configureExpress(connection);
         }
     });
@@ -40,6 +50,9 @@ REST.prototype.configureExpress = function(connection) {
       app.use(bodyParser.urlencoded({ extended: true }));
       app.use(bodyParser.json());
       app.use(bodyParser.text());
+
+      app.set('view engine', 'ejs');
+      
       var router = express.Router();
       app.use('', router);
       app.use(express.static('public'));
