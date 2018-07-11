@@ -22,7 +22,7 @@ var logger = require('../Logger/logger');
 
 var obj;
 
-function invoke(unique_id,peer,actionName,parameters){
+module.exports = function invoke(unique_id,peer,actionName,parameters){
 
 	logger.init(unique_id);
 	var orgDomain = unique_id + '.com';
@@ -30,20 +30,19 @@ function invoke(unique_id,peer,actionName,parameters){
 
 	var paramString="";
 	
-	var res = true;
 
 	if (!shell.which('docker')) {
 		shell.echo('Sorry, this script requires docker');
 		logger.log('deployer',"Tried deploying without installing docker ");
 		shell.exit(1);
-		return false;
+		return "ERROR: docker not installed on server";
 	}
 
 	if (!shell.which('docker-compose')) {
 		shell.echo('Sorry, this script requires docker-compose');
 		logger.log('deployer',"Tried deploying without installing docker-compose ");		
 		shell.exit(1);
-		return false;
+		return "ERROR: docker-compose not installed on server";
 	}
 
 	for(var iter = 0; iter<parameters.length;iter++){
@@ -51,15 +50,19 @@ function invoke(unique_id,peer,actionName,parameters){
 	}
 
 
-	obj = shell.exec("docker exec -t " + peer + "_" + unique_id + "_cli peer chaincode invoke -o orderer." + orgDomain + ":7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/" + orgDomain + "/orderers/orderer."+ orgDomain + "/msp/tlscacerts/tlsca." + orgDomain + "-cert.pem -C " + channelName + " -n mycc -c '{\"Args\":[\"" + actionName + "\"" + paramString + "]}'");
+	obj = shell.exec("docker exec -t " + peer + "_" + unique_id + "_cli peer chaincode invoke -o orderer." + orgDomain + ":7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/" + orgDomain + "/orderers/orderer."+ orgDomain + "/msp/tlscacerts/tlsca." + orgDomain + "-cert.pem -C " + channelName + " -n mycc -c '{\"Args\":[\"" + actionName + "\"" + paramString + "]}'", {silent:true});
 	if(obj.code !== 0) {
         // node couldn't execute the command
         console.log("Invoking function " + actionName + " with parameters " + paramString + " failed")
         logger.log('invoker',"Invoking function " + actionName + " with parameters " + paramString + " failed");
+        logger.log('invoker',obj.stderr);
+        console.log(obj.stdout);
+        return obj.stdout;
     }
     logger.log('invoker',"Successfully invoked function " + actionName + " with parameters " + paramString);
-    return true;
+    logger.log('invoker',obj.stdout);
+    return obj.stdout;
 }
 
 
-invoke("test0701v1","Restaurant","initLedger",[]);
+//invoke("test0701v1","Restaurant","initLedger",[]);

@@ -25,11 +25,13 @@ module.exports = function compile(filename) {
     // Hyperledger Fabric library location TBD
     // Output folder TBD
     // export GOPATH=$(cd ../../;pwd) & 
-    obj = shell.exec('export GOPATH=$HOME/go & go build --tags nopkcs11 '+filename);
+    obj = shell.exec('go build --tags nopkcs11 '+filename);
     if(obj.code !== 0) {
-        console.log('Channel creation failed!');
-        logger.log('deployer','Channel creation failed!');
-        logger.log('deployer',obj.stderr);
+        console.log('Compilation failed.');
+        console.log(obj.stdout);
+        logger.log('compiler','Compilation failed!');
+        logger.log('compiler', 'stdout:\n'+obj.stdout);
+        logger.log('compiler',obj.stderr);
         return obj.stderr;           
     }
 

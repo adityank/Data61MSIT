@@ -27,15 +27,6 @@ var obj;
 var channelName;
 var channelProfile;
 
-function sleep(milliseconds) {
-  var start = new Date().getTime();
-  for (var i = 0; i < 1e7; i++) {
-    if ((new Date().getTime() - start) > milliseconds){
-      break;
-    }
-  }
-  return true;
-}
 
 function createJoinChannel(peer,unique_id,first){
     var orgDomain = unique_id + '.com';
@@ -47,7 +38,7 @@ function createJoinChannel(peer,unique_id,first){
 	        console.log('Channel creation failed!');
 	        logger.log('deployer','Channel creation failed!');
             logger.log('deployer',obj.stderr);
-			return false;			
+			return obj.stderr;			
 		}
 	    logger.log('deployer','=================Channel created successfully!================');
 	}
@@ -58,7 +49,7 @@ function createJoinChannel(peer,unique_id,first){
 	        console.log("Channel fetching failed for " + peer + "!");
 	        logger.log('deployer',"Channel fetching failed for " + peer + "!");
             logger.log('deployer',obj.stderr);
-        	return false;
+        	return obj.stderr;
 	    }
 	    logger.log('deployer', '================' + peer + ' fetched channel successfully!=================');
 	}
@@ -69,10 +60,10 @@ function createJoinChannel(peer,unique_id,first){
         console.log("Channel joining failed for " + peer + "!");
         logger.log('deployer',"Channel joining failed for " + peer + "!");
         logger.log('deployer',obj.stderr);
-        return false;
+        return obj.stderr;
 	}
     logger.log('deployer', '===============' + peer + ' joined channel successfully!===============');
-	return true;
+	return "Success";
 }
 
 
@@ -84,10 +75,10 @@ function cryptogen(unique_id) {
         console.log("Artifacts generation failed!");
         logger.log('deployer',"Artifacts generation failed!");
         logger.log('deployer',obj.stderr);
-        return false;
+        return obj.stderr;
     }
     logger.log('deployer', 'Crytogen Succeeded!! ');
-    return true;
+    return "Success";
 }
 
 function channel_artifacts_gen(unique_id,peers){
@@ -101,7 +92,7 @@ function channel_artifacts_gen(unique_id,peers){
         console.log("Genesis generation failed!")
         logger.log('deployer',"Genesis generation failed!");
         logger.log('deployer',obj.stderr);
-        return false;
+        return obj.stderr;
     }
 
     logger.log('deployer', "Genesis block created!! ");
@@ -111,7 +102,7 @@ function channel_artifacts_gen(unique_id,peers){
         console.log("Channel.tx generation failed!")
         logger.log('deployer',"Channel.tx generation failed!");
         logger.log('deployer',obj.stderr);
-        return false;
+        return obj.stderr;
     }
     logger.log('deployer', "Channel.tx generated!! ");
 
@@ -124,11 +115,11 @@ function channel_artifacts_gen(unique_id,peers){
 	        logger.log('deployer',command);
 	        logger.log('deployer',peers[iter] + " generation failed!");
             logger.log('deployer',obj.stderr);
-	        return false;
+	        return obj.stderr;
 	    }
 	    logger.log('deployer', peers[iter] + "MSPanchors.tx created!! ");
 	}
-	return true;
+	return "Success";
 }
 
 
@@ -138,14 +129,15 @@ function createEnv(unique_id,ports){
 
 	fs.writeFileSync(file, "COMPOSE_PROJECT_NAME=net\nIMAGE_TAG=latest\n", function (err) {
     if (err)
-        throw err;
+        return err;
     });
     for(var iter=0;iter<ports.length;iter++){
 		fs.appendFileSync(file, "port" + iter.toString() + "=" + ports[iter] + "\n", function (err) {
 	    if (err) 
-	        throw err;
+	        return err;
 	    });
     }
+    return "Success";
 }
 
 function getPeers(unique_id){
@@ -154,40 +146,43 @@ function getPeers(unique_id){
 	return peers;
 }
 
-function deploy(unique_id,stage,ports){
+module.exports = function deploy(unique_id,stage,ports){
 
 	channelProfile = unique_id + "Channel";
 	channelName = "mychannel";
 	deploymentPath = "../../out/" + unique_id + "/";
-	fabricSamplesPath = "/Users/DLZHOU/Documents/Github/Unchained/";
+	fabricSamplesPath = "/home/dlzhou/fabric-samples/";
+
+    var res;
 
 	logger.log('deployer',"........----------------Starting to log deployment-----------------.............");	
 	logger.log('deployer', "******* Start Stage: " + stage.toString() + " ************")
 
 	logger.init(unique_id);
 		
-	createEnv(unique_id,ports);
+	res = createEnv(unique_id,ports);
+    if (res!="Success") {
+        return {result: stage, message: res};
+    }
 	logger.log('deployer', "******* Created .env file with " + ports.length + " ports ************")
 	
 	var peers = getPeers(unique_id);
 	console.log(peers.length);
 
-	shell.cd(deploymentPath);
-	var res = true;
-	
+	shell.cd(deploymentPath);	
 
 	if (!shell.which('docker')) {
 		shell.echo('Sorry, this script requires docker');
 		logger.log('deployer',"Tried deploying without installing docker ");
 		shell.exit(1);
-		return stage;
+		return {result: stage, message: "ERROR: docker not installed on server"};
 	}
 
 	if (!shell.which('docker-compose')) {
 		shell.echo('Sorry, this script requires docker-compose');
 		logger.log('deployer',"Tried deploying without installing docker-compose ");		
 		shell.exit(1);
-		return stage;
+		return {result: stage, message: "ERROR: docker-compose not installed on server"};
 	}
 
 	// Setup the infrastructure and bring up the network
@@ -196,8 +191,8 @@ function deploy(unique_id,stage,ports){
 		logger.log('deployer',"==================  Stage 0: Crytogen  ==========================");
 		res = cryptogen(unique_id);
 		//shell.exec('node deployNetwork.js', { async: true }, { async: true });
-		if(res == false)
-			return stage;
+		if(res != "Success")
+			return {result: stage, message: res};
 		logger.log('deployer', "==================  Crytogen Succeeded!!  ========================== ");
 		stage = 1;
 	}
@@ -206,8 +201,8 @@ function deploy(unique_id,stage,ports){
 		logger.log('deployer',"==================  Stage 1: Channel Artifacts Gen  ==========================");
 		res = channel_artifacts_gen(unique_id,peers);
 		//shell.exec('node deployNetwork.js', { async: true }, { async: true });
-		if(res == false)
-			return stage;
+		if(res != "Success")
+			return {result: stage, message: res};
 		logger.log('deployer', "==================  Channel Artifacts Generated!!  ========================== ");
 		stage = 2;
 	}
@@ -216,24 +211,28 @@ function deploy(unique_id,stage,ports){
 		logger.log('deployer',"==================  Stage 2: Bring Up Network  ==========================");
 		shell.exec("docker-compose -f docker-compose-cli.yaml up", {silent: true, async:true})
 		
-		var wait = sleep(10000);
+        logger.log('deployer', 'before wait');
+        var start = new Date().getTime();
+        while ((new Date().getTime() - start) < 10000){
+            // wait for network to run
+            stage = 2;
+        }
 
-		logger.log('deployer', wait);
+		logger.log('deployer', 'after wait');
 
 	    logger.log('deployer', "==================  Network up and running!!  ========================== ");
 		stage = 3;
 	}
 
-	//shell.exec('node deployPeer.js', { async: true }, { async: true });
 
     if(stage == 3){
     	logger.log('deployer',"==================  Stage 3: Create & Join Channel  ==========================");
-		endorsers = "";
+		var endorsers = "";
 		var first = true;
 		for(var iter=0; iter<peers.length; iter++){
 			res = createJoinChannel(peers[iter],unique_id,first);
-			if(res == false)
-				return stage;
+			if(res != "Success")
+				return {result: stage, message: res};
 			logger.log('deployer',"Channel for " + peers[iter] + " created and joined ");
 			if(first == true){
 				first = false;
@@ -256,7 +255,7 @@ function deploy(unique_id,stage,ports){
 		        console.log("Installing chaincode failed on " + peers[iter])
 		        logger.log("Installing chaincode failed on " + peers[iter]);
 	            logger.log('deployer',obj.stderr);
-		        return stage;
+		        return {result: stage, message: obj.stderr};
 		    }
 		    logger.log('deployer', peers[iter] + " installed chaincode ");
 		}
@@ -272,17 +271,18 @@ function deploy(unique_id,stage,ports){
 	        console.log("Instantiating chaincode failed")
 	        logger.log("Instantiating chaincode failed");
 	        logger.log('deployer',obj.stderr);
-	        return stage;
+	        return {result: stage, message: obj.stderr};
 	    }
 	    logger.log('deployer',"==================  Chaincode instantiated!  ========================== ");
 		stage = 6;
 	}
-	return stage;
+    logger.log('deployer', "******* Final Stage Reached: " + stage.toString() + " ************")
+	return {result: stage, message: "Success"};
 }
 
 // peer names need to be lower case
-stage = deploy('test0702v1',['Restaurant','Customer','Deliverer'],0,[7010,7011,7012,7013,7014,7015,7016]);
-logger.log('deployer', "******* Final Stage Reached: " + stage.toString() + " ************")
+//deploy('16c7332',0,[7210,7211,7212,7213,7214,7215,7216]);
+
 /*console.log('======================v1done========================')
 stage = deploy('test0702v2',['Restaurant','Customer','Deliverer'],2);
 logger.log('deployer', "******* Final Stage Reached: " + stage.toString() + " ************")

@@ -7,12 +7,14 @@
 var mysql   = require("mysql");
 var fs = require("fs");
 var crypto = require('crypto');
+
+const uniqueString = require('unique-string');
+
+var sh = require("shorthash");
+
 var parse = require("../Translator/parser.js");
 
 const getPortSync = require('get-port-sync');
-
-var num_peers;
-
 
 
 function REST_ROUTER(router,connection) {
@@ -39,12 +41,13 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
             if (err) throw err;
             console.log("Query all networks");
             res.render('index',{
-                                uniqle_id: "N/A",
+                                unique_id: "N/A",
                                 all_networks: result,
                                 translate_results: "N/A",
                                 compile_results: "N/A",
                                 deploy_results: "N/A",
-                                invoke_results: "N/A"
+                                invoke_results: "N/A",
+                                translated_chaincode: "N/A"
             });
         });        
         //res.sendFile( __dirname + "/public/index.html" );
@@ -93,9 +96,11 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         };
         console.log(receive);
 
-        var uniqle_id = crypto.createHash('md5').update(receive.xmlModel).digest('hex').substring(0, 5);
-        console.log("uniqle_id created: " + uniqle_id); 
-        filename = "tmp/" + uniqle_id + ".bpmn";
+
+        var unique_id = sh.unique(uniqueString());
+        console.log("unique_id created: " + unique_id); 
+        filename = "tmp/" + unique_id + ".bpmn";
+
 
         fs.writeFile(filename, receive.xmlModel, function (err) {
             if (err) {
@@ -103,12 +108,14 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
             }
 
 
-            num_peers = parse(filename,uniqle_id);
+            var translate_results;
+            translate_results = parse(filename,unique_id);
+            console.log(translate_results.result);
+            console.log(translate_results.num_peers);
 
-            translate_results = parse(filename,uniqle_id);
+            query = "INSERT INTO bpmn (unique_id, status, num_peers) VALUES (?,?,?)";
+            table = [unique_id,0,translate_results.num_peers];
 
-            query = "INSERT INTO bpmn (uniqle_id, status) VALUES (?,?)";
-            table = [uniqle_id,0];
             query = mysql.format(query,table);
             connection.query(query, function (err, result) {
                 if (err) throw err;
@@ -122,12 +129,13 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 console.log("Query all networks");
                 // send response
                 res.render('index',{
-                                uniqle_id: uniqle_id,
+                                unique_id: unique_id,
                                 all_networks: result,
-                                translate_results: translate_results,
+                                translate_results: translate_results.result,
                                 compile_results: "N/A",
                                 deploy_results: "N/A",
-                                invoke_results: "N/A"
+                                invoke_results: "N/A",
+                                translated_chaincode: translate_results.chaincode
                 });
             });
         });
@@ -140,8 +148,8 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     /*
     POST format
     {
-        // The only uniqle_id
-        "uniqle_id": 
+        // The only unique_id
+        "unique_id": 
         // The chaincode
         "chaincode":     
     }
@@ -150,13 +158,13 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         console.log("Deploying Smart Contract" );
         
         receive = {
-          uniqle_id:req.body.uniqle_id,
+          unique_id:req.body.unique_id,
           chaincode:req.body.chaincode
         };
         console.log(receive);
-        filename = "../../out/" + receive.uniqle_id + "/chaincode/chaincode.go";
+        filename = "../../out/" + receive.unique_id + "/chaincode/chaincode.go";
 
-        // save in out/uniqle_id/chaincode/*.go
+        // save in out/unique_id/chaincode/*.go
         fs.writeFile(filename, receive.chaincode, function (err) {
             if (err) {
                 console.log(err);
@@ -171,13 +179,13 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 console.log("Query all networks");
                 // send response
                 res.render('index',{
-                                uniqle_id: receive.uniqle_id,
+                                unique_id: receive.unique_id,
                                 all_networks: result,
-                                translate_results: "translate_results",
-
+                                translate_results: "N/A",
                                 compile_results: compile_status,
                                 deploy_results: "N/A",
-                                invoke_results: "N/A"
+                                invoke_results: "N/A",
+                                translated_chaincode: "N/A"
                 });
             });
         });
@@ -190,53 +198,67 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     /*
     POST format
     {
-        // The only uniqle_id
-        "uniqle_id": 
+        // The only unique_id
+        "unique_id": 
         // The chaincode
         "chaincode":     
     }
     */
     router.post("/api/v1/deploy",function(req,res){
         console.log("Deploying Smart Contract" );
-        var ports = [];
-        for(var iter=0;iter<2*num_peers + 1;iter++){
-            ports.push(getPortSync());
-        }
-
+        
         receive = {
-          uniqle_id:req.body.uniqle_id,
+          unique_id:req.body.unique_id,
           chaincode:req.body.chaincode
         };
         console.log(receive);
  
-        var status;
-        query = "SELECT * FROM bpmn WHERE uniqle_id=?";
-        table = [receive.uniqle_id];
+
+        query = "SELECT * FROM bpmn WHERE unique_id=?";
+        table = [receive.unique_id];
         query = mysql.format(query,table);
         connection.query(query, function (err, result) {
             if (err) throw err;
             console.log("Querying new status");
             console.log(result[0].status);
-            status = result[0].status;
-        });
-        // parameters: uniqle_id and status
-        deploy_results = deploy(receive.uniqle_id,status,ports);
+            var status = result[0].status;
+            var num_peers = result[0].num_peers;
 
-        query = "SELECT * FROM bpmn";
-        connection.query(query, function (err, result) {
-            if (err) throw err;
-            console.log("Query all networks");
-            // send response
-            res.render('index',{
-                            uniqle_id: receive.uniqle_id,
-                            all_networks: result,
-                            translate_results: "N/A",
-                            compile_results: "N/A",
-                            deploy_results: deploy_results,
-                            invoke_results: "N/A"
+            var ports = [];
+            for(var iter=0;iter<2*num_peers + 1;iter++){
+                ports.push(getPortSync());
+            }
 
+            var deploy = require("../Deployer/deployer.js");
+            // parameters: unique_id and status
+            console.log('status:'+status);
+            deploy_results = deploy(receive.unique_id,status,ports);
+            query = "UPDATE bpmn SET status=? WHERE unique_id=?";
+            table = [deploy_results.result, receive.unique_id];
+            query = mysql.format(query,table);
+            connection.query(query, function (err, result) {
+                if (err) throw err;
+                console.log("Updating deployment status");
+            });
+
+            query = "SELECT * FROM bpmn";
+            connection.query(query, function (err, result) {
+                if (err) throw err;
+                console.log("Query all networks");
+                // send response
+                res.render('index',{
+                                unique_id: receive.unique_id,
+                                all_networks: result,
+                                translate_results: "N/A",
+                                compile_results: "N/A",
+                                deploy_results: deploy_results.message,
+                                invoke_results: "N/A",
+                                translated_chaincode: "N/A"
+
+                });
             });
         });
+        
 
         //res.end(JSON.stringify(response));
     });
@@ -247,8 +269,8 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     /*
     POST format
     {
-        // The only uniqle_id
-        "uniqle_id": 
+        // The only unique_id
+        "unique_id": 
         // The chaincode
         "function_name":
         // The parameters, a list of parameters
@@ -259,28 +281,34 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         console.log("Invoking Smart Contract: function " + req.body.function_name);
         
         receive = {
-          uniqle_id:req.body.uniqle_id,
+          peer:req.body.peer,
+          unique_id:req.body.unique_id,
           function_name:req.body.function_name,
           parameters:req.body.parameters
         };
 
         console.log(receive);
-        
-        invoke_results = invoke(receive.uniqle_id, function_name, parameters);     
+
+        var parameters;
+        if (receive.parameters!="")
+            parameters = receive.parameters.split(',');
+        else
+            parameters = [];
+        console.log(parameters);
+        var invoke = require("../Invoker/invoker.js");
+        var invoke_results = invoke(receive.unique_id, receive.peer, receive.function_name, parameters);     
 
         // send response
         res.render('index',{
-                                uniqle_id: receive.uniqle_id,
-                                all_networks: result,
-
-                                translate_results: "N/A",
-                                compile_results: "N/A",
-                                deploy_results: "N/A",
-                                invoke_results: invoke_results
-                });
-        //res.end(JSON.stringify(response));
-    });
-}
-
+                                unique_id: receive.unique_id,
+                                all_networks: "N/A",
+                            translate_results: "N/A",
+                            compile_results: "N/A",
+                            deploy_results: "N/A",
+                            invoke_results: invoke_results,
+                            translated_chaincode: "N/A"
+            });
+        });
+};
 // Makes this module available
 module.exports = REST_ROUTER;

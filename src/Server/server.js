@@ -19,7 +19,7 @@ REST.prototype.connectMysql = function() {
         connectionLimit : 100,
         host     : 'localhost',
         user     : 'root',
-        password : 'lxup5teeN',  // replace with your MySQL password
+        password : '930727',  // replace with your MySQL password
         database : 'bpmn',
         debug    :  false
     });
@@ -34,7 +34,7 @@ REST.prototype.connectMysql = function() {
           connection.query(query, function (err, result) {
             console.log("Table deleted");
           });
-          query = "CREATE TABLE bpmn (id INT AUTO_INCREMENT PRIMARY KEY, uniqle_id VARCHAR(255), status INT)";
+          query = "CREATE TABLE bpmn (id INT AUTO_INCREMENT PRIMARY KEY, unique_id VARCHAR(255), status INT, num_peers INT)";
           connection.query(query,function(err,result){
               if (err) throw err;
               console.log("Table created");
