@@ -80,12 +80,26 @@ function getNameMapping(etree){
 function getNameAndTypeMappings(etree,typeMap,nameMap){
     // A mapping between unique task_id and the corresponding task name
 
-    var tasks = etree.findall('./bpmn:process/bpmn:task');
+    var tasks = [];
+    var normalTasks = etree.findall('./bpmn:process/bpmn:task');
+    var sendTasks = etree.findall('./bpmn:process/bpmn:sendTask');
+    var receiveTasks = etree.findall('./bpmn:process/bpmn:receiveTask');
+    var userTasks = etree.findall('./bpmn:process/bpmn:userTask');
+    var manualTasks = etree.findall('./bpmn:process/bpmn:manualTask');
+    var businessRuleTasks = etree.findall('./bpmn:process/bpmn:businessRuleTask');
+    var scriptTasks = etree.findall('./bpmn:process/bpmn:scriptTask');
+    var serviceTasks = etree.findall('./bpmn:process/bpmn:serviceTask');
+    
+    tasks.concat(normalTasks);
+    tasks.concat(sendTasks);
+    tasks.concat(receiveTasks);
+    tasks.concat(userTasks);
+    tasks.concat(manualTasks);
+    tasks.concat(businessRuleTasks);
+    tasks.concat(scriptTasks);  
+    tasks.concat(serviceTasks);
 
     var functionNames = new HashSet();
-
-
-
 
     // Check here if taskname is unique
     for(var iter=0; iter<tasks.length; iter++){
@@ -292,7 +306,7 @@ function formArray(typeMap,nameMap,laneMap,incomingMap,outgoingMap){
 }
 
 
-module.exports = function parse(filename,unique_id){
+function parse(filename,unique_id){
     var etree = getElementTree(filename);
 
     //sequence
@@ -319,11 +333,11 @@ module.exports = function parse(filename,unique_id){
     taskObjArray = formArray(typeMap,nameMap,laneMap,incomingMap,outgoingMap);
     //console.log(taskObjArray);
 
-/*    for (t in taskObjArray){
+    for (t in taskObjArray){
         console.log(taskObjArray[t].ID + ', ' + taskObjArray[t].Type + ', ' + taskObjArray[t].Name + ', ' + taskObjArray[t].Lane);
         console.log(taskObjArray[t].Children.length + ', ' + taskObjArray[t].Parents.length);
     }
-
+/*
     for (var t in laneMap){
         console.log(t + ': ' + laneMap[t]);
         console.log('----');
@@ -372,8 +386,7 @@ module.exports = function parse(filename,unique_id){
 }
 
 
-//parse("../../bpmn_examples/pizza.bpmn","test0702v1");
-//parse("../../bpmn_examples/pizza.bpmn","test0702v2");
+parse("../../bpmn_examples/unmodified_o2c.bpmn","cash");
 
 /*
 START
