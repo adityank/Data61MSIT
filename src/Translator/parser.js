@@ -90,16 +90,18 @@ function getNameAndTypeMappings(etree,typeMap,nameMap){
     var scriptTasks = etree.findall('./bpmn:process/bpmn:scriptTask');
     var serviceTasks = etree.findall('./bpmn:process/bpmn:serviceTask');
     
-    tasks.concat(normalTasks);
-    tasks.concat(sendTasks);
-    tasks.concat(receiveTasks);
-    tasks.concat(userTasks);
-    tasks.concat(manualTasks);
-    tasks.concat(businessRuleTasks);
-    tasks.concat(scriptTasks);  
-    tasks.concat(serviceTasks);
+    tasks = tasks.concat(normalTasks);
+    tasks = tasks.concat(sendTasks);
+    tasks = tasks.concat(receiveTasks);
+    tasks = tasks.concat(userTasks);
+    tasks = tasks.concat(manualTasks);
+    tasks = tasks.concat(businessRuleTasks);
+    tasks = tasks.concat(scriptTasks);  
+    tasks = tasks.concat(serviceTasks);
 
     var functionNames = new HashSet();
+
+    console.log(tasks.length);
 
     // Check here if taskname is unique
     for(var iter=0; iter<tasks.length; iter++){
@@ -117,6 +119,7 @@ function getNameAndTypeMappings(etree,typeMap,nameMap){
         })(iter);
     }
 
+    
     var starts = etree.findall('./bpmn:process/bpmn:startEvent');
     // A mapping between unique task_id and the corresponding task name
     for(var iter=0; iter<starts.length; iter++){
@@ -333,11 +336,10 @@ function parse(filename,unique_id){
     taskObjArray = formArray(typeMap,nameMap,laneMap,incomingMap,outgoingMap);
     //console.log(taskObjArray);
 
-    for (t in taskObjArray){
+/*    for (t in taskObjArray){
         console.log(taskObjArray[t].ID + ', ' + taskObjArray[t].Type + ', ' + taskObjArray[t].Name + ', ' + taskObjArray[t].Lane);
         console.log(taskObjArray[t].Children.length + ', ' + taskObjArray[t].Parents.length);
     }
-/*
     for (var t in laneMap){
         console.log(t + ': ' + laneMap[t]);
         console.log('----');
@@ -386,7 +388,7 @@ function parse(filename,unique_id){
 }
 
 
-parse("../../bpmn_examples/unmodified_o2c.bpmn","cash");
+parse("../../bpmn_examples/modified_o2c.bpmn","cash2");
 
 /*
 START
