@@ -9,10 +9,9 @@ var fs = require("fs");
 var crypto = require('crypto');
 
 const uniqueString = require('unique-string');
+const importFresh = require('import-fresh');
 
 var sh = require("shorthash");
-
-var parse = require("../Translator/parser.js");
 
 const getPortSync = require('get-port-sync');
 
@@ -107,7 +106,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 console.log(err);
             }
 
-
+            var parse = importFresh("../Translator/parser.js");
             var translate_results;
             translate_results = parse(filename,unique_id);
             console.log(translate_results.result);
@@ -170,7 +169,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 console.log(err);
             }
 
-            var compile = require("../Compiler/compiler.js");
+            var compile = importFresh("../Compiler/compiler.js");
             var compile_status = compile(filename);
 
             query = "SELECT * FROM bpmn";
@@ -229,7 +228,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 ports.push(getPortSync());
             }
 
-            var deploy = require("../Deployer/deployer.js");
+            var deploy = importFresh("../Deployer/deployer.js");
             // parameters: unique_id and status
             console.log('status:'+status);
             deploy_results = deploy(receive.unique_id,status,ports);
@@ -295,7 +294,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         else
             parameters = [];
         console.log(parameters);
-        var invoke = require("../Invoker/invoker.js");
+        var invoke = importFresh("../Invoker/invoker.js");
         var invoke_results = invoke(receive.unique_id, receive.peer, receive.function_name, parameters);     
 
         // send response
