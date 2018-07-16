@@ -110,35 +110,40 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
 
             var translate_results;
             translate_results = parse(filename,unique_id);
-            console.log(translate_results.result);
-            console.log(translate_results.num_peers);
+            if(translate_results == -1)
+                 console.log("Failed translating...check logs for details");
+            else{
+                console.log(translate_results.result);
+                console.log(translate_results.num_peers);
 
-            query = "INSERT INTO bpmn (unique_id, status, num_peers) VALUES (?,?,?)";
-            table = [unique_id,0,translate_results.num_peers];
+                query = "INSERT INTO bpmn (unique_id, status, num_peers) VALUES (?,?,?)";
+                table = [unique_id,0,translate_results.num_peers];
 
-            query = mysql.format(query,table);
-            connection.query(query, function (err, result) {
-                if (err) throw err;
-                console.log("Adding new entries");
-            });
-
-
-            query = "SELECT * FROM bpmn";
-            connection.query(query, function (err, result) {
-                if (err) throw err;
-                console.log("Query all networks");
-                // send response
-                res.render('index',{
-                                unique_id: unique_id,
-                                all_networks: result,
-                                translate_results: translate_results.result,
-                                compile_results: "N/A",
-                                deploy_results: "N/A",
-                                invoke_results: "N/A",
-                                translated_chaincode: translate_results.chaincode
+                query = mysql.format(query,table);
+                connection.query(query, function (err, result) {
+                    if (err) throw err;
+                    console.log("Adding new entries");
                 });
-            });
+
+
+                query = "SELECT * FROM bpmn";
+                connection.query(query, function (err, result) {
+                    if (err) throw err;
+                    console.log("Query all networks");
+                    // send response
+                    res.render('index',{
+                                    unique_id: unique_id,
+                                    all_networks: result,
+                                    translate_results: translate_results.result,
+                                    compile_results: "N/A",
+                                    deploy_results: "N/A",
+                                    invoke_results: "N/A",
+                                    translated_chaincode: translate_results.chaincode
+                    });
+                });
+            }
         });
+
         //res.end(JSON.stringify(response));
     });
 

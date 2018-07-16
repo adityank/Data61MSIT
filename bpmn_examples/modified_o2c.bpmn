@@ -116,7 +116,7 @@
       <bpmn:outgoing>SequenceFlow_0yxd6xg</bpmn:outgoing>
     </bpmn:task>
     <bpmn:sequenceFlow id="SequenceFlow_0yxd6xg" sourceRef="Task_0sqyndi" targetRef="EndEvent_0oqmmqi" />
-    <bpmn:task id="Task_1mie3r2" name="Invoice accepted2">
+    <bpmn:task id="Task_1mie3r2" name="Invoice accepted">
       <bpmn:incoming>SequenceFlow_10lg84t</bpmn:incoming>
       <bpmn:outgoing>SequenceFlow_0w3ieoo</bpmn:outgoing>
     </bpmn:task>

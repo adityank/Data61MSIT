@@ -102,14 +102,15 @@ function getNameAndTypeMappings(etree,typeMap,nameMap){
     var functionNames = new HashSet();
 
     console.log(tasks.length);
-
     // Check here if taskname is unique
     for(var iter=0; iter<tasks.length; iter++){
-        (function(iter) {
+        console.log(iter);
+        r = (function(iter) {
             typeMap[tasks[iter].get('id')] = 'task';
             if(functionNames.contains(tasks[iter].get('name'))){
-                //****************TODO*****************Send message back to server
-                console.log("non-unique");
+                f=1;
+                logger.log('translator',"***Failure***: non-unique function name: " + tasks[iter].get('name'));
+                return -1;
             }
             else{
                 nameMap[tasks[iter].get('id')] = tasks[iter].get('name');
@@ -117,6 +118,8 @@ function getNameAndTypeMappings(etree,typeMap,nameMap){
             }
 
         })(iter);
+        if(r == -1)
+            return -1;
     }
 
     
@@ -256,7 +259,7 @@ function getOrgs(laneToTasks){
 
 // Returns if the task is intermediate
 function intermediate(task){
-    return task.toString().substring(0,12) == "Intermediate";
+    return (task.toString().length > 12 && task.toString().substring(0,12) == "Intermediate");
 }
 
 // Returns the first non-intermediate child task of the task  
@@ -302,7 +305,6 @@ function pruneMap(map){
 function formArray(typeMap,nameMap,laneMap,incomingMap,outgoingMap){
     var array = [];
     for (var ids in typeMap){
-        //console.log(ids + ', ' + typeMap[ids] + ', ' + nameMap[ids] + ', ' + laneMap[ids]);
         array.push(new Task(ids,typeMap[ids],nameMap[ids],laneMap[ids],outgoingMap[ids],incomingMap[ids]));
     }
     return array;
@@ -314,19 +316,21 @@ function parse(filename,unique_id){
 
     //sequence
     var flows = getFlows(etree);
+
     var incomingMap = getParents(flows);
+
     var outgoingMap = getChildren(flows);
-    
-    //removeIntermediate(incomingMap);
-    //removeIntermediate(outgoingMap);
-    
-    //pruneMap(incomingMap);
-    //pruneMap(outgoingMap);
 
     var nameMap = {};
     var typeMap = {};
-    getNameAndTypeMappings(etree,nameMap,typeMap);
 
+    logger.init(unique_id);
+
+    res = getNameAndTypeMappings(etree,nameMap,typeMap);
+
+    if(res == -1){
+        return -1;
+    }
     //access control
     //var nameMap = getTaskMapping(etree);
 
@@ -365,19 +369,28 @@ function parse(filename,unique_id){
         console.log(task + ': ' + child);
     }*/
 
-    logger.init(unique_id);
-
-    generateYAML(orgs, unique_id);
     
-    generateGo(unique_id, taskObjArray);
 
+    res = generateYAML(orgs, unique_id);
+    if(res == -1)
+        return -1;
+    
+    res = generateGo(unique_id, taskObjArray);
+    if(res == -1)
+        return -1;
+    
     file = "../../out/" + unique_id + "/peers.txt";
     fs.writeFile(file, "");
     for(var iter=0;iter<orgs.length;iter++){
-        fs.appendFile(file, orgs[iter]+"\n", function (err) {
-        if (err) 
-            throw err;
+
+        res = fs.appendFile(file, orgs[iter]+"\n", function (err) {
+        if (err){
+            logger.log('translator',err);
+            return -1;
+        } 
         });
+        if(res == -1)
+            return -1;
     }
     var gofile = "../../out/" + unique_id + "/chaincode/chaincode.go";
     var chaincode;
@@ -390,16 +403,6 @@ function parse(filename,unique_id){
 
 parse("../../bpmn_examples/modified_o2c.bpmn","cash2");
 
-/*
-START
-EVENT
-TASK
-AND
-XOR
-OR
-END
-
-*/
 
 
 // var tasks = [{Type:'START', ID: 'sta123', Name:'Start', Parents:[], Children:['cre123'], Lane:'restaurant.example.com'},
