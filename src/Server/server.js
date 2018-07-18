@@ -30,14 +30,10 @@ REST.prototype.connectMysql = function() {
           self.stop(err);
         } 
         else {
-          var query = "DROP TABLE bpmn";
-          connection.query(query, function (err, result) {
-            console.log("Table deleted");
-          });
-          query = "CREATE TABLE bpmn (id INT AUTO_INCREMENT PRIMARY KEY, unique_id VARCHAR(255), status INT, num_peers INT)";
+          query = "CREATE TABLE IF NOT EXISTS bpmn (id INT AUTO_INCREMENT PRIMARY KEY, unique_id VARCHAR(255), status INT, num_peers INT)";
           connection.query(query,function(err,result){
               if (err) throw err;
-              console.log("Table created");
+              console.log("Database connected");
           });
           self.configureExpress(connection);
         }

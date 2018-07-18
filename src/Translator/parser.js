@@ -84,9 +84,6 @@ function getNameAndTypeMappings(etree,typeMap,nameMap){
 
     var functionNames = new HashSet();
 
-
-
-
     // Check here if taskname is unique
     for(var iter=0; iter<tasks.length; iter++){
         (function(iter) {
@@ -130,7 +127,16 @@ function getNameAndTypeMappings(etree,typeMap,nameMap){
         })(iter);
     }
 
-    var ors = etree.findall('./bpmn:process/bpmn:parallelGateway');
+    var ands = etree.findall('./bpmn:process/bpmn:parallelGateway');
+    // A mapping between unique task_id and the corresponding task name
+    for(var iter=0; iter<ands.length; iter++){
+        (function(iter) {
+            typeMap[ands[iter].get('id')] = 'AND';
+            nameMap[ands[iter].get('id')] = ands[iter].get('name');            
+        })(iter);
+    }
+
+    var ors = etree.findall('./bpmn:process/bpmn:inclusiveGateway');
     // A mapping between unique task_id and the corresponding task name
     for(var iter=0; iter<ors.length; iter++){
         (function(iter) {
@@ -141,7 +147,7 @@ function getNameAndTypeMappings(etree,typeMap,nameMap){
 
     var ends = etree.findall('./bpmn:process/bpmn:endEvent');
     // A mapping between unique task_id and the corresponding task name
-    for(var iter=0; iter<ors.length; iter++){
+    for(var iter=0; iter<ends.length; iter++){
         (function(iter) {
             typeMap[ends[iter].get('id')] = 'END';
             nameMap[ends[iter].get('id')] = ends[iter].get('name');            
@@ -149,7 +155,6 @@ function getNameAndTypeMappings(etree,typeMap,nameMap){
     }
     
 }
-
 
 
 function getFlows(etree){

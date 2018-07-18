@@ -64,7 +64,11 @@ module.exports = function invoke(unique_id,peer,actionName,parameters){
         console.log("Invoking function " + actionName + " with parameters " + paramString + " failed")
         logger.log('invoker',"Invoking function " + actionName + " with parameters " + paramString + " failed");
         logger.log('invoker',output);
-        return output;
+        logger.log('invoker',obj.stderr);
+        if (output != '') {
+            return output;
+        }
+        return obj.stderr;
     }
     logger.log('invoker',"Successfully invoked function " + actionName + " with parameters " + paramString);
     logger.log('invoker',output);

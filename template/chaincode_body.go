@@ -63,36 +63,31 @@ func (s *SmartContract) DoTask(APIstub shim.ChaincodeStubInterface, targetEvent 
             }
             return true, nil
         } else if len(targetEvent.XORtoken)>0 {
-            for i,xorID := range targetEvent.XORtoken {
-                xor, err := s.GetEvent(APIstub, xorID)
+            // Consume XOR token in order
+            xorID := targetEvent.XORtoken[0]
+            xor, err := s.GetEvent(APIstub, xorID)
+            if err!=nil {
+                return false, err
+            }
+            err = s.ConsumeToken(APIstub, xor)
+            if err!=nil {
+                return false, err
+            }
+            for _, childID := range xor.Children {
+                // revoke this XOR token from its children
+                err = s.ConsumeXORToken(APIstub, childID, xorID)
+                if err!=nil {
+                    return false, err
+                }                
+            }
+            // Now propagate a token to current event's children
+            for _, childID := range targetEvent.Children {
+                err = s.PropagateToken(APIstub, childID, targetEvent.ID)
                 if err!=nil {
                     return false, err
                 }
-                if xor.Token>0 { // found a usable XOR token
-                    // delete tested XOR tokens
-                    targetEvent.XORtoken = targetEvent.XORtoken[i+1:]
-                    err = s.PutEvent(APIstub, targetEvent)
-                    if err!=nil {
-                        return false, err
-                    }
-                    err = s.ConsumeToken(APIstub, xor)
-                    if err!=nil {
-                        return false, err
-                    }
-                    // Propagate a token to all children
-                    for _, childID := range targetEvent.Children {
-                        err = s.PropagateToken(APIstub, childID, targetEvent.ID)
-                        if err!=nil {
-                            return false, err
-                        }
-                    }
-                    return true, nil
-                }
             }
-            // delete all tested XOR tokens
-            targetEvent.XORtoken = []string {}
-            err := s.PutEvent(APIstub, targetEvent)
-            return false, err
+            return true, nil
         } else {
             return false, nil
         }
@@ -141,6 +136,7 @@ func (s *SmartContract) PropagateToken(APIstub shim.ChaincodeStubInterface, targ
         return nil
     } else if targetEvent.Type == "XOR" {
         if len(targetEvent.Children)<=1 {
+            // Deterministic outgoing flow. Treat as normal token.
             for _, childID := range targetEvent.Children {
                 err = s.PropagateToken(APIstub, childID, targetEvent.ID)
                 if err!= nil {
@@ -150,8 +146,8 @@ func (s *SmartContract) PropagateToken(APIstub shim.ChaincodeStubInterface, targ
             return nil
         } else {
             targetEvent.Token += 1
-            err = s.PutEvent(APIstub, targetEvent)
-            if err!=nil {
+            err =  s.PutEvent(APIstub, targetEvent)
+            if err!= nil {
                 return err
             }
             for _, childID := range targetEvent.Children {
@@ -185,6 +181,34 @@ func (s *SmartContract) PropagateXORToken(APIstub shim.ChaincodeStubInterface, t
     } else if targetEvent.Type == "event" {
         for _, childID := range targetEvent.Children {
             err = s.PropagateXORToken(APIstub, childID, xorID)
+            if err!=nil {
+                return err
+            }
+        }
+        return nil
+    } else {
+        // Unsupported
+        return errors.New("Attaching another gateway to an exclusive gateway is not supported.")
+    }
+}
+
+
+func (s *SmartContract) ConsumeXORToken(APIstub shim.ChaincodeStubInterface, targetEventID string, xorID string) (error) {
+    targetEvent, err := s.GetEvent(APIstub, targetEventID)
+    if err!=nil {
+        return err
+    }
+    if targetEvent.Type == "task" {
+        for i, tokenID := range targetEvent.XORtoken {
+            if tokenID == xorID {
+                targetEvent.XORtoken = append(targetEvent.XORtoken[:i],targetEvent.XORtoken[i+1:]...)
+                return s.PutEvent(APIstub, targetEvent)
+            }
+        }
+        return errors.New("ConsumeXORToken Error: didn't find token "+xorID+" for "+targetEventID) // This should not happen
+    } else if targetEvent.Type == "event" {
+        for _, childID := range targetEvent.Children {
+            err = s.ConsumeXORToken(APIstub, childID, xorID)
             if err!=nil {
                 return err
             }
