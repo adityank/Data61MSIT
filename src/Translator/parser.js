@@ -297,7 +297,7 @@ function formArray(typeMap,nameMap,laneMap,incomingMap,outgoingMap){
 }
 
 
-module.exports = function parse(filename,unique_id){
+function parse(filename,unique_id){
     var etree = getElementTree(filename);
 
     //sequence
@@ -376,8 +376,9 @@ module.exports = function parse(filename,unique_id){
     
 }
 
+module.exports = parse;
 
-//parse("../../bpmn_examples/pizza.bpmn","test0702v1");
+// parse("../../bpmn_examples/andgate.bpmn","andgate");
 //parse("../../bpmn_examples/pizza.bpmn","test0702v2");
 
 /*

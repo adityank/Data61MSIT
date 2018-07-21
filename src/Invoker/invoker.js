@@ -24,7 +24,7 @@ const stripAnsi = require('strip-ansi');
 
 var obj;
 
-module.exports = function invoke(unique_id,peer,actionName,parameters){
+function invoke(unique_id,peer,actionName,parameters){
 
 	logger.init(unique_id);
 	var orgDomain = unique_id + '.com';
@@ -75,5 +75,5 @@ module.exports = function invoke(unique_id,peer,actionName,parameters){
     return output;
 }
 
-
+module.exports = invoke;
 //invoke("test0701v1","Restaurant","initLedger",[]);
