@@ -31,7 +31,7 @@ function checkPath(unique_id) {
 }
 
 
-module.exports = function generateGo(unique_id, tasks) {
+function generateGo(unique_id, tasks) {
     console.log('---begin generating Go chaincode---');
 
     logger.log('translator','---begin generating Go chaincode---');
@@ -54,7 +54,7 @@ module.exports = function generateGo(unique_id, tasks) {
         var Name = '"'+task.Name+'"';
         var Token = 0;
         var AND_token = '';
-        if (Type=='AND') {
+        if (Type=='"AND"') {
             AND_token = '"'+task.Parents.join('":0,"')+'":0';
         }
         var Children = '';
@@ -85,6 +85,7 @@ module.exports = function generateGo(unique_id, tasks) {
     
 }
 
+module.exports = generateGo;
 
 // var tasks = [{Type:'START', ID: 'sta123', Name:'Start', Parents:[], Children:['cre123'], Lane:'restaurant.example.com'},
 //          {Type:'task', ID: 'cre123', Name:'Creat Order', Parents:['sta123'], Children:['and123'], Lane:'customer.example.com'},

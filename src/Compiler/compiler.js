@@ -19,7 +19,7 @@ var fs = require('fs');
 var shell = require('shelljs');
 var logger = require('../Logger/logger');
 
-module.exports = function compile(filename) {
+function compile(filename) {
     console.log('Start compiling...')
     // Careful with GOPATH, set back?
     // Hyperledger Fabric library location TBD
@@ -38,5 +38,7 @@ module.exports = function compile(filename) {
     console.log('Successfully compiled!');
     return "Success";
 }
+
+module.exports = compile;
 
 //compile('badcc');

@@ -146,7 +146,7 @@ function getPeers(unique_id){
 	return peers;
 }
 
-module.exports = function deploy(unique_id,stage,ports){
+function deploy(unique_id,stage,ports){
 
 	channelProfile = unique_id + "Channel";
 	channelName = "mychannel";
@@ -279,6 +279,8 @@ module.exports = function deploy(unique_id,stage,ports){
     logger.log('deployer', "******* Final Stage Reached: " + stage.toString() + " ************")
 	return {result: stage, message: "Success"};
 }
+
+module.exports = deploy;
 
 // peer names need to be lower case
 //deploy('16c7332',0,[7210,7211,7212,7213,7214,7215,7216]);
