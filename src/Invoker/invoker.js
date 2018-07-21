@@ -20,6 +20,8 @@ var shell = require('shelljs');
 
 var logger = require('../Logger/logger');
 
+const stripAnsi = require('strip-ansi');
+
 var obj;
 
 module.exports = function invoke(unique_id,peer,actionName,parameters){
@@ -29,6 +31,7 @@ module.exports = function invoke(unique_id,peer,actionName,parameters){
 	var channelName = 'mychannel';
 
 	var paramString="";
+	var use_silent = false;
 	
 
 	if (!shell.which('docker')) {
@@ -49,19 +52,27 @@ module.exports = function invoke(unique_id,peer,actionName,parameters){
 		paramString += ', \"'+parameters[iter] + '\"';
 	}
 
+	if (actionName=='queryEvent' || actionName=='queryAllEvents') {
+		obj = shell.exec("docker exec -t " + peer + "_" + unique_id + "_cli peer chaincode query -C " + channelName + " -n mycc -c '{\"Args\":[\"" + actionName + "\"" + paramString + "]}'", {silent:use_silent});
+	} else {
+		obj = shell.exec("docker exec -t " + peer + "_" + unique_id + "_cli peer chaincode invoke -o orderer." + orgDomain + ":7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/" + orgDomain + "/orderers/orderer."+ orgDomain + "/msp/tlscacerts/tlsca." + orgDomain + "-cert.pem -C " + channelName + " -n mycc -c '{\"Args\":[\"" + actionName + "\"" + paramString + "]}'", {silent:use_silent});
+	}
 
-	obj = shell.exec("docker exec -t " + peer + "_" + unique_id + "_cli peer chaincode invoke -o orderer." + orgDomain + ":7050 --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/" + orgDomain + "/orderers/orderer."+ orgDomain + "/msp/tlscacerts/tlsca." + orgDomain + "-cert.pem -C " + channelName + " -n mycc -c '{\"Args\":[\"" + actionName + "\"" + paramString + "]}'", {silent:true});
+	var output = stripAnsi(obj.stdout);
 	if(obj.code !== 0) {
         // node couldn't execute the command
         console.log("Invoking function " + actionName + " with parameters " + paramString + " failed")
         logger.log('invoker',"Invoking function " + actionName + " with parameters " + paramString + " failed");
+        logger.log('invoker',output);
         logger.log('invoker',obj.stderr);
-        console.log(obj.stdout);
-        return obj.stdout;
+        if (output != '') {
+            return output;
+        }
+        return obj.stderr;
     }
     logger.log('invoker',"Successfully invoked function " + actionName + " with parameters " + paramString);
-    logger.log('invoker',obj.stdout);
-    return obj.stdout;
+    logger.log('invoker',output);
+    return output;
 }
 
 

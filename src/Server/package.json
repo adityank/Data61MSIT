@@ -10,6 +10,7 @@
     "express": "^4.16.3",
     "get-port-sync": "^1.0.0",
     "hashset": "0.0.6",
+    "import-fresh": "^2.0.0",
     "mysql": "^2.15.0",
     "nodemon": "^1.17.5",
     "shorthash": "0.0.2"
