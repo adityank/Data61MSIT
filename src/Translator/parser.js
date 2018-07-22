@@ -24,6 +24,10 @@
 *
 ******************************************************************************************************************/
 
+// No or needed
+//
+
+
 // module for file-system
 var fs = require('fs');
 
@@ -142,6 +146,9 @@ function getNameAndTypeMappings(etree,typeMap,nameMap){
     }
 
     var xors = etree.findall('./bpmn:process/bpmn:exclusiveGateway');
+
+    //if 
+
     // A mapping between unique task_id and the corresponding task name
     for(var iter=0; iter<xors.length; iter++){
         (function(iter) {
@@ -170,7 +177,7 @@ function getNameAndTypeMappings(etree,typeMap,nameMap){
     
 }
 
-
+// 
 
 function getFlows(etree){
     return etree.findall('./bpmn:process/bpmn:sequenceFlow');
