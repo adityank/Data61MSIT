@@ -38,7 +38,10 @@ var generateGo = require('./ChaincodeGenerator');
 
 var logger = require('../Logger/logger');
 
-function Task(id,name,type,lane,children,parents) {
+
+
+
+function Task(id,type,name,lane,children,parents) {
     this.ID = id;
     this.Name = name;
     this.Type = type;
@@ -136,14 +139,18 @@ function getNameAndTypeMappings(etree,typeMap,nameMap){
         })(iter);
     }
 
+    // Inclusive Gateway feature is turned off
     var ors = etree.findall('./bpmn:process/bpmn:inclusiveGateway');
-    // A mapping between unique task_id and the corresponding task name
-    for(var iter=0; iter<ors.length; iter++){
-        (function(iter) {
-            typeMap[ors[iter].get('id')] = 'OR';
-            nameMap[ors[iter].get('id')] = ors[iter].get('name');            
-        })(iter);
+    if (ors.length>0) {
+        return "Support for Inclusive Gateway is not enabled.";
     }
+    // A mapping between unique task_id and the corresponding task name
+    // for(var iter=0; iter<ors.length; iter++){
+    //     (function(iter) {
+    //         typeMap[ors[iter].get('id')] = 'OR';
+    //         nameMap[ors[iter].get('id')] = ors[iter].get('name');            
+    //     })(iter);
+    // }
 
     var ends = etree.findall('./bpmn:process/bpmn:endEvent');
     // A mapping between unique task_id and the corresponding task name
@@ -153,7 +160,7 @@ function getNameAndTypeMappings(etree,typeMap,nameMap){
             nameMap[ends[iter].get('id')] = ends[iter].get('name');            
         })(iter);
     }
-    
+    return null;
 }
 
 
@@ -171,28 +178,33 @@ function insert(dep, key, value) {
 }
 
 
-function getParents(flows){
-    var dep = {};
+function getDependancies(flows,incomingMap,outgoingMap,typeMap,nameMap,laneMap){
     // store immediate dependants
     for(var iter=0; iter<flows.length; iter++){
         (function(iter) {
-            insert(dep, flows[iter].get('targetRef'),flows[iter].get('sourceRef'));
+            console.log( flows[iter].get('name') +" && " + typeMap[flows[iter].get('sourceRef')]);
+            if(typeMap[flows[iter].get('sourceRef')] == 'XOR' && flows[iter].get('name') != null){
+                console.log("entered!");
+                //annotation exists
+                newid = 'Condition_'+flows[iter].get('id').toString().substring(13);//re-use sequence flow id, 13 is length of 'SequenceFlow_'
+                typeMap[newid] = 'task';
+                nameMap[newid] = flows[iter].get('name');
+                // Owner of the XOR gate decides the path
+                laneMap[newid] = laneMap[flows[iter].get('sourceRef')];
+
+                insert(incomingMap, newid,flows[iter].get('sourceRef'));
+                insert(outgoingMap, flows[iter].get('sourceRef'),newid);
+                insert(incomingMap, flows[iter].get('targetRef'),newid);
+                insert(outgoingMap, newid,flows[iter].get('targetRef'));
+            }
+            else{
+                insert(incomingMap, flows[iter].get('targetRef'),flows[iter].get('sourceRef'));
+                insert(outgoingMap, flows[iter].get('sourceRef'),flows[iter].get('targetRef'));
+            }
         })(iter);
     }
-    return dep;
+    return null;
 }
-
-function getChildren(flows){
-    var dep = {};
-    // store immediate dependants
-    for(var iter=0; iter<flows.length; iter++){
-        (function(iter) {
-            insert(dep, flows[iter].get('sourceRef'),flows[iter].get('targetRef'));
-        })(iter);
-    }
-    return dep;
-}
-
 
 function getOrgsAndAccess(etree,orgs){
     // Get all participants(lanes)
@@ -296,15 +308,13 @@ function formArray(typeMap,nameMap,laneMap,incomingMap,outgoingMap){
     return array;
 }
 
-
 function parse(filename,unique_id){
     var etree = getElementTree(filename);
 
     //sequence
     var flows = getFlows(etree);
-    var incomingMap = getParents(flows);
-    var outgoingMap = getChildren(flows);
     
+
     //removeIntermediate(incomingMap);
     //removeIntermediate(outgoingMap);
     
@@ -313,15 +323,29 @@ function parse(filename,unique_id){
 
     var nameMap = {};
     var typeMap = {};
-    getNameAndTypeMappings(etree,nameMap,typeMap);
+    var err = getNameAndTypeMappings(etree,typeMap,nameMap);
+
+
+    console.log(typeMap);
+
+    if (err!=null){
+        return {result: err, num_peers: 0, chaincode: ""};
+    }
 
     //access control
-    //var nameMap = getTaskMapping(etree);
-
     var orgs = [];
     var laneMap = getOrgsAndAccess(etree,orgs);
 
+    var incomingMap = {};
+    var outgoingMap = {};
+    
+    err = getDependancies(flows,incomingMap,outgoingMap,typeMap,nameMap,laneMap);
+    if (err!=null){
+        return {result: err, num_peers: 0, chaincode: ""};
+    }
+  
     taskObjArray = formArray(typeMap,nameMap,laneMap,incomingMap,outgoingMap);
+  
     //console.log(taskObjArray);
 
 /*    for (t in taskObjArray){
@@ -379,7 +403,7 @@ function parse(filename,unique_id){
 module.exports = parse;
 
 // parse("../../bpmn_examples/andgate.bpmn","andgate");
-//parse("../../bpmn_examples/pizza.bpmn","test0702v2");
+//parse("../../bpmn_examples/databased.bpmn","databased");
 
 /*
 START
