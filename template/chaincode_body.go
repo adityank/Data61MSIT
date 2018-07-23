@@ -188,7 +188,7 @@ func (s *SmartContract) PropagateXORToken(APIstub shim.ChaincodeStubInterface, t
         return nil
     } else {
         // Unsupported
-        return errors.New("Attaching another gateway to an exclusive gateway is not supported.")
+        return errors.New("Attaching another gateway immediately after an exclusive gateway is not supported.")
     }
 }
 
