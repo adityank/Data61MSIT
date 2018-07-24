@@ -1,6 +1,9 @@
 #!bin/bash
 
-#delete existing hyperledger fabric material
+#-------------------delete existing hyperledger fabric material------------
+
+
+
 sudo yum -y update
 #---------------------install wget, git, curl----------------
 sudo yum -y install wget git curl
@@ -45,6 +48,33 @@ mysql --user=root --password
 
 ALTER USER 'root'@'localhost' IDENTIFIED BY 'Unchained#1';
 
+CREATE DATABASE bpmn;
+
+
+# ----------------git setup----------------
+ssh-keygen -t rsa -b 4096 -C ""
+cat ~/.ssh/id_rsa.pub
+git clone git@github.com:adityank/Data61MSIT.git
+git checkout Integration_Second_Release
+
+
 # -----------------structurize-----------------
 
+
+
 # ----------------npm install all packages globally------------------
+npm install -g express
+npm install -g shelljs
+npm install -g body-parser
+npm install -g ejs
+npm install -g get-port-sync
+npm install -g hashset
+npm install -g mysql
+npm install -g nodemon
+npm install -g shorthash
+npm install -g elementtree
+npm install -g fs
+npm install -g unique-string
+npm install -g import-fresh
+
+
