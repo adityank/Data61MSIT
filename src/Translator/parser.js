@@ -185,7 +185,8 @@ function getDependancies(flows,incomingMap,outgoingMap,typeMap,nameMap,laneMap,f
     // Check nested XOR gate
     for (source in outgoingMap){
         if (typeMap[source] == 'XOR' && outgoingMap[source].length > 1) {
-            for (target in outgoingMap[source]) {
+            for (var iter=0; iter<outgoingMap[source].length; iter++) {
+                var target = outgoingMap[source][iter];
                 if (typeMap[target] == 'XOR' || typeMap[target] == 'AND') {
                     return "Immediate nested exclusive gateways is not supported. From "+source+" To "+target;
                 }
