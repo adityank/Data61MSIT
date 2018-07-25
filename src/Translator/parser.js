@@ -167,7 +167,7 @@ function getDependancies(flows,incomingMap,outgoingMap,typeMap,nameMap,laneMap,f
                     if(functionNames.contains(flows[iter].get('name'))){
                         return "Duplicated function name detected: "+flows[iter].get('name');
                     }
-                    functionNames.add(tasks[iter].get('name'));
+                    functionNames.add(flows[iter].get('name'));
                     nameMap[newid] = flows[iter].get('name');
                     // Owner of the XOR gate decides the path
                     laneMap[newid] = laneMap[flows[iter].get('sourceRef')];
