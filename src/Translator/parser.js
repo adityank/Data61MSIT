@@ -15,30 +15,23 @@
 *   14 June 2018 - Aditya Kamble - Integrated with YAMLGenerator and Server.
 *   19 June 2018 - Aditya Kamble - Added different mappings to integrate with ChaincodeGenerator.
 *   01 July 2018 - Aditya Kamble - Modified the tag format to <bpmn:
+*   20 July 2018 - Dongliang Zhou - Added support for annotated outflow from XOR gate.
+*   23 July 2018 - Dongliang Zhou - Added error handling and unsupported message.
 *
 * Description: This is the parser which takes in a BPMN file path and sends the extracted information to generators. 
 *
 * External Dependencies: 
 * 1. Path for existing BPMN file.
-* 2. Node-modules: fs, elementtree
+* 2. Node-modules: fs, elementtree, hashset
 *
 ******************************************************************************************************************/
 
-// module for file-system
 var fs = require('fs');
-
-// module for element tree 
 var et = require('elementtree');
-
 var HashSet = require('hashset');
-
-
 var generateYAML = require('./YAMLGenerator');
 var generateGo = require('./ChaincodeGenerator');
-
 var logger = require('../Logger/logger');
-
-
 
 
 function Task(id,type,name,lane,children,parents) {
@@ -56,6 +49,7 @@ function Task(id,type,name,lane,children,parents) {
         this.Parents = []; 
 }
 
+
 function getElementTree(filename){
     // In particular, tree for XML file
     var XML = et.XML;
@@ -66,40 +60,23 @@ function getElementTree(filename){
     return et.parse(data);
 }
 
-/*// Get all tasks
-function getNameMapping(etree){
-    var tasks = etree.findall('./process/task');
-    // A mapping between unique task_id and the corresponding task name
-    var nameMap = {};
-    for(var iter=0; iter<tasks.length; iter++){
-        (function(iter) {
-            nameMap[tasks[iter].get('id')] = tasks[iter].get('name');
-        })(iter);
-    }
-    return nameMap;
-}*/
-
 // Get mappings from id to type
-function getNameAndTypeMappings(etree,typeMap,nameMap){
+function getNameAndTypeMappings(etree,typeMap,nameMap,functionNames){
     // A mapping between unique task_id and the corresponding task name
 
     var tasks = etree.findall('./bpmn:process/bpmn:task');
-
-    var functionNames = new HashSet();
 
     // Check here if taskname is unique
     for(var iter=0; iter<tasks.length; iter++){
         (function(iter) {
             typeMap[tasks[iter].get('id')] = 'task';
             if(functionNames.contains(tasks[iter].get('name'))){
-                //****************TODO*****************Send message back to server
-                console.log("non-unique");
+                return "Duplicated function name detected: "+task[iter].get('name');
             }
             else{
                 nameMap[tasks[iter].get('id')] = tasks[iter].get('name');
                 functionNames.add(tasks[iter].get('name'));
             }
-
         })(iter);
     }
 
@@ -178,33 +155,47 @@ function insert(dep, key, value) {
 }
 
 
-function getDependancies(flows,incomingMap,outgoingMap,typeMap,nameMap,laneMap){
+function getDependancies(flows,incomingMap,outgoingMap,typeMap,nameMap,laneMap,functionNames){
     // store immediate dependants
     for(var iter=0; iter<flows.length; iter++){
         (function(iter) {
-            console.log( flows[iter].get('name') +" && " + typeMap[flows[iter].get('sourceRef')]);
+            //console.log( flows[iter].get('name') +" && " + typeMap[flows[iter].get('sourceRef')]);
             if(typeMap[flows[iter].get('sourceRef')] == 'XOR' && flows[iter].get('name') != null){
-                console.log("entered!");
-                //annotation exists
-                newid = 'Condition_'+flows[iter].get('id').toString().substring(13);//re-use sequence flow id, 13 is length of 'SequenceFlow_'
-                typeMap[newid] = 'task';
-                nameMap[newid] = flows[iter].get('name');
-                // Owner of the XOR gate decides the path
-                laneMap[newid] = laneMap[flows[iter].get('sourceRef')];
-
-                insert(incomingMap, newid,flows[iter].get('sourceRef'));
-                insert(outgoingMap, flows[iter].get('sourceRef'),newid);
-                insert(incomingMap, flows[iter].get('targetRef'),newid);
-                insert(outgoingMap, newid,flows[iter].get('targetRef'));
-            }
-            else{
+                    //annotation exists
+                    newid = 'Condition_'+flows[iter].get('id').toString().substring(13);//re-use sequence flow id, 13 is length of 'SequenceFlow_'
+                    typeMap[newid] = 'task';
+                    if(functionNames.contains(flows[iter].get('name'))){
+                        return "Duplicated function name detected: "+flows[iter].get('name');
+                    }
+                    functionNames.add(flows[iter].get('name'));
+                    nameMap[newid] = flows[iter].get('name');
+                    // Owner of the XOR gate decides the path
+                    laneMap[newid] = laneMap[flows[iter].get('sourceRef')];
+    
+                    insert(incomingMap, newid,flows[iter].get('sourceRef'));
+                    insert(outgoingMap, flows[iter].get('sourceRef'),newid);
+                    insert(incomingMap, flows[iter].get('targetRef'),newid);
+                    insert(outgoingMap, newid,flows[iter].get('targetRef'));
+            } else{
                 insert(incomingMap, flows[iter].get('targetRef'),flows[iter].get('sourceRef'));
                 insert(outgoingMap, flows[iter].get('sourceRef'),flows[iter].get('targetRef'));
             }
         })(iter);
     }
+    // Check nested XOR gate
+    for (source in outgoingMap){
+        if (typeMap[source] == 'XOR' && outgoingMap[source].length > 1) {
+            for (var iter=0; iter<outgoingMap[source].length; iter++) {
+                var target = outgoingMap[source][iter];
+                if (typeMap[target] == 'XOR' || typeMap[target] == 'AND') {
+                    return "Immediate nested exclusive gateways is not supported. From "+source+" To "+target;
+                }
+            }
+        }
+    }
     return null;
 }
+
 
 function getOrgsAndAccess(etree,orgs){
     // Get all participants(lanes)
@@ -246,6 +237,7 @@ function getOrgsAndAccess(etree,orgs){
     return laneMap;
 }
 
+
 function getOrgs(laneToTasks){
     var orgs = [];    
     for (var lane in laneToTasks){
@@ -254,10 +246,6 @@ function getOrgs(laneToTasks){
     return orgs;
 }
 
-// Returns if the task is intermediate
-function intermediate(task){
-    return task.toString().substring(0,12) == "Intermediate";
-}
 
 // Returns the first non-intermediate child task of the task  
 function getChild(task,outgoingMap){
@@ -267,6 +255,7 @@ function getChild(task,outgoingMap){
     return task;
 }
 
+
 // Returns the first non-intermediate parent task of the task  
 function getParent(task,incomingMap){
     while(intermediate(task)){
@@ -274,6 +263,16 @@ function getParent(task,incomingMap){
     }
     return task;
 }
+
+
+/* Pruning intermediate events is disabled in the parser
+   Intermediate events are handled in the chaincode
+
+// Returns if the task is intermediate
+function intermediate(task){
+    return task.toString().substring(0,12) == "Intermediate";
+}
+
 
 // Updates the child or parent to the task after skipping the intermediate one
 function removeIntermediate(map){
@@ -291,6 +290,7 @@ function removeIntermediate(map){
     }
 }
 
+
 // Removes intermediate tasks from the map
 function pruneMap(map){
     for (var task in map){
@@ -298,39 +298,32 @@ function pruneMap(map){
             delete map[task];
     }
 }
+*/
+
 
 function formArray(typeMap,nameMap,laneMap,incomingMap,outgoingMap){
     var array = [];
     for (var ids in typeMap){
-        //console.log(ids + ', ' + typeMap[ids] + ', ' + nameMap[ids] + ', ' + laneMap[ids]);
         array.push(new Task(ids,typeMap[ids],nameMap[ids],laneMap[ids],outgoingMap[ids],incomingMap[ids]));
     }
     return array;
 }
 
+
 function parse(filename,unique_id){
+    logger.init(unique_id);
+
     var etree = getElementTree(filename);
 
     //sequence
     var flows = getFlows(etree);
     
-
-    //removeIntermediate(incomingMap);
-    //removeIntermediate(outgoingMap);
-    
-    //pruneMap(incomingMap);
-    //pruneMap(outgoingMap);
-
     var nameMap = {};
     var typeMap = {};
-    var err = getNameAndTypeMappings(etree,typeMap,nameMap);
-
-
-    console.log(typeMap);
-
-    if (err!=null){
-        return {result: err, num_peers: 0, chaincode: ""};
-    }
+    var functionNames = new HashSet();
+    var err = null;
+    err = getNameAndTypeMappings(etree,typeMap,nameMap,functionNames);
+    if (err) return {result: err, num_peers: orgs.length, chaincode: ""};
 
     //access control
     var orgs = [];
@@ -339,85 +332,43 @@ function parse(filename,unique_id){
     var incomingMap = {};
     var outgoingMap = {};
     
-    err = getDependancies(flows,incomingMap,outgoingMap,typeMap,nameMap,laneMap);
-    if (err!=null){
-        return {result: err, num_peers: 0, chaincode: ""};
-    }
-  
+    err = getDependancies(flows,incomingMap,outgoingMap,typeMap,nameMap,laneMap,functionNames);
+    if (err) return {result: err, num_peers: orgs.length, chaincode: ""};
+
+    /* Pruning intermediate events is disabled in the parser
+       Intermediate events are handled in the chaincode
+    removeIntermediate(incomingMap);
+    removeIntermediate(outgoingMap);
+    pruneMap(incomingMap);
+    pruneMap(outgoingMap);
+    */
+
     taskObjArray = formArray(typeMap,nameMap,laneMap,incomingMap,outgoingMap);
   
-    //console.log(taskObjArray);
-
-/*    for (t in taskObjArray){
-        console.log(taskObjArray[t].ID + ', ' + taskObjArray[t].Type + ', ' + taskObjArray[t].Name + ', ' + taskObjArray[t].Lane);
-        console.log(taskObjArray[t].Children.length + ', ' + taskObjArray[t].Parents.length);
-    }
-
-    for (var t in laneMap){
-        console.log(t + ': ' + laneMap[t]);
-        console.log('----');
-    }
-    console.log(".-.-..-.--.--.-.-..-.--.-.-");
-    // Print all constructs and its dependancies
-    for (var task in incomingMap){
-        var value = incomingMap[task].length;
-        var parent = "";
-        for (var iter=0;iter<value;iter++){
-            parent += incomingMap[task][iter]+", ";
-        }
-        console.log(task + ': ' + parent);
-    }
-    console.log(".-.-..-.--.--.-.-..-.--.-.-");
-    // Print all constructs and its dependants
-    for (var task in outgoingMap){
-        var value = outgoingMap[task].length;
-        var child = "";
-        for (var iter=0;iter<value;iter++){
-            child += outgoingMap[task][iter]+", ";
-        }
-        console.log(task + ': ' + child);
-    }*/
-
-    logger.init(unique_id);
-
-    generateYAML(orgs, unique_id);
+    err = generateYAML(orgs, unique_id);
+    if (err) return {result: err, num_peers: orgs.length, chaincode: ""};
     
-    generateGo(unique_id, taskObjArray);
+    err = generateGo(unique_id, taskObjArray);
+    if (err) return {result: err, num_peers: orgs.length, chaincode: ""};
 
-    file = "../../out/" + unique_id + "/peers.txt";
+    var file = "../../out/" + unique_id + "/peers.txt";
     fs.writeFile(file, "");
     for(var iter=0;iter<orgs.length;iter++){
         fs.appendFile(file, orgs[iter]+"\n", function (err) {
-        if (err) 
-            throw err;
+        if (err) return {result: err, num_peers: orgs.length, chaincode: ""};
         });
     }
     var gofile = "../../out/" + unique_id + "/chaincode/chaincode.go";
     var chaincode;
-    chaincode = fs.readFileSync(gofile).toString('utf-8');
-    console.log(chaincode);
+    fs.readFileSync(gofile, function (err, data){
+        if (err) return {result: err, num_peers: orgs.length, chaincode: ""};
+        chaincode = data.toString('utf-8');
+    });
     return {result: "Success", num_peers: orgs.length, chaincode: chaincode};
-    
 }
 
 module.exports = parse;
 
 // parse("../../bpmn_examples/andgate.bpmn","andgate");
 //parse("../../bpmn_examples/databased.bpmn","databased");
-
-/*
-START
-EVENT
-TASK
-AND
-XOR
-OR
-END
-
-*/
-
-
-// var tasks = [{Type:'START', ID: 'sta123', Name:'Start', Parents:[], Children:['cre123'], Lane:'restaurant.example.com'},
-//          {Type:'task', ID: 'cre123', Name:'Creat Order', Parents:['sta123'], Children:['and123'], Lane:'customer.example.com'},
-//          {Type:'AND', ID: 'and123', Name:'Parellel Gateway', Parents:['cre123','cre666'], Children:[], Lane:'restaurant.example.com'}];
 
