@@ -29,7 +29,7 @@
 var fs = require('fs');
 var et = require('elementtree');
 var HashSet = require('hashset');
-var generateYAML = require('./YAMLGenerator');
+var generateYAML = require('./YamlGenerator');
 var generateGo = require('./ChaincodeGenerator');
 var logger = require('../Logger/logger');
 
