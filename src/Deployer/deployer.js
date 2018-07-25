@@ -151,7 +151,7 @@ function deploy(unique_id,stage,ports){
 	channelProfile = unique_id + "Channel";
 	channelName = "mychannel";
 	deploymentPath = "../../out/" + unique_id + "/";
-	fabricSamplesPath = "/home/dlzhou/fabric-samples/";
+	fabricSamplesPath = "~/fabric-samples/";
 
     var res;
 
