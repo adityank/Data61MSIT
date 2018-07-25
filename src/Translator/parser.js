@@ -407,8 +407,9 @@ function parse(filename,unique_id){
     
 }
 
+module.exports = parse;
 
-parse("../../bpmn_examples/modified_o2c.bpmn","cash2");
+//parse("../../bpmn_examples/modified_o2c.bpmn","cash2");
 
 
 

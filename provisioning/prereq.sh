@@ -23,8 +23,10 @@ sudo chkconfig docker on
 sudo wget https://storage.googleapis.com/golang/go1.9.2.linux-amd64.tar.gz
 sudo tar -zxvf  go1.9.2.linux-amd64.tar.gz -C /usr/local/
 export PATH=$PATH:/usr/local/go/bin
+sudo -- sh -c "echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bash_profile"
 sudo mkdir $HOME/work
 export GOPATH=$HOME/work
+sudo -- sh -c "echo 'export GOPATH=$HOME/work' >> ~/.bash_profile"
 go version
 
 # ------------------------install binaries and samples------------------------
@@ -63,6 +65,7 @@ git checkout Integration_Second_Release
 
 
 # ----------------npm install all packages globally------------------
+
 npm install -g express
 npm install -g shelljs
 npm install -g body-parser
@@ -77,4 +80,5 @@ npm install -g fs
 npm install -g unique-string
 npm install -g import-fresh
 
-
+export NODE_PATH=~/.nvm/versions/node/v8.9.4/lib/node_modules
+sudo -- sh -c "echo 'export NODE_PATH=~/.nvm/versions/node/v8.9.4/lib/node_modules' >> ~/.bash_profile"
