@@ -75,17 +75,26 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     // POST /api/v1/translate
     // req paramdter is the request object
     // res parameter is the response object
+    // Note: some the parameters is deprecated in Hyperledger
     /*
     POST format
     {
-        //  The BPMN    model   in  XML
+        // The BPMN model in XML
         "xmlModel":
-                "<?xml  version=\"1.0\" encoding=\"UTF-8\"?><bpmn:definitions>...</bpmn:definitions>",
-        //  The BPMN    process name
-        "processName":  "IncidentManagement",
-        //  Whether or  not to  use Petri-net   method  (BPMN2Solidity  translator  option)
-        "usePetriMethod":   true
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?><bpmn:definitions>...
+        </bpmn:definitions>",
+        // The BPMN process name
+        "processName": "IncidentManagement",
+        // Whether or not to use Petri-net method (BPMN2Solidity translator option)
+        "usePetriMethod": true
     }
+    Response format
+    {
+        "errors": ["<ARRAY_OF_TRANSLATION_ERRORS>"] | null,
+        // Solidity smart contract output
+        "contractCode":
+        "pragma solidity ^0.4.18; contract ProcessFactory {...}" | null
+        }
     */
     router.post("/api/v1/translate",function(req,res){
         console.log("Translating the BPMN file" );
@@ -121,22 +130,8 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 console.log("Adding new entries");
             });
 
-
-            query = "SELECT * FROM bpmn";
-            connection.query(query, function (err, result) {
-                if (err) throw err;
-                console.log("Query all networks");
-                // send response
-                res.render('index',{
-                                unique_id: unique_id,
-                                all_networks: result,
-                                translate_results: translate_results.result,
-                                compile_results: "N/A",
-                                deploy_results: "N/A",
-                                invoke_results: "N/A",
-                                translated_chaincode: translate_results.chaincode
-                });
-            });
+        res.errors = null;
+            
         });
         //res.end(JSON.stringify(response));
     });
