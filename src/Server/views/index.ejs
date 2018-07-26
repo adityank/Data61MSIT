@@ -18,7 +18,11 @@
       <b>Deploy</b> 
       <form action = "/api/v1/deploy" method = "POST">
          unique_id: <input type = "text" name = "unique_id"><br>
-         chaincode: <input type = "text" name = "chaincode"><br>
+         <input type = "submit" value = "Submit">
+      </form>
+      <b>Bring Down</b>
+      <form action = "/api/v1/bringdown" method = "POST">
+         unique_id: <input type = "text" name = "unique_id"><br>
          <input type = "submit" value = "Submit">
       </form>
       <b>Invoke</b>
