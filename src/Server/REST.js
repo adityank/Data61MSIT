@@ -129,31 +129,87 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 if (err) throw err;
                 console.log("Adding new entries");
             });
+            
+            // compose response object
+            var response = {
+                "errors":translate_results.result,
+                "contractCode":translate_results.chaincode
+            };
 
-        res.errors = null;
+            res.json(response);
             
         });
         //res.end(JSON.stringify(response));
     });
 
+    //POST /api/v1/account/fetch
+    // Note: this fucntion is deprecated in Hyperledger
+    /*
+    Response format
+    {
+        "error": "If error occurred" | null, 
+        "result": [
+        "0x11D6fd252049f869349CAdf4E2df3E17c8539Bf0", "0x180d34b876DAa90057B2Ec345E82E2B1E9a4A082", ...
+        ] 
+    }
+    */
+    router.post("/api/v1/account/fetch",function(req,res){
+        var response = {
+            "errors":"This function is not supported.",
+            "result":"This function is not supported."
+        };
+        res.json(response);
+        //res.end(JSON.stringify(response));
+    });
+
+
+
     //POST /api/v1/compile
     // req paramdter is the request object
     // res parameter is the response object
     /*
-    POST format
+    Request format
     {
-        // The only unique_id
-        "unique_id": 
-        // The chaincode
-        "chaincode":     
+        "contractCode": "pragma solidity ^0.4.18; contract ProcessFactory {...}", 
+        // Whether or not to enable compiler optimization (solc compiler option) 
+        "optimizationEnabled": true
+    }
+    Response format
+    {
+    "errors": ["Compilation errors or warnings"] | null, "contracts": {
+    // The smart contract name. The Solidity code provided may define multiple smart contracts.
+    "ProcessFactory": {
+    // The smart contract Application Binary Interface (ABI) "interface": [
+    {
+        "type": "function",
+        "name": "createInstance",
+        "constant": false,
+        "payable": false,
+        "inputs": [{ "name": "_participants", "type": "address[]" }], "outputs": [{ "name": "", "type": "uint256" }]
+        }
+        ... ],
+        // Compiled EVM bytecode
+        "bytecode": "0xdeadbeef",
+        // Contract EVM bytecode at runtime (i.e. constructor excluded) "runtimeBytecode": "0xbeef",
+        // Execution cost estimate for contract deployment and contract functions "gasEstimates": {
+                "creation": 100000,
+                "external": {
+        "createInstance(address[])": 50000
+        ... },
+        "internal": { "setPreconditions(uint256,uint256)": 20314 ...
+        } }
+            },
+            "ProcessMonitor": {
+        ... }
+        } 
     }
     */
-    router.post("/api/v1/compile",function(req,res){
+    router.post("/api/v1/contract/compile",function(req,res){
         console.log("Deploying Smart Contract" );
         
         receive = {
           unique_id:req.body.unique_id,
-          chaincode:req.body.chaincode
+          chaincode:req.body.contractCode
         };
         console.log(receive);
         filename = "../../out/" + receive.unique_id + "/chaincode/chaincode.go";
@@ -167,43 +223,43 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
             var compile = importFresh("../Compiler/compiler.js");
             var compile_status = compile(filename);
 
-            query = "SELECT * FROM bpmn";
-            connection.query(query, function (err, result) {
-                if (err) throw err;
-                console.log("Query all networks");
-                // send response
-                res.render('index',{
-                                unique_id: receive.unique_id,
-                                all_networks: result,
-                                translate_results: "N/A",
-                                compile_results: compile_status,
-                                deploy_results: "N/A",
-                                invoke_results: "N/A",
-                                translated_chaincode: "N/A"
-                });
-            });
+            var response = {
+                "errors":compile_status
+            };
+
+            res.json(response);
         });
         //res.end(JSON.stringify(response));
     });
+
+
 
     //POST /api/v1/deploy
     // req paramdter is the request object
     // res parameter is the response object
     /*
-    POST format
+    Request format
     {
-        // The only unique_id
-        "unique_id": 
-        // The chaincode
-        "chaincode":     
+        // Ethereum account to use for sending the contract deployment transaction. 
+        "sender": "0x11D6fd252049f869349CAdf4E2df3E17c8539Bf0",
+        // Compiled EVM bytecode of smart contract
+        "bytecode": "0xdeadbeef",
+        // Number of confirmations to wait before the transaction is consideredcommitted. 
+        "numConfirmations": 0
+    }
+    Response format
+    {
+        "error": "If error occurred" | null,
+        // UUID generated for deployment. Will be used to watch deployment progress. 
+        "result": "<DEPLOYMENT_ID_FOR_WATCHING_DEPLOYMENT_PROGRESS>"
     }
     */
     router.post("/api/v1/deploy",function(req,res){
         console.log("Deploying Smart Contract" );
         
         receive = {
-          unique_id:req.body.unique_id,
-          chaincode:req.body.chaincode
+          unique_id:req.body.sender,
+          chaincode:req.body.bytecode
         };
         console.log(receive);
  
@@ -235,43 +291,54 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 console.log("Updating deployment status");
             });
 
-            query = "SELECT * FROM bpmn";
-            connection.query(query, function (err, result) {
-                if (err) throw err;
-                console.log("Query all networks");
-                // send response
-                res.render('index',{
-                                unique_id: receive.unique_id,
-                                all_networks: result,
-                                translate_results: "N/A",
-                                compile_results: "N/A",
-                                deploy_results: deploy_results.message,
-                                invoke_results: "N/A",
-                                translated_chaincode: "N/A"
+            var response = {
+                "result": deploy_results.result,
+                "error": deploy_results.message
+            };
 
-                });
-            });
+            res.json(response);
         });
         
 
         //res.end(JSON.stringify(response));
     });
 
-    //POST /api/v1/invoke
+    //POST /api/v1/contract/function/call
     // req paramdter is the request object
     // res parameter is the response object
     /*
-    POST format
+    Request body: 
     {
-        // The only unique_id
-        "unique_id": 
-        // The chaincode
-        "function_name":
-        // The parameters, a list of parameters
-        "parameters"    
+        "contractAddress": "0xe71cEE28a1AE3c9501d990C192D2D364016cEb13", 
+        "contractAbi": [
+        {
+        "type": "function",
+        "name": "isProcessInstanceCompleted",
+        "constant": true,
+        "payable": false,
+        "inputs": [{ "name": "instanceID", "type": "uint256" }], "outputs": [{ "name": "", "type": "bool" }]
+        } 
+        ],
+        "fnName": "isProcessInstanceCompleted",
+        // Smart contract function parameters.
+        // Must specify in the same order as the 'inputs' array in the contract ABI. 
+        "fnParams": [
+        {
+            "type": "uint256", "value": "<PARAM_VALUE>"
+        } 
+        ],
+        "txParams": {
+        // Ethereum account to use for calling the function "from": "<SENDER_ETHEREUM_ACCOUNT>"
+        },
+        "defaultBlock": "<BLOCK_NUMBER | latest | pending>" 
+    }
+    Response body:
+    {
+        "error": "If error occurred" | null, 
+        "result": "<FUNCTION_LOCAL_CALL_RESULT>"
     }
     */
-    router.post("/api/v1/invoke",function(req,res){
+    router.post("/api/v1/contract/function/call",function(req,res){
         console.log("Invoking Smart Contract: function " + req.body.function_name);
         
         receive = {
@@ -293,16 +360,14 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         var invoke_results = invoke(receive.unique_id, receive.peer, receive.function_name, parameters);     
 
         // send response
-        res.render('index',{
-                                unique_id: receive.unique_id,
-                                all_networks: "N/A",
-                            translate_results: "N/A",
-                            compile_results: "N/A",
-                            deploy_results: "N/A",
-                            invoke_results: invoke_results,
-                            translated_chaincode: "N/A"
-            });
-        });
+        var response = {
+            "error":null,
+            "result":invoke_results
+        };
+        
+        res.json(response);
+    });
+
 };
 // Makes this module available
 module.exports = REST_ROUTER;
