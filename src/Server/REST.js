@@ -226,7 +226,69 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
             var deploy = importFresh("../Deployer/deployer.js");
             // parameters: unique_id and status
             console.log('status:'+status);
-            deploy_results = deploy(receive.unique_id,status,ports);
+            deploy_results = deploy.deploy(receive.unique_id,status,ports);
+            query = "UPDATE bpmn SET status=? WHERE unique_id=?";
+            table = [deploy_results.result, receive.unique_id];
+            query = mysql.format(query,table);
+            connection.query(query, function (err, result) {
+                if (err) throw err;
+                console.log("Updating deployment status");
+            });
+
+            query = "SELECT * FROM bpmn";
+            connection.query(query, function (err, result) {
+                if (err) throw err;
+                console.log("Query all networks");
+                // send response
+                res.render('index',{
+                                unique_id: receive.unique_id,
+                                all_networks: result,
+                                translate_results: "N/A",
+                                compile_results: "N/A",
+                                deploy_results: deploy_results.message,
+                                invoke_results: "N/A",
+                                translated_chaincode: "N/A"
+
+                });
+            });
+        });
+        
+
+        //res.end(JSON.stringify(response));
+    });
+
+    //POST /api/v1/bringdown
+    // req paramdter is the request object
+    // res parameter is the response object
+    /*
+    POST format
+    {
+        // The only unique_id
+        "unique_id": 
+    }
+    */
+    router.post("/api/v1/bringdown",function(req,res){
+        console.log("Bringing down containers" );
+        
+        receive = {
+          unique_id:req.body.unique_id
+        };
+        console.log(receive);
+ 
+
+        query = "SELECT * FROM bpmn WHERE unique_id=?";
+        table = [receive.unique_id];
+        query = mysql.format(query,table);
+        connection.query(query, function (err, result) {
+            if (err) throw err;
+            console.log("Querying new status");
+            console.log(result[0].status);
+            var status = result[0].status;
+
+            var deploy = importFresh("../Deployer/deployer.js");
+            // parameters: unique_id and status
+            console.log('status:'+status);
+            deploy_results = deploy.bringDown(receive.unique_id,status);
             query = "UPDATE bpmn SET status=? WHERE unique_id=?";
             table = [deploy_results.result, receive.unique_id];
             query = mysql.format(query,table);
