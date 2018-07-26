@@ -1,8 +1,4 @@
-#!bin/bash
-
-#-------------------delete existing hyperledger fabric material------------
-
-
+#!/usr/bin/bash
 
 sudo yum -y update
 #---------------------install wget, git, curl----------------
@@ -11,26 +7,34 @@ sudo yum -y install wget git curl
 # --------------------------install docker & docker compose-------------------------
 sudo yum install docker -y -qq
 sudo usermod -a -G docker ec2-user
-sudo curl -L https://github.com/docker/compose/releases/download/1.9.0/docker-compose-`uname -s`-`uname -m` | sudo tee /usr/local/bin/docker-compose > /dev/null
+curl -L https://github.com/docker/compose/releases/download/1.9.0/docker-compose-`uname -s`-`uname -m` | sudo tee /usr/local/bin/docker-compose > /dev/null
 sudo chmod +x /usr/local/bin/docker-compose
-sudo service docker start
+service docker start
 sudo chkconfig docker on
 
 # -------------------------install Python (if not python 2.7 by default)-----------
-#sudo yum install python -y -qq (already installed on ami)
+#yum install python -y -qq (already installed on ami)
+sudo yum -y install gcc
 
 # ---------------------install and setup go 1.9 (PATH & stuff)---------------------
 sudo wget https://storage.googleapis.com/golang/go1.9.2.linux-amd64.tar.gz
 sudo tar -zxvf  go1.9.2.linux-amd64.tar.gz -C /usr/local/
 export PATH=$PATH:/usr/local/go/bin
-sudo -- sh -c "echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bash_profile"
-sudo mkdir $HOME/work
+echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bash_profile
+mkdir $HOME/work
 export GOPATH=$HOME/work
-sudo -- sh -c "echo 'export GOPATH=$HOME/work' >> ~/.bash_profile"
+echo 'export GOPATH=$HOME/work' >> ~/.bash_profile
+
 go version
 
 # ------------------------install binaries and samples------------------------
-curl -sSL http://bit.ly/2ysbOFE | sudo bash -s 1.2.0
+curl -sSL http://bit.ly/2ysbOFE | sudo bash -s 1.1.0 1.1.0 0.4.6
+
+# -------------------------install github fabric libraries---------------------------
+go get -u github.com/hyperledger/fabric/core/chaincode/shim
+cd ~/work/src/github.com/hyperledger/fabric/
+git checkout v1.1.0
+go build
 
 # -----------------------install nodejs & npm-------------------
 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.6/install.sh | bash
@@ -39,30 +43,21 @@ nvm install 8.9.4
 npm install npm@5.6.0 -g
 
 # -----------------------setup mysql database----------------------------
-sudo wget http://dev.mysql.com/get/mysql57-community-release-el7-8.noarch.rpm
+wget http://dev.mysql.com/get/mysql57-community-release-el7-8.noarch.rpm
 sudo yum -y localinstall mysql57-community-release-el7-8.noarch.rpm
 sudo yum -y install mysql-community-server
-sudo service mysqld status
 sudo service mysqld start
 
-sudo grep 'temporary password' /var/log/mysqld.log
-mysql --user=root --password
-
-ALTER USER 'root'@'localhost' IDENTIFIED BY 'Unchained#1';
-
-CREATE DATABASE bpmn;
-
+mysql --user=root --password="$(sudo grep 'temporary password' /var/log/mysqld.log | awk '{print substr($0, 92);}')"
+echo "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Unchained#1';" | mysql --user=root --password="$(sudo grep 'temporary password' /var/log/mysqld.log | awk '{print substr($0, 92);}')" ""  --connect-expired-password
+echo "CREATE DATABASE bpmn;" | mysql --user=root --password="Unchained#1"
 
 # ----------------git setup----------------
-ssh-keygen -t rsa -b 4096 -C ""
-cat ~/.ssh/id_rsa.pub
-git clone git@github.com:adityank/Data61MSIT.git
-git checkout Integration_Second_Release
-
-
-# -----------------structurize-----------------
-
-
+#ssh-keygen -t rsa -b 4096 -C ""
+#cat ~/.ssh/id_rsa.pub
+#git clone git@github.com:adityank/Data61MSIT.git
+#cd Data61MSIT
+#git checkout Integration_Second_Release
 
 # ----------------npm install all packages globally------------------
 
@@ -79,6 +74,8 @@ npm install -g elementtree
 npm install -g fs
 npm install -g unique-string
 npm install -g import-fresh
+npm install -g strip-ansi
+
 
 export NODE_PATH=~/.nvm/versions/node/v8.9.4/lib/node_modules
-sudo -- sh -c "echo 'export NODE_PATH=~/.nvm/versions/node/v8.9.4/lib/node_modules' >> ~/.bash_profile"
+echo 'export NODE_PATH=~/.nvm/versions/node/v8.9.4/lib/node_modules' >> ~/.bash_profile
