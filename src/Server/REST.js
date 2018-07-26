@@ -31,26 +31,6 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     router.get("/",function(req,res){
         res.json({"Message":"BPMN Translation Server Version 1.0"});
     });
-
-
-    // Index page used for testing
-    router.get("/index",function(req,res){
-        query = "SELECT * FROM bpmn";
-        connection.query(query, function (err, result) {
-            if (err) throw err;
-            console.log("Query all networks");
-            res.render('index',{
-                                unique_id: "N/A",
-                                all_networks: result,
-                                translate_results: "N/A",
-                                compile_results: "N/A",
-                                deploy_results: "N/A",
-                                invoke_results: "N/A",
-                                translated_chaincode: "N/A"
-            });
-        });        
-        //res.sendFile( __dirname + "/public/index.html" );
-    });
     
     /*
     // list all created or deployed networks
@@ -126,7 +106,9 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
 
             query = mysql.format(query,table);
             connection.query(query, function (err, result) {
-                if (err) throw err;
+                if (err) {
+                    console.log(err);
+                }
                 console.log("Adding new entries");
             });
             
@@ -268,7 +250,9 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         table = [receive.unique_id];
         query = mysql.format(query,table);
         connection.query(query, function (err, result) {
-            if (err) throw err;
+            if (err) {
+                console.log(err);
+            }
             console.log("Querying new status");
             console.log(result[0].status);
             var status = result[0].status;
@@ -287,13 +271,17 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
             table = [deploy_results.result, receive.unique_id];
             query = mysql.format(query,table);
             connection.query(query, function (err, result) {
-                if (err) throw err;
+                if (err) {
+                    console.log(err);
+                }
                 console.log("Updating deployment status");
             });
 
             query = "SELECT * FROM bpmn";
             connection.query(query, function (err, result) {
-                if (err) throw err;
+                if (err) {
+                    console.log(err);
+                } 
                 console.log("Query all networks");
                 // send response
                 res.render('index',{
@@ -336,7 +324,9 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         table = [receive.unique_id];
         query = mysql.format(query,table);
         connection.query(query, function (err, result) {
-            if (err) throw err;
+            if (err) {
+                console.log(err);
+            }
             console.log("Querying new status");
             console.log(result[0].status);
             var status = result[0].status;
@@ -349,7 +339,9 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
             table = [deploy_results.result, receive.unique_id];
             query = mysql.format(query,table);
             connection.query(query, function (err, result) {
-                if (err) throw err;
+                if (err) {
+                    console.log(err);
+                }
                 console.log("Updating deployment status");
             });
 
