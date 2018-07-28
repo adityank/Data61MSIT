@@ -26,14 +26,14 @@ function REST_ROUTER(router,connection) {
 REST_ROUTER.prototype.handleRoutes= function(router,connection) {
 
     // GET with no specifier - returns system version information
-    // req paramdter is the request object
+    // req parameter is the request object
     // res parameter is the response object
     router.get("/",function(req,res){
         return res.json({"Message":"BPMN Translation Server Version 1.0"});
     });
     
     // POST /api/v1/translate
-    // req paramdter is the request object
+    // req parameter is the request object
     // res parameter is the response object
     // Note: some the parameters is deprecated in Hyperledger
     /*
@@ -202,7 +202,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     });
 
     //POST /api/v1/compile
-    // req paramdter is the request object
+    // req parameter is the request object
     // res parameter is the response object
     /*
     Post format
@@ -281,7 +281,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
 
 
     //POST /api/v1/deploy
-    // req paramdter is the request object
+    // req parameter is the request object
     // res parameter is the response object
     /*
     Request format
@@ -374,7 +374,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     });
 
     //POST /api/v1/bringdown
-    // req paramdter is the request object
+    // req parameter is the request object
     // res parameter is the response object
     /*
     Request format
@@ -451,7 +451,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     });
 
     //POST /api/v1/contract/function/call
-    // req paramdter is the request object
+    // req parameter is the request object
     // res parameter is the response object
     /*
     Request body: 
@@ -486,6 +486,85 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     }
     */
     router.post("/api/v1/contract/function/call",function(req,res){
+        console.log("Invoking Smart Contract: function " + req.body.function_name);
+        
+        receive = {
+          unique_id:req.body.contractAddress,
+          function_name:req.body.fnName,
+          parameters:req.body.fnParams,
+          peer:req.body.txParams.from
+        };
+
+        console.log(receive);
+        if (!receive.unique_id || !receive.function_name || !receive.peer) {
+            response = {
+                "error":"contractAddress, fnName, and txParams.from must be supplied.",
+                "result":null
+            };
+            return res.json(response);
+        }
+
+        var parameters = [receive.function_name];
+        for (var i = 0; i < receive.parameters.length; i++) {
+            if (receive.parameters[i].value) {
+                parameters.push(receive.parameters[i].value);
+            }
+        }
+        console.log(parameters);
+        var invoke = importFresh("../Invoker/invoker.js");
+        var invoke_results;
+        try {invoke_results = invoke(receive.unique_id, receive.peer, "_localCall", parameters);}
+        catch (err) {
+            response = {
+                "error":err.toString(),
+                "result":invoke_results
+            };
+            return res.json(response);
+        }
+
+        response = {
+            "error":null,
+            "result":invoke_results
+        };
+        return res.json(response);
+    });
+
+    //POST /api/v1/contract/function/sendTx
+    // req parameter is the request object
+    // res parameter is the response object
+    /*
+    Request body: 
+    {
+        "contractAddress": "0xe71cEE28a1AE3c9501d990C192D2D364016cEb13", 
+        "contractAbi": [
+        {
+        "type": "function",
+        "name": "isProcessInstanceCompleted",
+        "constant": true,
+        "payable": false,
+        "inputs": [{ "name": "instanceID", "type": "uint256" }], "outputs": [{ "name": "", "type": "bool" }]
+        } 
+        ],
+        "fnName": "isProcessInstanceCompleted",
+        // Smart contract function parameters.
+        // Must specify in the same order as the 'inputs' array in the contract ABI. 
+        "fnParams": [
+        {
+            "type": "uint256", "value": "<PARAM_VALUE>"
+        } 
+        ],
+        "txParams": {
+        // Ethereum account to use for calling the function "from": "<SENDER_ETHEREUM_ACCOUNT>"
+        },
+        "defaultBlock": "<BLOCK_NUMBER | latest | pending>" 
+    }
+    Response body:
+    {
+        "error": "If error occurred" | null, 
+        "result": "<FUNCTION_LOCAL_CALL_RESULT>"
+    }
+    */
+    router.post("/api/v1/contract/function/sendTx",function(req,res){
         console.log("Invoking Smart Contract: function " + req.body.function_name);
         
         receive = {
