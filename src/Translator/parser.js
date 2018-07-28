@@ -323,7 +323,7 @@ function parse(filename,unique_id){
     var functionNames = new HashSet();
     var err = null;
     err = getNameAndTypeMappings(etree,typeMap,nameMap,functionNames);
-    if (err) return {result: err, num_peers: orgs.length, chaincode: ""};
+    if (err) return {errors: err, num_peers: orgs.length, chaincode: ""};
 
     //access control
     var orgs = [];
@@ -333,7 +333,7 @@ function parse(filename,unique_id){
     var outgoingMap = {};
     
     err = getDependancies(flows,incomingMap,outgoingMap,typeMap,nameMap,laneMap,functionNames);
-    if (err) return {result: err, num_peers: orgs.length, chaincode: ""};
+    if (err) return {errors: err, num_peers: orgs.length, chaincode: ""};
 
     /* Pruning intermediate events is disabled in the parser
        Intermediate events are handled in the chaincode
@@ -346,25 +346,25 @@ function parse(filename,unique_id){
     taskObjArray = formArray(typeMap,nameMap,laneMap,incomingMap,outgoingMap);
   
     err = generateYAML(orgs, unique_id);
-    if (err) return {result: err, num_peers: orgs.length, chaincode: ""};
+    if (err) return {errors: err, num_peers: orgs.length, chaincode: ""};
     
     err = generateGo(unique_id, taskObjArray);
-    if (err) return {result: err, num_peers: orgs.length, chaincode: ""};
+    if (err) return {errors: err, num_peers: orgs.length, chaincode: ""};
 
     var file = "../../out/" + unique_id + "/peers.txt";
     fs.writeFile(file, "");
     for(var iter=0;iter<orgs.length;iter++){
         fs.appendFile(file, orgs[iter]+"\n", function (err) {
-        if (err) return {result: err, num_peers: orgs.length, chaincode: ""};
+        if (err) return {errors: err, num_peers: orgs.length, chaincode: ""};
         });
     }
     var gofile = "../../out/" + unique_id + "/chaincode/chaincode.go";
     var chaincode;
     fs.readFileSync(gofile, function (err, data){
-        if (err) return {result: err, num_peers: orgs.length, chaincode: ""};
+        if (err) return {errors: err, num_peers: orgs.length, chaincode: ""};
         chaincode = data.toString('utf-8');
     });
-    return {result: "Success", num_peers: orgs.length, chaincode: chaincode};
+    return {errors: null, num_peers: orgs.length, chaincode: chaincode};
 }
 
 module.exports = parse;

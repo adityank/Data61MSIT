@@ -32,26 +32,6 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         res.json({"Message":"BPMN Translation Server Version 1.0"});
     });
     
-    /*
-    // list all created or deployed networks
-    router.get("/api/v1/list",function(req,res){
-        var query = "SELECT * FROM bpmn";
-        connection.query(query, function (err, result) {
-            
-            console.log("Query all networks");
-        });
-        res.render('index',{
-                            all_networks: "N/A",
-                            translate_results: "N/A",
-                            compile_results: "N/A",
-                            deploy_results: "N/A",
-                            invoke_results: "N/A"
-        });
-    });
-    */
-
-
-    
     // POST /api/v1/translate
     // req paramdter is the request object
     // res parameter is the response object
@@ -84,22 +64,35 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         };
         console.log(receive);
 
-
         var unique_id = sh.unique(uniqueString());
         console.log("unique_id created: " + unique_id); 
         filename = "tmp/" + unique_id + ".bpmn";
 
-
         fs.writeFile(filename, receive.xmlModel, function (err) {
+            var response;
             if (err) {
                 console.log(err);
+                response = {
+                    "errors":err,
+                    "contractCode":null,
+                    "uniqueId":null
+                };
+                return res.json(response);
             }
-
             var parse = importFresh("../Translator/parser.js");
             var translate_results;
             translate_results = parse(filename,unique_id);
-            console.log(translate_results.result);
+            console.log(translate_results.errors);
             console.log(translate_results.num_peers);
+
+            if (translate_results.errors) {
+                response = {
+                    "errors":translate_results.errors,
+                    "contractCode":null,
+                    "uniqueId":null
+                };
+                return res.json(response);
+            }
 
             query = "INSERT INTO bpmn (unique_id, status, num_peers) VALUES (?,?,?)";
             table = [unique_id,0,translate_results.num_peers];
@@ -108,18 +101,22 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
             connection.query(query, function (err, result) {
                 if (err) {
                     console.log(err);
+                    response = {
+                        "errors":err,
+                        "contractCode":null,
+                        "uniqueId":null
+                    };
+                    return res.json(response);
                 }
                 console.log("Adding new entries");
+                // compose response object
+                response = {
+                    "errors":translate_results.result,
+                    "contractCode":translate_results.chaincode,
+                    "uniqueId":unique_id
+                };
+                return res.json(response);
             });
-            
-            // compose response object
-            var response = {
-                "errors":translate_results.result,
-                "contractCode":translate_results.chaincode
-            };
-
-            res.json(response);
-            
         });
         //res.end(JSON.stringify(response));
     });
@@ -136,12 +133,47 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     }
     */
     router.post("/api/v1/account/fetch",function(req,res){
-        var response = {
-            "errors":"This function is not supported.",
-            "result":"This function is not supported."
+        receive = {
+          unique_id:req.body.uniqueId,
         };
-        res.json(response);
-        //res.end(JSON.stringify(response));
+        console.log(receive);
+        var response;
+
+        query = "SELECT * FROM bpmn where unique_id='"+receive.unique_id+"'";
+        connection.query(query, function (err, result) {
+            if (err) {
+                response = {
+                    "errors":err.toString(),
+                    "result":null
+                };
+                return res.json(response);
+            }
+
+            if (result.length==0) {
+                response = {
+                    "errors":"Unique Id "+receive.unique_id+" is not found.",
+                    "result":null
+                };
+                return res.json(response);
+            }
+            
+            var file = "../../out/" + receive.unique_id + "/peers.txt";
+            fs.readFile(file, 'utf-8', function(err, result){
+                if (err){
+                    response = {
+                        "errors":err.toString(),
+                        "result":null
+                    };
+                    return res.json(response);
+                }
+                var peers = result.split('\n').filter(Boolean);
+                response = {
+                    "errors":null,
+                    "result":peers
+                };
+                return res.json(response);
+            });
+        });
     });
 
 
