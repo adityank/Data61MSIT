@@ -19,24 +19,22 @@ var fs = require('fs');
 var shell = require('shelljs');
 var logger = require('../Logger/logger');
 
-function compile(filename) {
+function compile(unique_id) {
+    logger.init(unique_id);
     console.log('Start compiling...')
-    // Careful with GOPATH, set back?
-    // Hyperledger Fabric library location TBD
-    // Output folder TBD
-    // export GOPATH=$(cd ../../;pwd) & 
-    obj = shell.exec('go build --tags nopkcs11 '+filename);
+
+    obj = shell.exec('cd ../../out/'+unique_id+'/chaincode/ && go build --tags nopkcs11 chaincode.go');
     if(obj.code !== 0) {
         console.log('Compilation failed.');
         console.log(obj.stdout);
         logger.log('compiler','Compilation failed!');
         logger.log('compiler', 'stdout:\n'+obj.stdout);
         logger.log('compiler',obj.stderr);
-        return obj.stderr;           
+        return [obj.stderr];           
     }
 
     console.log('Successfully compiled!');
-    return "Success";
+    return null;
 }
 
 module.exports = compile;

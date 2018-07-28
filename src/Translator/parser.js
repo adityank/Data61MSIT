@@ -323,7 +323,7 @@ function parse(filename,unique_id){
     var functionNames = new HashSet();
     var err = null;
     err = getNameAndTypeMappings(etree,typeMap,nameMap,functionNames);
-    if (err) return {errors: err, num_peers: orgs.length, chaincode: ""};
+    if (err) return {errors: err, num_peers: orgs.length, chaincode: null};
 
     //access control
     var orgs = [];
@@ -333,7 +333,7 @@ function parse(filename,unique_id){
     var outgoingMap = {};
     
     err = getDependancies(flows,incomingMap,outgoingMap,typeMap,nameMap,laneMap,functionNames);
-    if (err) return {errors: err, num_peers: orgs.length, chaincode: ""};
+    if (err) return {errors: err, num_peers: orgs.length, chaincode: null};
 
     /* Pruning intermediate events is disabled in the parser
        Intermediate events are handled in the chaincode
@@ -345,30 +345,24 @@ function parse(filename,unique_id){
 
     taskObjArray = formArray(typeMap,nameMap,laneMap,incomingMap,outgoingMap);
   
-    err = generateYAML(orgs, unique_id);
-    if (err) return {errors: err, num_peers: orgs.length, chaincode: ""};
+    try {generateYAML(orgs, unique_id);}
+    catch (err) {return {errors: err, num_peers: orgs.length, chaincode: null};}
     
-    err = generateGo(unique_id, taskObjArray);
-    if (err) return {errors: err, num_peers: orgs.length, chaincode: ""};
+    try {generateGo(unique_id, taskObjArray);}
+    catch (err) {return {errors: err, num_peers: orgs.length, chaincode: null};}
 
     var file = "../../out/" + unique_id + "/peers.txt";
-    fs.writeFile(file, "");
+    fs.writeFileSync(file, "");
     for(var iter=0;iter<orgs.length;iter++){
-        fs.appendFile(file, orgs[iter]+"\n", function (err) {
-        if (err) return {errors: err, num_peers: orgs.length, chaincode: ""};
-        });
+        fs.appendFileSync(file, orgs[iter]+"\n");
     }
     var gofile = "../../out/" + unique_id + "/chaincode/chaincode.go";
-    var chaincode;
-    fs.readFileSync(gofile, function (err, data){
-        if (err) return {errors: err, num_peers: orgs.length, chaincode: ""};
-        chaincode = data.toString('utf-8');
-    });
+    var chaincode = fs.readFileSync(gofile,'utf-8');
     return {errors: null, num_peers: orgs.length, chaincode: chaincode};
 }
 
 module.exports = parse;
 
-// parse("../../bpmn_examples/andgate.bpmn","andgate");
+//parse("../../bpmn_examples/andgate.bpmn","andgate");
 //parse("../../bpmn_examples/databased.bpmn","databased");
 

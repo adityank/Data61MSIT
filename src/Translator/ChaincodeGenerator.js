@@ -37,14 +37,15 @@ function generateGo(unique_id, tasks) {
     logger.log('translator','---begin generating Go chaincode---');
     
     checkPath(unique_id)
-    var outpath = '../../out/'+unique_id+'/chaincode/';
-    var writer = fs.createWriteStream(outpath+'chaincode.go');
+    var outpath = '../../out/'+unique_id+'/chaincode/chaincode.go';
+    fs.writeFileSync(outpath, "");
+
     var domain = unique_id + '.com';
 
     var header_template = fs.readFileSync('../../template/chaincode_header.go', 'utf8');
     header_template.split(/\r?\n/).forEach(function(line){
-            writer.write(eval('`'+line+'\n`'));
-        })
+            fs.appendFileSync(outpath,eval('`'+line+'\n`'));
+        });
 
     var event_setup_template = fs.readFileSync('../../template/chaincode_event_setup.go', 'utf8');
     for (var i=0; i<tasks.length; i++) {
@@ -70,25 +71,18 @@ function generateGo(unique_id, tasks) {
             function_control = 'Functions[event.Name]=event.ID';
         }
         event_setup_template.split(/\r?\n/).forEach(function(line){
-            writer.write(eval('`'+line+'\n`'));
+            fs.appendFileSync(outpath,eval('`'+line+'\n`'));
         });
     }
 
     var body_template = fs.readFileSync('../../template/chaincode_body.go', 'utf8');
     body_template.split(/\r?\n/).forEach(function(line){
-            writer.write(eval('`'+line+'\n`'));
-        })
+            fs.appendFileSync(outpath,eval('`'+line+'\n`'));
+        });
 
-    writer.end();
     console.log('---end generating Go chaincode---');
     logger.log('translator','---end generating Go chaincode---');
     
 }
 
 module.exports = generateGo;
-
-// var tasks = [{Type:'START', ID: 'sta123', Name:'Start', Parents:[], Children:['cre123'], Lane:'restaurant.example.com'},
-//          {Type:'task', ID: 'cre123', Name:'Creat Order', Parents:['sta123'], Children:['and123'], Lane:'customer.example.com'},
-//          {Type:'AND', ID: 'and123', Name:'Parellel Gateway', Parents:['cre123','cre666'], Children:[], Lane:'restaurant.example.com'}];
-// var unique_id = '1';
-// generateGo(unique_id, tasks);

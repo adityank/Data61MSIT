@@ -29,7 +29,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     // req paramdter is the request object
     // res parameter is the response object
     router.get("/",function(req,res){
-        res.json({"Message":"BPMN Translation Server Version 1.0"});
+        return res.json({"Message":"BPMN Translation Server Version 1.0"});
     });
     
     // POST /api/v1/translate
@@ -42,18 +42,14 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         // The BPMN model in XML
         "xmlModel":
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?><bpmn:definitions>...
-        </bpmn:definitions>",
-        // The BPMN process name
-        "processName": "IncidentManagement",
-        // Whether or not to use Petri-net method (BPMN2Solidity translator option)
-        "usePetriMethod": true
+        </bpmn:definitions>"
     }
     Response format
     {
         "errors": ["<ARRAY_OF_TRANSLATION_ERRORS>"] | null,
-        // Solidity smart contract output
+        // Go chaincode smart contract output
         "contractCode":
-        "pragma solidity ^0.4.18; contract ProcessFactory {...}" | null
+        "type SmartContract struct {}..." | null
         }
     */
     router.post("/api/v1/translate",function(req,res){
@@ -63,6 +59,14 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
           xmlModel:req.body.xmlModel,
         };
         console.log(receive);
+        if (!receive.xmlModel) {
+            response = {
+                "errors":["xmlModel must be supplied."],
+                "contractCode":null,
+                "unique_id":null
+            };
+            return res.json(response);
+        }
 
         var unique_id = sh.unique(uniqueString());
         console.log("unique_id created: " + unique_id); 
@@ -75,21 +79,30 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 response = {
                     "errors":err,
                     "contractCode":null,
-                    "uniqueId":null
+                    "unique_id":null
                 };
                 return res.json(response);
             }
             var parse = importFresh("../Translator/parser.js");
             var translate_results;
-            translate_results = parse(filename,unique_id);
+            try {translate_results = parse(filename,unique_id);}
+            catch (err) {
+                response = {
+                    "errors":err.toString(),
+                    "contractCode":null,
+                    "unique_id":null
+                };
+                return res.json(response);
+            }
             console.log(translate_results.errors);
             console.log(translate_results.num_peers);
+            console.log(translate_results.chaincode);
 
             if (translate_results.errors) {
                 response = {
                     "errors":translate_results.errors,
                     "contractCode":null,
-                    "uniqueId":null
+                    "unique_id":null
                 };
                 return res.json(response);
             }
@@ -104,7 +117,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                     response = {
                         "errors":err,
                         "contractCode":null,
-                        "uniqueId":null
+                        "unique_id":null
                     };
                     return res.json(response);
                 }
@@ -113,8 +126,9 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 response = {
                     "errors":translate_results.result,
                     "contractCode":translate_results.chaincode,
-                    "uniqueId":unique_id
+                    "unique_id":unique_id
                 };
+                console.log(response.contractCode);
                 return res.json(response);
             });
         });
@@ -122,22 +136,33 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     });
 
     //POST /api/v1/account/fetch
-    // Note: this fucntion is deprecated in Hyperledger
+    // Note: this fucntion returns a list of possible senders for a specific chaincode identified by its unique_id
     /*
+    POST format
+    {
+        // The unique_id for a chaincode
+        "unique_id":"A2C4D6"
+    }
     Response format
     {
         "error": "If error occurred" | null, 
         "result": [
-        "0x11D6fd252049f869349CAdf4E2df3E17c8539Bf0", "0x180d34b876DAa90057B2Ec345E82E2B1E9a4A082", ...
+        "Restaurant", "Customer", "Deliverer" ...
         ] 
     }
     */
     router.post("/api/v1/account/fetch",function(req,res){
         receive = {
-          unique_id:req.body.uniqueId,
+          unique_id:req.body.unique_id,
         };
         console.log(receive);
         var response;
+        if (!receive.unique_id) {
+            response = {
+                "errors":"unique_id must be supplied."
+            };
+            return res.json(response);
+        }
 
         query = "SELECT * FROM bpmn where unique_id='"+receive.unique_id+"'";
         connection.query(query, function (err, result) {
@@ -176,47 +201,17 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         });
     });
 
-
-
     //POST /api/v1/compile
     // req paramdter is the request object
     // res parameter is the response object
     /*
     Request format
     {
-        "contractCode": "pragma solidity ^0.4.18; contract ProcessFactory {...}", 
-        // Whether or not to enable compiler optimization (solc compiler option) 
-        "optimizationEnabled": true
+        "contractCode": "pragma solidity ^0.4.18; contract ProcessFactory {...}"
     }
     Response format
     {
-    "errors": ["Compilation errors or warnings"] | null, "contracts": {
-    // The smart contract name. The Solidity code provided may define multiple smart contracts.
-    "ProcessFactory": {
-    // The smart contract Application Binary Interface (ABI) "interface": [
-    {
-        "type": "function",
-        "name": "createInstance",
-        "constant": false,
-        "payable": false,
-        "inputs": [{ "name": "_participants", "type": "address[]" }], "outputs": [{ "name": "", "type": "uint256" }]
-        }
-        ... ],
-        // Compiled EVM bytecode
-        "bytecode": "0xdeadbeef",
-        // Contract EVM bytecode at runtime (i.e. constructor excluded) "runtimeBytecode": "0xbeef",
-        // Execution cost estimate for contract deployment and contract functions "gasEstimates": {
-                "creation": 100000,
-                "external": {
-        "createInstance(address[])": 50000
-        ... },
-        "internal": { "setPreconditions(uint256,uint256)": 20314 ...
-        } }
-            },
-            "ProcessMonitor": {
-        ... }
-        } 
-    }
+    "errors": ["Compilation errors or warnings"] | null
     */
     router.post("/api/v1/contract/compile",function(req,res){
         console.log("Deploying Smart Contract" );
@@ -226,24 +221,45 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
           chaincode:req.body.contractCode
         };
         console.log(receive);
-        filename = "../../out/" + receive.unique_id + "/chaincode/chaincode.go";
-
-        // save in out/unique_id/chaincode/*.go
-        fs.writeFile(filename, receive.chaincode, function (err) {
-            if (err) {
-                console.log(err);
-            }
-
-            var compile = importFresh("../Compiler/compiler.js");
-            var compile_status = compile(filename);
-
-            var response = {
-                "errors":compile_status
+        var response;
+        if (!receive.unique_id || !receive.chaincode) {
+            response = {
+                "errors":["unique_id and contractCode must be supplied."]
             };
+            return res.json(response);
+        }
 
-            res.json(response);
+        query = "SELECT * FROM bpmn where unique_id='"+receive.unique_id+"'";
+        connection.query(query, function (err, result) {
+            if (err) {
+                response = {
+                    "errors":[err.toString()]
+                };
+                return res.json(response);
+            }
+            if (result.length==0) {
+                response = {
+                    "errors":["Unique Id "+receive.unique_id+" is not found."]
+                };
+                return res.json(response);
+            }
+            // save in out/unique_id/chaincode/*.go
+            filename = "../../out/" + receive.unique_id + "/chaincode/chaincode.go";            
+            fs.writeFile(filename, receive.chaincode, function (err) {
+                if (err) {
+                    response = {
+                        "errors":[err.toString()]
+                    };
+                    return res.json(response);
+                }
+                var compile = importFresh("../Compiler/compiler.js");
+                var compile_status = compile(receive.unique_id);
+                response = {
+                    "errors":compile_status
+                };
+                return res.json(response);
+            });
         });
-        //res.end(JSON.stringify(response));
     });
 
 
@@ -254,12 +270,8 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     /*
     Request format
     {
-        // Ethereum account to use for sending the contract deployment transaction. 
-        "sender": "0x11D6fd252049f869349CAdf4E2df3E17c8539Bf0",
-        // Compiled EVM bytecode of smart contract
-        "bytecode": "0xdeadbeef",
-        // Number of confirmations to wait before the transaction is consideredcommitted. 
-        "numConfirmations": 0
+        // Unique Id to identify the generated/compiled chaincode. 
+        "sender": "A2B4C6"
     }
     Response format
     {
