@@ -59,6 +59,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
           xmlModel:req.body.xmlModel,
         };
         console.log(receive);
+        var response;
         if (!receive.xmlModel) {
             response = {
                 "errors":["xmlModel must be supplied."],
@@ -73,7 +74,6 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         filename = "tmp/" + unique_id + ".bpmn";
 
         fs.writeFile(filename, receive.xmlModel, function (err) {
-            var response;
             if (err) {
                 console.log(err);
                 response = {
@@ -205,13 +205,16 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     // req paramdter is the request object
     // res parameter is the response object
     /*
-    Request format
+    Post format
     {
-        "contractCode": "pragma solidity ^0.4.18; contract ProcessFactory {...}"
+        "contractCode": "pragma solidity ^0.4.18; contract ProcessFactory {...}",
+        "unique_id": "A2B4C6"
     }
     Response format
     {
     "errors": ["Compilation errors or warnings"] | null
+    // return bytecode to identify
+    "contracts": {"bytecode":"unique_id"}
     */
     router.post("/api/v1/contract/compile",function(req,res){
         console.log("Deploying Smart Contract" );
@@ -224,7 +227,8 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         var response;
         if (!receive.unique_id || !receive.chaincode) {
             response = {
-                "errors":["unique_id and contractCode must be supplied."]
+                "errors":["unique_id and contractCode must be supplied."],
+                "contracts":{"bytecode":null}
             };
             return res.json(response);
         }
@@ -233,13 +237,15 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         connection.query(query, function (err, result) {
             if (err) {
                 response = {
-                    "errors":[err.toString()]
+                    "errors":[err.toString()],
+                    "contracts":{"bytecode":null}
                 };
                 return res.json(response);
             }
             if (result.length==0) {
                 response = {
-                    "errors":["Unique Id "+receive.unique_id+" is not found."]
+                    "errors":["Unique Id "+receive.unique_id+" is not found."],
+                    "contracts":{"bytecode":null}
                 };
                 return res.json(response);
             }
@@ -248,14 +254,24 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
             fs.writeFile(filename, receive.chaincode, function (err) {
                 if (err) {
                     response = {
-                        "errors":[err.toString()]
+                        "errors":[err.toString()],
+                        "contracts":{"bytecode":null}
                     };
                     return res.json(response);
                 }
                 var compile = importFresh("../Compiler/compiler.js");
-                var compile_status = compile(receive.unique_id);
+                var compile_status;
+                try {compile_status = compile(receive.unique_id);}
+                catch (err) {
+                    response = {
+                        "errors":err.toString(),
+                        "contracts":{"bytecode":null}
+                    };
+                    return res.json(response);
+                }
                 response = {
-                    "errors":compile_status
+                    "errors":compile_status,
+                    "contracts":{"bytecode":receive.unique_id}
                 };
                 return res.json(response);
             });
@@ -271,7 +287,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     Request format
     {
         // Unique Id to identify the generated/compiled chaincode. 
-        "sender": "A2B4C6"
+        "bytecode": "A2B4C6"
     }
     Response format
     {
@@ -284,20 +300,35 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         console.log("Deploying Smart Contract" );
         
         receive = {
-          unique_id:req.body.sender,
-          chaincode:req.body.bytecode
+          unique_id:req.body.bytecode,
         };
         console.log(receive);
+        var response;
+        if (!receive.unique_id) {
+            response = {
+                "error":"bytecode (unique_id for chaincode) must be supplied.",
+                "result":receive.unique_id
+            };
+            return res.json(response);
+        }
  
-
-        query = "SELECT * FROM bpmn WHERE unique_id=?";
-        table = [receive.unique_id];
-        query = mysql.format(query,table);
+        query = "SELECT * FROM bpmn where unique_id='"+receive.unique_id+"'";
         connection.query(query, function (err, result) {
             if (err) {
-                console.log(err);
+                response = {
+                    "error":err.toString(),
+                    "result":receive.unique_id
+                };
+                return res.json(response);
             }
-            console.log("Querying new status");
+            if (result.length==0) {
+                response = {
+                    "error":"Unique Id "+receive.unique_id+" is not found.",
+                    "result":receive.unique_id
+                };
+                return res.json(response);
+            }
+
             console.log(result[0].status);
             var status = result[0].status;
             var num_peers = result[0].num_peers;
@@ -310,95 +341,113 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
             var deploy = importFresh("../Deployer/deployer.js");
             // parameters: unique_id and status
             console.log('status:'+status);
-            deploy_results = deploy.deploy(receive.unique_id,status,ports);
+            var deploy_results;
+            try {deploy_results = deploy.deploy(receive.unique_id,status,ports);}
+            catch (err) {
+                console.log(err);
+                response = {
+                    "error": err.toString(),
+                    "result":receive.unique_id
+                };
+                return res.json(response);
+            }
             query = "UPDATE bpmn SET status=? WHERE unique_id=?";
             table = [deploy_results.result, receive.unique_id];
             query = mysql.format(query,table);
             connection.query(query, function (err, result) {
                 if (err) {
                     console.log(err);
+                    response = {
+                        "error":err.toString(),
+                        "result":receive.unique_id
+                    };
+                    return res.json(response);
                 }
                 console.log("Updating deployment status");
-            });
-
-            query = "SELECT * FROM bpmn";
-            connection.query(query, function (err, result) {
-                if (err) {
-                    console.log(err);
-                } 
-                console.log("Query all networks");
-                // send response
-                res.render('index',{
-                                unique_id: receive.unique_id,
-                                all_networks: result,
-                                translate_results: "N/A",
-                                compile_results: "N/A",
-                                deploy_results: deploy_results.message,
-                                invoke_results: "N/A",
-                                translated_chaincode: "N/A"
-
-                });
+                response = {
+                    "error":deploy_results.error,
+                    "result":receive.unique_id
+                };
+                return res.json(response);
             });
         });
-        
-
-        //res.end(JSON.stringify(response));
     });
 
     //POST /api/v1/bringdown
     // req paramdter is the request object
     // res parameter is the response object
     /*
-    POST format
+    Request format
     {
-        // The only unique_id
-        "unique_id": 
+        // Unique Id to identify the deployment. 
+        "bytecode": "A2B4C6"
+    }
+    Response format
+    {
+        "error": "If error occurred" | null,
     }
     */
     router.post("/api/v1/bringdown",function(req,res){
         console.log("Bringing down containers" );
         
         receive = {
-          unique_id:req.body.unique_id
+          unique_id:req.body.bytecode
         };
         console.log(receive);
+        var response;
+        if (!receive.unique_id) {
+            response = {
+                "error":"bytecode (unique_id for chaincode) must be supplied."
+            };
+            return res.json(response);
+        }
  
-
-        query = "SELECT * FROM bpmn WHERE unique_id=?";
-        table = [receive.unique_id];
-        query = mysql.format(query,table);
+        query = "SELECT * FROM bpmn where unique_id='"+receive.unique_id+"'";
         connection.query(query, function (err, result) {
             if (err) {
-                console.log(err);
+                response = {
+                    "error":err.toString()
+                };
+                return res.json(response);
             }
-            console.log("Querying new status");
-            console.log(result[0].status);
-            var status = result[0].status;
+            if (result.length==0) {
+                response = {
+                    "error":"Unique Id "+receive.unique_id+" is not found."
+                };
+                return res.json(response);
+            }
 
+            var status = result[0].status;
             var deploy = importFresh("../Deployer/deployer.js");
             // parameters: unique_id and status
             console.log('status:'+status);
-            deploy_results = deploy.bringDown(receive.unique_id,status);
+            var bringdown_results;
+            try {bringdown_results = deploy.bringDown(receive.unique_id,status);}
+            catch (err) {
+                console.log(err);
+                response = {
+                    "error": err.toString()
+                };
+                return res.json(response);
+            }
             query = "UPDATE bpmn SET status=? WHERE unique_id=?";
-            table = [deploy_results.result, receive.unique_id];
+            table = [bringdown_results.result, receive.unique_id];
             query = mysql.format(query,table);
             connection.query(query, function (err, result) {
                 if (err) {
                     console.log(err);
+                    response = {
+                        "error": err.toString()
+                    };
+                    return res.json(response);
                 }
                 console.log("Updating deployment status");
+                response = {
+                    "error": bringdown_results.error
+                };
+                return res.json(response);
             });
-
-            var response = {
-                "result": deploy_results.result,
-                "error": deploy_results.message
-            };
-
-            res.json(response);
         });
-        
-
-        //res.end(JSON.stringify(response));
     });
 
     //POST /api/v1/contract/function/call

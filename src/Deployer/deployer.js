@@ -38,7 +38,7 @@ function createJoinChannel(peer,unique_id,first){
             console.log('Channel creation failed!');
             logger.log('deployer','Channel creation failed!');
             logger.log('deployer',obj.stderr);
-            return obj.stderr;          
+            return obj.stderr.toString();          
         }
         logger.log('deployer','=================Channel created successfully!================');
     }
@@ -49,7 +49,7 @@ function createJoinChannel(peer,unique_id,first){
             console.log("Channel fetching failed for " + peer + "!");
             logger.log('deployer',"Channel fetching failed for " + peer + "!");
             logger.log('deployer',obj.stderr);
-            return obj.stderr;
+            return obj.stderr.toString();
         }
         logger.log('deployer', '================' + peer + ' fetched channel successfully!=================');
     }
@@ -60,10 +60,10 @@ function createJoinChannel(peer,unique_id,first){
         console.log("Channel joining failed for " + peer + "!");
         logger.log('deployer',"Channel joining failed for " + peer + "!");
         logger.log('deployer',obj.stderr);
-        return obj.stderr;
+        return obj.stderr.toString();
     }
     logger.log('deployer', '===============' + peer + ' joined channel successfully!===============');
-    return "Success";
+    return null;
 }
 
 
@@ -75,10 +75,10 @@ function cryptogen(unique_id) {
         console.log("Artifacts generation failed!");
         logger.log('deployer',"Artifacts generation failed!");
         logger.log('deployer',obj.stderr);
-        return obj.stderr;
+        return obj.stderr.toString();
     }
     logger.log('deployer', 'Crytogen Succeeded!! ');
-    return "Success";
+    return null;
 }
 
 function channel_artifacts_gen(unique_id,peers){
@@ -92,7 +92,7 @@ function channel_artifacts_gen(unique_id,peers){
         console.log("Genesis generation failed!")
         logger.log('deployer',"Genesis generation failed!");
         logger.log('deployer',obj.stderr);
-        return obj.stderr;
+        return obj.stderr.toString();
     }
 
     logger.log('deployer', "Genesis block created!! ");
@@ -102,7 +102,7 @@ function channel_artifacts_gen(unique_id,peers){
         console.log("Channel.tx generation failed!")
         logger.log('deployer',"Channel.tx generation failed!");
         logger.log('deployer',obj.stderr);
-        return obj.stderr;
+        return obj.stderr.toString();
     }
     logger.log('deployer', "Channel.tx generated!! ");
 
@@ -115,11 +115,11 @@ function channel_artifacts_gen(unique_id,peers){
             logger.log('deployer',command);
             logger.log('deployer',peers[iter] + " generation failed!");
             logger.log('deployer',obj.stderr);
-            return obj.stderr;
+            return obj.stderr.toString();
         }
         logger.log('deployer', peers[iter] + "MSPanchors.tx created!! ");
     }
-    return "Success";
+    return null;
 }
 
 
@@ -129,15 +129,15 @@ function createEnv(unique_id,ports){
 
     fs.writeFileSync(file, "COMPOSE_PROJECT_NAME=net\nIMAGE_TAG=latest\n", function (err) {
     if (err)
-        return err;
+        return err.toString();
     });
     for(var iter=0;iter<ports.length;iter++){
         fs.appendFileSync(file, "port" + iter.toString() + "=" + ports[iter] + "\n", function (err) {
         if (err) 
-            return err;
+            return err.toString();
         });
     }
-    return "Success";
+    return null;
 }
 
 function getPeers(unique_id){
@@ -153,14 +153,14 @@ function deploy(unique_id,stage,ports){
     deploymentPath = "../../out/" + unique_id + "/";
     fabricSamplesPath = "~/fabric-samples/";
 
-    var res;
+    var err;
     logger.init(unique_id);
     logger.log('deployer',"........----------------Starting to log deployment-----------------.............");  
     logger.log('deployer', "******* Start Stage: " + stage.toString() + " ************")
         
-    res = createEnv(unique_id,ports);
-    if (res!="Success") {
-        return {result: stage, message: res};
+    err = createEnv(unique_id,ports);
+    if (err) {
+        return {result: stage, error: err};
     }
     logger.log('deployer', "******* Created .env file with " + ports.length + " ports ************")
     
@@ -173,34 +173,34 @@ function deploy(unique_id,stage,ports){
         shell.echo('Sorry, this script requires docker');
         logger.log('deployer',"Tried deploying without installing docker ");
         shell.exit(1);
-        return {result: stage, message: "ERROR: docker not installed on server"};
+        return {result: stage, error: "ERROR: docker not installed on server"};
     }
 
     if (!shell.which('docker-compose')) {
         shell.echo('Sorry, this script requires docker-compose');
         logger.log('deployer',"Tried deploying without installing docker-compose ");        
         shell.exit(1);
-        return {result: stage, message: "ERROR: docker-compose not installed on server"};
+        return {result: stage, error: "ERROR: docker-compose not installed on server"};
     }
 
     // Setup the infrastructure and bring up the network
     if(stage == 0){     
 
         logger.log('deployer',"==================  Stage 0: Crytogen  ==========================");
-        res = cryptogen(unique_id);
+        err = cryptogen(unique_id);
         //shell.exec('node deployNetwork.js', { async: true }, { async: true });
-        if(res != "Success")
-            return {result: stage, message: res};
+        if(err)
+            return {result: stage, error: err};
         logger.log('deployer', "==================  Crytogen Succeeded!!  ========================== ");
         stage = 1;
     }
 
     if(stage == 1){     
         logger.log('deployer',"==================  Stage 1: Channel Artifacts Gen  ==========================");
-        res = channel_artifacts_gen(unique_id,peers);
+        err = channel_artifacts_gen(unique_id,peers);
         //shell.exec('node deployNetwork.js', { async: true }, { async: true });
-        if(res != "Success")
-            return {result: stage, message: res};
+        if(err)
+            return {result: stage, error: err};
         logger.log('deployer', "==================  Channel Artifacts Generated!!  ========================== ");
         stage = 2;
     }
@@ -228,9 +228,9 @@ function deploy(unique_id,stage,ports){
         var endorsers = "";
         var first = true;
         for(var iter=0; iter<peers.length; iter++){
-            res = createJoinChannel(peers[iter],unique_id,first);
-            if(res != "Success")
-                return {result: stage, message: res};
+            err = createJoinChannel(peers[iter],unique_id,first);
+            if(err)
+                return {result: stage, error: err};
             logger.log('deployer',"Channel for " + peers[iter] + " created and joined ");
             if(first == true){
                 first = false;
@@ -253,7 +253,7 @@ function deploy(unique_id,stage,ports){
                 console.log("Installing chaincode failed on " + peers[iter])
                 logger.log("Installing chaincode failed on " + peers[iter]);
                 logger.log('deployer',obj.stderr);
-                return {result: stage, message: obj.stderr};
+                return {result: stage, error: obj.stderr.toString()};
             }
             logger.log('deployer', peers[iter] + " installed chaincode ");
         }
@@ -269,7 +269,7 @@ function deploy(unique_id,stage,ports){
             console.log("Instantiating chaincode failed")
             logger.log("Instantiating chaincode failed");
             logger.log('deployer',obj.stderr);
-            return {result: stage, message: obj.stderr};
+            return {result: stage, error: obj.stderr.toString()};
         }
         logger.log('deployer',"==================  Chaincode instantiated!  ========================== ");
         stage = 6;
@@ -282,20 +282,19 @@ function deploy(unique_id,stage,ports){
         stage = 6;
     }
     logger.log('deployer', "******* Final Stage Reached: " + stage.toString() + " ************")
-    return {result: stage, message: "Success"};
+    return {result: stage, error: null};
 }
 
 
 function bringDown(unique_id,stage) {
     deploymentPath = "../../out/" + unique_id + "/";
 
-    var res;
     logger.init(unique_id);
     logger.log('deployer',"........----------------Starting to log deployment-----------------.............");  
     logger.log('deployer', "******* Start Stage: " + stage.toString() + " ************")
 
     if(stage!=6) {
-        return {result: stage, message: "Requested deployment is not running."};
+        return {result: stage, error: "Requested deployment is not running."};
     }
 
     shell.cd(deploymentPath);   
@@ -304,14 +303,14 @@ function bringDown(unique_id,stage) {
         shell.echo('Sorry, this script requires docker');
         logger.log('deployer',"Tried deploying without installing docker ");
         shell.exit(1);
-        return {result: stage, message: "ERROR: docker not installed on server"};
+        return {result: stage, error: "ERROR: docker not installed on server"};
     }
 
     if (!shell.which('docker-compose')) {
         shell.echo('Sorry, this script requires docker-compose');
         logger.log('deployer',"Tried deploying without installing docker-compose ");        
         shell.exit(1);
-        return {result: stage, message: "ERROR: docker-compose not installed on server"};
+        return {result: stage, error: "ERROR: docker-compose not installed on server"};
     }
 
     logger.log('deployer',"==================  Stage 6: Stop containers  ==========================");
@@ -321,11 +320,11 @@ function bringDown(unique_id,stage) {
         console.log("Stop containers failed")
         logger.log("Stop containers failed");
         logger.log('deployer',obj.stderr);
-        return {result: stage, message: obj.stderr};
+        return {result: stage, error: obj.stderr.toString()};
     }
     logger.log('deployer',"==================  Containers stopped!  ========================== ");
     stage = 7;
-    return {result: stage, message: "Success"};
+    return {result: stage, error: null};
 }
 
 module.exports = {
