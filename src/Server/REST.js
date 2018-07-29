@@ -73,7 +73,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         console.log("unique_id created: " + unique_id); 
         filename = "tmp/" + unique_id + ".bpmn";
 
-        fs.writeFile(filename, receive.xmlModel, function (err) {
+        fs.writeFile(filename, receive.xmlModel, {flag:'wx'}, function (err) {
             if (err) {
                 console.log(err);
                 response = {

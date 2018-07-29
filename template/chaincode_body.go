@@ -296,7 +296,7 @@ func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respons
         return s.Init(APIstub)
     } else if function == "_localCall" {
         if len(args)==0 {
-            return shim.Error(errors.New("Must provide a function name."))
+            return shim.Error("Must provide a function name.")
         }
 
         local_function := args[0]
@@ -328,7 +328,7 @@ func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respons
             if err!=nil {
                 return shim.Error(err.Error())
             } else if success {
-                return shim.Success("This function call is valid.")
+                return shim.Success([]byte("This function call is valid."))
             } else {
                 return shim.Error("Requested function does not follow the business logic.")
             }
