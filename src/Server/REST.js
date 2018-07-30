@@ -33,9 +33,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     });
     
     // POST /api/v1/translate
-    // req parameter is the request object
-    // res parameter is the response object
-    // Note: some the parameters is deprecated in Hyperledger
+    // Description: Translate a BPMN process model to Chaincode smart contract code. 
     /*
     POST format
     {
@@ -52,6 +50,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         "type SmartContract struct {}..." | null
         }
     */
+
     router.post("/api/v1/translate",function(req,res){
         console.log("Translating the BPMN file" );
         
@@ -136,7 +135,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     });
 
     //POST /api/v1/account/fetch
-    // Note: this fucntion returns a list of possible senders for a specific chaincode identified by its unique_id
+    // Description: this function returns a list of possible senders (peers) for a specific chaincode identified by its unique_id
     /*
     POST format
     {
@@ -146,9 +145,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     Response format
     {
         "error": "If error occurred" | null, 
-        "result": [
-        "Restaurant", "Customer", "Deliverer" ...
-        ] 
+        "result": ["Restaurant", "Customer", "Deliverer" ...] 
     }
     */
     router.post("/api/v1/account/fetch",function(req,res){
@@ -202,8 +199,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     });
 
     //POST /api/v1/compile
-    // req parameter is the request object
-    // res parameter is the response object
+    // Description: this function overwrite the uploaded chaincode to the specific unique_id and test compile it
     /*
     Post format
     {
@@ -278,11 +274,8 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         });
     });
 
-
-
     //POST /api/v1/deploy
-    // req parameter is the request object
-    // res parameter is the response object
+    // Description: this function deploys the process identified by the unique_id
     /*
     Request format
     {
@@ -374,8 +367,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     });
 
     //POST /api/v1/bringdown
-    // req parameter is the request object
-    // res parameter is the response object
+    // Description: this function brings down the deployment identified by the unique_id
     /*
     Request format
     {
@@ -451,8 +443,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     });
 
     //POST /api/v1/contract/function/call
-    // req parameter is the request object
-    // res parameter is the response object
+    // Description: this function tests a function call "locally", meaning it only checks if the call is executable.
     /*
     Request body: 
     {
@@ -520,8 +511,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     });
 
     //POST /api/v1/contract/function/sendTx
-    // req parameter is the request object
-    // res parameter is the response object
+    // Description: this function invokes a function call to the ledger, which will affect everyone if succeeds.
     /*
     Request body: 
     {
