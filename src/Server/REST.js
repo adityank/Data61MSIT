@@ -76,7 +76,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
             if (err) {
                 console.log(err);
                 response = {
-                    "errors":err,
+                    "errors":[err.toString()],
                     "contractCode":null,
                     "unique_id":null
                 };
@@ -87,7 +87,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
             try {translate_results = parse(filename,unique_id);}
             catch (err) {
                 response = {
-                    "errors":err.toString(),
+                    "errors":[err.toString()],
                     "contractCode":null,
                     "unique_id":null
                 };
@@ -114,7 +114,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 if (err) {
                     console.log(err);
                     response = {
-                        "errors":err,
+                        "errors":[err.toString()],
                         "contractCode":null,
                         "unique_id":null
                     };

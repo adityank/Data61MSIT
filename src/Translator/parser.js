@@ -203,50 +203,58 @@ function getOrgsAndAccess(etree,orgs,laneMap){
 
     // Stores mapping between the lane and the tasks(operations) restricted in that lane
     var lanes = etree.findall('./bpmn:process/bpmn:laneSet/bpmn:lane');
+    var laneNames = new HashSet();
+
+    if(lanes.length == 0) {
+        return "The BPMN must have at least one lane.";
+    }
+
     for(var iter=0; iter<lanes.length; iter++){
-        (function(iter) {
-            laneName = lanes[iter].get('name');
-            childlanes = lanes[iter].findall('./bpmn:childLaneSet/bpmn:lane');
-            numchildlanes = childlanes.length;
-
-            // If no childlanes, map tasks to that lane
-            if(numchildlanes == 0){
-                orgs.push(laneName);
-                var allTasks = lanes[iter].findall('./bpmn:flowNodeRef');
-                var numTasks = allTasks.length;
-                for (var iter=0;iter<numTasks;iter++){
-                    //if(allTasks[iter].text.substring(0,4)=="Task")
-                    laneMap[allTasks[iter].text] = laneName;
-                }
-            }
-            // else separately map tasks to childlanes
-            while(numchildlanes>0){
-                childlane = childlanes[numchildlanes-1];
-                orgs.push(childlane.get('name'));
-                var allTasks = childlane.findall('./bpmn:flowNodeRef');
-                var numTasks = allTasks.length;
-                for (var iter=0;iter<numTasks;iter++){
-                    //if(allTasks[iter].text.substring(0,4)=="Task")
-                    laneMap[allTasks[iter].text] = childlane.get('name');
-                }
-                numchildlanes--;
-            }
-        })(iter);
+        var err = processLaneRecur(lanes[iter],orgs,laneNames,laneMap);
+        if (err) return err;
     }
-
-    if(lanes.length == 0)
-        return "No lanes found."
+    return null;
 }
 
 
-function getOrgs(laneToTasks){
-    var orgs = [];    
-    for (var lane in laneToTasks){
-        orgs.push(lane);
-    }
-    return orgs;
+function processLaneRecur(lane,orgs,laneNames,laneMap) {
+        var laneName = lane.get('name');
+        if(!laneName) {
+            return "All lanes must be named: "+lane.get('id');
+        }
+        if (!laneName.match(/^[0-9a-zA-Z_]+$/)){
+            return "Lane names can only contain a-Z, 0-9, and _: "+laneName;
+        }
+        var childlanes = lane.findall('./bpmn:childLaneSet/bpmn:lane');
+        var numchildlanes = childlanes.length;
+
+        // If no childlanes, map tasks to that lane
+        if(numchildlanes == 0){
+            if (laneNames.contains(laneName)) {
+                return "Duplicated lane name found: "+laneName;
+            }
+            laneNames.add(laneName);
+            orgs.push(laneName);
+            var allTasks = lane.findall('./bpmn:flowNodeRef');
+            var numTasks = allTasks.length;
+            for (var iter=0;iter<numTasks;iter++){
+                laneMap[allTasks[iter].text] = laneName;
+            }
+            return null;
+        }
+        // else separately map tasks to childlanes
+        else {
+            for (var iter=0;iter<numchildlanes;iter++){
+                var err = processLaneRecur(childlanes[iter],orgs,laneNames,laneMap);
+                if (err) return err;
+            }
+            return null;
+        }
 }
 
+
+/* Pruning intermediate events is disabled in the parser
+   Intermediate events are handled in the chaincode
 
 // Returns the first non-intermediate child task of the task  
 function getChild(task,outgoingMap){
@@ -265,9 +273,6 @@ function getParent(task,incomingMap){
     return task;
 }
 
-
-/* Pruning intermediate events is disabled in the parser
-   Intermediate events are handled in the chaincode
 
 // Returns if the task is intermediate
 function intermediate(task){
@@ -324,23 +329,20 @@ function parse(filename,unique_id){
     var functionNames = new HashSet();
     var err = null;
     err = getNameAndTypeMappings(etree,typeMap,nameMap,functionNames);
-    if (err) return {errors: err, num_peers: orgs.length, chaincode: null};
+    if (err) return {errors: [err.toString()], num_peers: 0, chaincode: null};
 
     //access control
     var orgs = [];
     var laneMap = {};
 
-    err = null;
     err = getOrgsAndAccess(etree,orgs,laneMap);
-    if (err) return {errors: err, num_peers: orgs.length, chaincode: null};
-
+    if (err) return {errors: [err.toString()], num_peers: 0, chaincode: null};
 
     var incomingMap = {};
     var outgoingMap = {};
     
-    err = null;
     err = getDependancies(flows,incomingMap,outgoingMap,typeMap,nameMap,laneMap,functionNames);
-    if (err) return {errors: err, num_peers: orgs.length, chaincode: null};
+    if (err) return {errors: [err.toString()], num_peers: 0, chaincode: null};
 
     /* Pruning intermediate events is disabled in the parser
        Intermediate events are handled in the chaincode
@@ -350,13 +352,13 @@ function parse(filename,unique_id){
     pruneMap(outgoingMap);
     */
 
-    taskObjArray = formArray(typeMap,nameMap,laneMap,incomingMap,outgoingMap);
-  
+    var taskObjArray = formArray(typeMap,nameMap,laneMap,incomingMap,outgoingMap);
+
     try {generateYAML(orgs, unique_id);}
-    catch (err) {return {errors: err, num_peers: orgs.length, chaincode: null};}
+    catch (err) {return {errors: [err.toString()], num_peers: orgs.length, chaincode: null};}
     
     try {generateGo(unique_id, taskObjArray);}
-    catch (err) {return {errors: err, num_peers: orgs.length, chaincode: null};}
+    catch (err) {return {errors: [err.toString()], num_peers: orgs.length, chaincode: null};}
 
     var file = "../../out/" + unique_id + "/peers.txt";
     fs.writeFileSync(file, "");
@@ -365,11 +367,18 @@ function parse(filename,unique_id){
     }
     var gofile = "../../out/" + unique_id + "/chaincode/chaincode.go";
     var chaincode = fs.readFileSync(gofile,'utf-8');
+
     return {errors: null, num_peers: orgs.length, chaincode: chaincode};
 }
 
 module.exports = parse;
 
-//parse("../../bpmn_examples/andgate.bpmn","andgate");
-//parse("../../bpmn_examples/databased.bpmn","databased");
-
+/*
+test = "participant_without_lane";
+result = parse("../../bpmn_examples/"+test+".bpmn",test);
+console.log(result.errors);
+console.log(result.num_peers);
+// test cases:
+// invalid_lane_name duplicated_lane_names nested_child_lanes unnamed_lanes participant_without_lane
+// no_participant
+*/
