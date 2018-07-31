@@ -218,38 +218,38 @@ function getOrgsAndAccess(etree,orgs,laneMap){
 
 
 function processLaneRecur(lane,orgs,laneNames,laneMap) {
-        var laneName = lane.get('name');
-        if(!laneName) {
-            return "All lanes must be named: "+lane.get('id');
-        }
-        if (!laneName.match(/^[0-9a-zA-Z_]+$/)){
-            return "Lane names can only contain a-Z, 0-9, and _: "+laneName;
-        }
-        var childlanes = lane.findall('./bpmn:childLaneSet/bpmn:lane');
-        var numchildlanes = childlanes.length;
+    var laneName = lane.get('name');
+    if(!laneName) {
+        return "All lanes must be named: "+lane.get('id');
+    }
+    if (!laneName.match(/^[0-9a-zA-Z_]+$/)){
+        return "Lane names can only contain a-Z, 0-9, and _: "+laneName;
+    }
+    var childlanes = lane.findall('./bpmn:childLaneSet/bpmn:lane');
+    var numchildlanes = childlanes.length;
 
-        // If no childlanes, map tasks to that lane
-        if(numchildlanes == 0){
-            if (laneNames.contains(laneName)) {
-                return "Duplicated lane name found: "+laneName;
-            }
-            laneNames.add(laneName);
-            orgs.push(laneName);
-            var allTasks = lane.findall('./bpmn:flowNodeRef');
-            var numTasks = allTasks.length;
-            for (var iter=0;iter<numTasks;iter++){
-                laneMap[allTasks[iter].text] = laneName;
-            }
-            return null;
+    // If no childlanes, map tasks to that lane
+    if(numchildlanes == 0){
+        if (laneNames.contains(laneName)) {
+            return "Duplicated lane name found: "+laneName;
         }
-        // else separately map tasks to childlanes
-        else {
-            for (var iter=0;iter<numchildlanes;iter++){
-                var err = processLaneRecur(childlanes[iter],orgs,laneNames,laneMap);
-                if (err) return err;
-            }
-            return null;
+        laneNames.add(laneName);
+        orgs.push(laneName);
+        var allTasks = lane.findall('./bpmn:flowNodeRef');
+        var numTasks = allTasks.length;
+        for (var iter=0;iter<numTasks;iter++){
+            laneMap[allTasks[iter].text] = laneName;
         }
+        return null;
+    }
+    // else separately map tasks to childlanes
+    else {
+        for (var iter=0;iter<numchildlanes;iter++){
+            var err = processLaneRecur(childlanes[iter],orgs,laneNames,laneMap);
+            if (err) return err;
+        }
+        return null;
+    }
 }
 
 
