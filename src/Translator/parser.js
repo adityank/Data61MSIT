@@ -197,12 +197,11 @@ function getDependancies(flows,incomingMap,outgoingMap,typeMap,nameMap,laneMap,f
 }
 
 
-function getOrgsAndAccess(etree,orgs){
+function getOrgsAndAccess(etree,orgs,laneMap){
     // Get all participants(lanes)
     var childlanes,numchildlanes,laneName,accessible,childlane;
 
     // Stores mapping between the lane and the tasks(operations) restricted in that lane
-    var laneMap = {};
     var lanes = etree.findall('./bpmn:process/bpmn:laneSet/bpmn:lane');
     for(var iter=0; iter<lanes.length; iter++){
         (function(iter) {
@@ -234,7 +233,9 @@ function getOrgsAndAccess(etree,orgs){
             }
         })(iter);
     }
-    return laneMap;
+
+    if(lanes.length == 0)
+        return "No lanes found."
 }
 
 
@@ -327,11 +328,17 @@ function parse(filename,unique_id){
 
     //access control
     var orgs = [];
-    var laneMap = getOrgsAndAccess(etree,orgs);
+    var laneMap = {};
+
+    err = null;
+    err = getOrgsAndAccess(etree,orgs,laneMap);
+    if (err) return {errors: err, num_peers: orgs.length, chaincode: null};
+
 
     var incomingMap = {};
     var outgoingMap = {};
     
+    err = null;
     err = getDependancies(flows,incomingMap,outgoingMap,typeMap,nameMap,laneMap,functionNames);
     if (err) return {errors: err, num_peers: orgs.length, chaincode: null};
 
