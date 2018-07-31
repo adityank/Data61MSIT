@@ -1,7 +1,19 @@
-/* 
-  This provides restful api for server
-  @by700git
-*/
+/******************************************************************************************************************
+* File: REST.js
+* Project: MSIT-SE Studio Project (Data61)
+* Copyright: Team Unchained
+* Versions:
+*   
+*   June 2018 - Xue Liu - Initial implementation
+*   July 2018 - Dongliang Zhou - Modified to match API document
+*
+* Description: This is the routing module to provide RESTful API.
+*
+* External Dependencies: 
+* 1. mysql, crypto, unique-string, import-fresh, shorthash, get-port-sync
+* 2. bpmn database in mysql
+*
+******************************************************************************************************************/
 
 // require database
 var mysql   = require("mysql");
@@ -52,12 +64,12 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     */
 
     router.post("/api/v1/translate",function(req,res){
-        console.log("Translating the BPMN file" );
+        //console.log("Translating the BPMN file" );
         
         receive = {
           xmlModel:req.body.xmlModel,
         };
-        console.log(receive);
+        //console.log(receive);
         var response;
         if (!receive.xmlModel) {
             response = {
@@ -69,12 +81,40 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         }
 
         var unique_id = sh.unique(uniqueString());
-        console.log("unique_id created: " + unique_id); 
+        //console.log("unique_id created: " + unique_id); 
         filename = "tmp/" + unique_id + ".bpmn";
 
-        fs.writeFile(filename, receive.xmlModel, {flag:'wx'}, function (err) {
+        var parse = importFresh("../Translator/parser.js");
+        var translate_results;
+        try {translate_results = parse(receive.xmlModel,unique_id);}
+        catch (err) {
+            response = {
+                "errors":[err.toString()],
+                "contractCode":null,
+                "unique_id":null
+            };
+            return res.json(response);
+        }
+        //console.log(translate_results.errors);
+        //console.log(translate_results.num_peers);
+        //console.log(translate_results.chaincode);
+
+        if (translate_results.errors) {
+            response = {
+                "errors":translate_results.errors,
+                "contractCode":null,
+                "unique_id":null
+            };
+            return res.json(response);
+        }
+
+        query = "INSERT INTO bpmn (unique_id, status, num_peers) VALUES (?,?,?)";
+        table = [unique_id,0,translate_results.num_peers];
+
+        query = mysql.format(query,table);
+        connection.query(query, function (err, result) {
             if (err) {
-                console.log(err);
+                //console.log(err);
                 response = {
                     "errors":[err.toString()],
                     "contractCode":null,
@@ -82,54 +122,15 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 };
                 return res.json(response);
             }
-            var parse = importFresh("../Translator/parser.js");
-            var translate_results;
-            try {translate_results = parse(filename,unique_id);}
-            catch (err) {
-                response = {
-                    "errors":[err.toString()],
-                    "contractCode":null,
-                    "unique_id":null
-                };
-                return res.json(response);
-            }
-            console.log(translate_results.errors);
-            console.log(translate_results.num_peers);
-            console.log(translate_results.chaincode);
-
-            if (translate_results.errors) {
-                response = {
-                    "errors":translate_results.errors,
-                    "contractCode":null,
-                    "unique_id":null
-                };
-                return res.json(response);
-            }
-
-            query = "INSERT INTO bpmn (unique_id, status, num_peers) VALUES (?,?,?)";
-            table = [unique_id,0,translate_results.num_peers];
-
-            query = mysql.format(query,table);
-            connection.query(query, function (err, result) {
-                if (err) {
-                    console.log(err);
-                    response = {
-                        "errors":[err.toString()],
-                        "contractCode":null,
-                        "unique_id":null
-                    };
-                    return res.json(response);
-                }
-                console.log("Adding new entries");
-                // compose response object
-                response = {
-                    "errors":translate_results.result,
-                    "contractCode":translate_results.chaincode,
-                    "unique_id":unique_id
-                };
-                console.log(response.contractCode);
-                return res.json(response);
-            });
+            //console.log("Adding new entries");
+            // compose response object
+            response = {
+                "errors":translate_results.result,
+                "contractCode":translate_results.chaincode,
+                "unique_id":unique_id
+            };
+            //console.log(response.contractCode);
+            return res.json(response);
         });
         //res.end(JSON.stringify(response));
     });
@@ -152,7 +153,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         receive = {
           unique_id:req.body.unique_id,
         };
-        console.log(receive);
+        //console.log(receive);
         var response;
         if (!receive.unique_id) {
             response = {
@@ -213,13 +214,13 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     "contracts": {"bytecode":"unique_id"}
     */
     router.post("/api/v1/contract/compile",function(req,res){
-        console.log("Deploying Smart Contract" );
+        //console.log("Deploying Smart Contract" );
         
         receive = {
           unique_id:req.body.unique_id,
           chaincode:req.body.contractCode
         };
-        console.log(receive);
+        //console.log(receive);
         var response;
         if (!receive.unique_id || !receive.chaincode) {
             response = {
@@ -290,12 +291,12 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     }
     */
     router.post("/api/v1/deploy",function(req,res){
-        console.log("Deploying Smart Contract" );
+        //console.log("Deploying Smart Contract" );
         
         receive = {
           unique_id:req.body.bytecode,
         };
-        console.log(receive);
+        //console.log(receive);
         var response;
         if (!receive.unique_id) {
             response = {
@@ -322,7 +323,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 return res.json(response);
             }
 
-            console.log(result[0].status);
+            //console.log(result[0].status);
             var status = result[0].status;
             var num_peers = result[0].num_peers;
 
@@ -333,11 +334,11 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
 
             var deploy = importFresh("../Deployer/deployer.js");
             // parameters: unique_id and status
-            console.log('status:'+status);
+            //console.log('status:'+status);
             var deploy_results;
             try {deploy_results = deploy.deploy(receive.unique_id,status,ports);}
             catch (err) {
-                console.log(err);
+                //console.log(err);
                 response = {
                     "error": err.toString(),
                     "result":receive.unique_id
@@ -349,14 +350,14 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
             query = mysql.format(query,table);
             connection.query(query, function (err, result) {
                 if (err) {
-                    console.log(err);
+                    //console.log(err);
                     response = {
                         "error":err.toString(),
                         "result":receive.unique_id
                     };
                     return res.json(response);
                 }
-                console.log("Updating deployment status");
+                //console.log("Updating deployment status");
                 response = {
                     "error":deploy_results.error,
                     "result":receive.unique_id
@@ -380,12 +381,12 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     }
     */
     router.post("/api/v1/bringdown",function(req,res){
-        console.log("Bringing down containers" );
+        //console.log("Bringing down containers" );
         
         receive = {
           unique_id:req.body.bytecode
         };
-        console.log(receive);
+        //console.log(receive);
         var response;
         if (!receive.unique_id) {
             response = {
@@ -412,11 +413,11 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
             var status = result[0].status;
             var deploy = importFresh("../Deployer/deployer.js");
             // parameters: unique_id and status
-            console.log('status:'+status);
+            //console.log('status:'+status);
             var bringdown_results;
             try {bringdown_results = deploy.bringDown(receive.unique_id,status);}
             catch (err) {
-                console.log(err);
+                //console.log(err);
                 response = {
                     "error": err.toString()
                 };
@@ -427,13 +428,13 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
             query = mysql.format(query,table);
             connection.query(query, function (err, result) {
                 if (err) {
-                    console.log(err);
+                    //console.log(err);
                     response = {
                         "error": err.toString()
                     };
                     return res.json(response);
                 }
-                console.log("Updating deployment status");
+                //console.log("Updating deployment status");
                 response = {
                     "error": bringdown_results.error
                 };
@@ -467,7 +468,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     }
     */
     router.post("/api/v1/contract/function/call",function(req,res){
-        console.log("Local Call Smart Contract: function " + req.body.function_name);
+        //console.log("Local Call Smart Contract: function " + req.body.function_name);
         
         receive = {
           unique_id:req.body.contractAddress,
@@ -476,7 +477,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
           peer:req.body.txParams.from
         };
 
-        console.log(receive);
+        //console.log(receive);
         if (!receive.unique_id || !receive.function_name || !receive.peer) {
             response = {
                 "error":"contractAddress, fnName, and txParams.from must be supplied.",
@@ -491,7 +492,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 parameters.push(receive.parameters[i].value);
             }
         }
-        console.log(parameters);
+        //console.log(parameters);
         var invoke = importFresh("../Invoker/invoker.js");
         var invoke_results;
         try {invoke_results = invoke(receive.unique_id, receive.peer, "_localCall", parameters);}
@@ -535,7 +536,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     }
     */
     router.post("/api/v1/contract/function/sendTx",function(req,res){
-        console.log("Invoking Smart Contract: function " + req.body.function_name);
+        //console.log("Invoking Smart Contract: function " + req.body.function_name);
         
         receive = {
           unique_id:req.body.contractAddress,
@@ -544,7 +545,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
           peer:req.body.txParams.from
         };
 
-        console.log(receive);
+        //console.log(receive);
         if (!receive.unique_id || !receive.function_name || !receive.peer) {
             response = {
                 "error":"contractAddress, fnName, and txParams.from must be supplied.",
@@ -559,7 +560,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 parameters.push(receive.parameters[i].value);
             }
         }
-        console.log(parameters);
+        //console.log(parameters);
         var invoke = importFresh("../Invoker/invoker.js");
         var invoke_results;
         try {invoke_results = invoke(receive.unique_id, receive.peer, receive.function_name, parameters);}
