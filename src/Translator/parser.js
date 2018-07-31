@@ -380,5 +380,5 @@ console.log(result.errors);
 console.log(result.num_peers);
 // test cases:
 // invalid_lane_name duplicated_lane_names nested_child_lanes unnamed_lanes participant_without_lane
-// no_participant
+// no_participant inclusive_gateway
 */
