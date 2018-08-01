@@ -249,12 +249,12 @@ function deploy(unique_id,stage,ports){
     // Setup the infrastructure and bring up the network
     // Pick up from current stage
     if(stage == 0){
-        logger.log('deployer',"==================  Stage 0: Crytogen  ==========================");
+        logger.log('deployer',"==================  Stage 0: Cryptogen  ==========================");
         err = cryptogen(unique_id);
         if(err) {
             return {result: stage, error: err};
         }
-        logger.log('deployer', "==================  Crytogen Succeeded!!  ========================== ");
+        logger.log('deployer', "==================  Cryptogen Succeeded!!  ========================== ");
         stage = 1;
     }
 
