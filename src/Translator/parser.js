@@ -109,11 +109,7 @@ function getNameAndTypeMappings(etree,typeMap,nameMap,functionNames){
     if (ors.length>0) {
         return "Support for Inclusive Gateway is not enabled.";
     }
-    // A mapping between unique task_id and the corresponding task name
-    // for(var iter=0; iter<ors.length; iter++){
-    //     typeMap[ors[iter].get('id')] = 'OR';
-    //     nameMap[ors[iter].get('id')] = ors[iter].get('name');            
-    // }
+
 
     var ends = etree.findall('./bpmn:process/bpmn:endEvent');
     for(var iter=0; iter<ends.length; iter++){
@@ -240,61 +236,6 @@ function processLaneRecur(lane,orgs,laneNames,laneMap) {
     }
 }
 
-
-/* Pruning intermediate events is disabled in the parser
-   Intermediate events are handled in the chaincode
-
-// Returns the first non-intermediate child task of the task  
-function getChild(task,outgoingMap){
-    while(intermediate(task)){
-        task = outgoingMap[task];
-    }
-    return task;
-}
-
-
-// Returns the first non-intermediate parent task of the task  
-function getParent(task,incomingMap){
-    while(intermediate(task)){
-        task = incomingMap[task];
-    }
-    return task;
-}
-
-
-// Returns if the task is intermediate
-function intermediate(task){
-    return task.toString().substring(0,12) == "Intermediate";
-}
-
-
-// Updates the child or parent to the task after skipping the intermediate one
-function removeIntermediate(map){
-    for (var task in map){
-        var value = map[task].length;
-        var temp;
-        for (var iter=0;iter<value;iter++){
-            if(intermediate(map[task][iter])){
-                temp = map[task][iter];
-                map[task].splice(iter,1);
-                iter--;
-                map[task].push(getParent(temp,map));
-            }
-        }
-    }
-}
-
-
-// Removes intermediate tasks from the map
-function pruneMap(map){
-    for (var task in map){
-        if(intermediate(task))
-            delete map[task];
-    }
-}
-*/
-
-
 // Helper function to put all maps together using Task structure
 // Return the array of Tasks
 function formArray(typeMap,nameMap,laneMap,incomingMap,outgoingMap){
@@ -334,14 +275,6 @@ function parse(data,unique_id){
     var outgoingMap = {};    
     err = getDependancies(flows,incomingMap,outgoingMap,typeMap,nameMap,laneMap,functionNames);
     if (err) return {errors: [err.toString()], num_peers: 0, chaincode: null};
-
-    /* Pruning intermediate events is disabled in the parser
-       Intermediate events are handled in the chaincode
-    removeIntermediate(incomingMap);
-    removeIntermediate(outgoingMap);
-    pruneMap(incomingMap);
-    pruneMap(outgoingMap);
-    */
 
     var taskObjArray = formArray(typeMap,nameMap,laneMap,incomingMap,outgoingMap);
 
