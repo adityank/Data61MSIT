@@ -1,0 +1,42 @@
+#******************************************************************************************************************
+# File: docker-compose-cli.yaml
+# Project: MSIT-SE Studio Project (Data61)
+# Copyright: Team Unchained
+# Versions:
+#   1.0 March 2018 - Modified based on the template (Dongliang Zhou)
+#   2.0 May 2018 - Transformed into a template for autogeneration (Dongliang Zhou)
+#
+# Description: This is the template file defining docker containers to simulate testing network.
+#
+# External Dependencies: Hyperledger fabric library
+#                        base\\docker-compose-base.yaml
+#                        base\\peer-base.yaml
+#
+#*****************************************************************************************************************/
+
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+version: '2'
+
+volumes:
+  orderer.${domain}:
+${peerVolumes}
+
+networks:
+  ${unique_id}:
+
+services:
+
+  orderer.${domain}:
+    extends:
+      file:   base/docker-compose-base.yaml
+      service: orderer.${domain}
+    container_name: orderer.${domain}
+    networks:
+      - ${unique_id}
+
+  # docker-compose-cli-peer.yaml content goes here
+  # docker-compose-cli-cli.yaml content goes here

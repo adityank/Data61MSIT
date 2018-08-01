@@ -1,11 +1,12 @@
 #******************************************************************************************************************
 # File: crypto-config.yaml
 # Project: MSIT-SE Studio Project (Data61)
-# Copyright: CMU Team Unchained
+# Copyright: Team Unchained
 # Versions:
-#   1.0 March 2018 - Modified based on the template by Dongliang Zhou
+#   1.0 March 2018 - Modified based on a sample file (Dongliang Zhou)
+#   2.0 May 2018 - Transformed into a template (Dongliang Zhou)
 #
-# Description: This is the file defining the network topology to generate MSP for the pizza example.
+# Description: This is a template file defining the network topology to generate MSP.
 #
 # External Dependencies: Hyperledger fabric library
 #                        
@@ -25,7 +26,7 @@ OrdererOrgs:
   # Orderer
   # ---------------------------------------------------------------------------
   - Name: Orderer
-    Domain: example.com
+    Domain: ${domain}
     # ---------------------------------------------------------------------------
     # "Specs" - See PeerOrgs below for complete description
     # ---------------------------------------------------------------------------
@@ -38,9 +39,9 @@ PeerOrgs:
   # ---------------------------------------------------------------------------
   # Org1
   # ---------------------------------------------------------------------------
-  - Name: Restaurant
-    Domain: restaurant.example.com
-    EnableNodeOUs: true
+  #- Name: \${peerName}
+    #Domain: \${peerDomainPrefix}.\${domain}
+    #EnableNodeOUs: true
     # ---------------------------------------------------------------------------
     # "Specs"
     # ---------------------------------------------------------------------------
@@ -74,8 +75,8 @@ PeerOrgs:
     # sections and the aggregate nodes will be created for you.  Take care with
     # name collisions
     # ---------------------------------------------------------------------------
-    Template:
-      Count: 2
+    #Template:
+    #  Count: 1
       # Start: 5
       # Hostname: {{.Prefix}}{{.Index}} # default
     # ---------------------------------------------------------------------------
@@ -83,23 +84,7 @@ PeerOrgs:
     # ---------------------------------------------------------------------------
     # Count: The number of user accounts _in addition_ to Admin
     # ---------------------------------------------------------------------------
-    Users:
-      Count: 1
-  # ---------------------------------------------------------------------------
-  # Org2: See "Org1" for full specification
-  # ---------------------------------------------------------------------------
-  - Name: Customer
-    Domain: customer.example.com
-    EnableNodeOUs: true
-    Template:
-      Count: 2
-    Users:
-      Count: 1
+    #Users:
+    #  Count: 1
 
-  - Name: Deliverer
-    Domain: deliverer.example.com
-    EnableNodeOUs: true
-    Template:
-      Count: 2
-    Users:
-      Count: 1
+# cryopto-config-peer.yaml content goes here

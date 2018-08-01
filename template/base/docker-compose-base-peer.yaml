@@ -1,0 +1,18 @@
+  peer0.${peerDomainPrefix}.${domain}:
+    container_name: peer0.${peerDomainPrefix}.${domain}
+    extends:
+      file: peer-base.yaml
+      service: peer-base
+    environment:
+      - CORE_PEER_ID=peer0.${peerDomainPrefix}.${domain}
+      - CORE_PEER_ADDRESS=peer0.${peerDomainPrefix}.${domain}:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.${peerDomainPrefix}.${domain}:7051
+      - CORE_PEER_LOCALMSPID=${peerName}MSP
+    volumes:
+        - /var/run/:/host/var/run/
+        - ../crypto-config/peerOrganizations/${peerDomainPrefix}.${domain}/peers/peer0.${peerDomainPrefix}.${domain}/msp:/etc/hyperledger/fabric/msp
+        - ../crypto-config/peerOrganizations/${peerDomainPrefix}.${domain}/peers/peer0.${peerDomainPrefix}.${domain}/tls:/etc/hyperledger/fabric/tls
+        - peer0.${peerDomainPrefix}.${domain}:/var/hyperledger/production
+    ports:
+      - ${peerPort7051}:7051
+      - ${peerPort7053}:7053

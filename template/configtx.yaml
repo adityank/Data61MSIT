@@ -1,11 +1,12 @@
 #******************************************************************************************************************
 # File: configtx.yaml
 # Project: MSIT-SE Studio Project (Data61)
-# Copyright: CMU Team Unchained
+# Copyright: Team Unchained
 # Versions:
-#   1.0 March 2018 - Modified based on the template by Dongliang Zhou
+#   1.0 March 2018 - Modified based on the sample file. (Dongliang Zhou)
+#   2.0 May 2018 - Transformed into a template for autogeneration. (Dongliang Zhou)
 #
-# Description: This is the file defining the network topology to generate channel block for the pizza example.
+# Description: This is the template file defining the network topology to generate channel block.
 #
 # External Dependencies: Hyperledger fabric library
 #                        crypto-config.yaml, base\*
@@ -28,7 +29,7 @@
 ################################################################################
 Profiles:
 
-    PizzaOrdererGenesis:
+    ${unique_id}Genesis:
         Capabilities:
             <<: *ChannelCapabilities
         Orderer:
@@ -40,17 +41,15 @@ Profiles:
         Consortiums:
             SampleConsortium:
                 Organizations:
-                    - *Restaurant
-                    - *Customer
-                    - *Deliverer
-    PizzaChannel: # arbitrary, used to identify the channel when generating .tx
+                    # config-orgs.yaml content goes here
+${configtx_orgs}
+    ${unique_id}Channel:
         Consortium: SampleConsortium
         Application:
             <<: *ApplicationDefaults
             Organizations:
-                - *Restaurant
-                - *Customer
-                - *Deliverer
+                # configtx-orgs.yaml content goes here
+${configtx_orgs}
             Capabilities:
                 <<: *ApplicationCapabilities
 
@@ -75,58 +74,8 @@ Organizations:
         ID: OrdererMSP
 
         # MSPDir is the filesystem path which contains the MSP configuration
-        MSPDir: crypto-config/ordererOrganizations/example.com/msp
+        MSPDir: crypto-config/ordererOrganizations/${domain}/msp
 
-    - &Restaurant
-        # DefaultOrg defines the organization which is used in the sampleconfig
-        # of the fabric.git development environment
-        Name: RestaurantMSP
-
-        # ID to load the MSP definition as
-        ID: RestaurantMSP
-
-        MSPDir: crypto-config/peerOrganizations/restaurant.example.com/msp
-
-        AnchorPeers:
-            # AnchorPeers defines the location of peers which can be used
-            # for cross org gossip communication.  Note, this value is only
-            # encoded in the genesis block in the Application section context
-            - Host: peer0.restaurant.example.com
-              Port: 7051
-
-    - &Customer
-        # DefaultOrg defines the organization which is used in the sampleconfig
-        # of the fabric.git development environment
-        Name: CustomerMSP
-
-        # ID to load the MSP definition as
-        ID: CustomerMSP
-
-        MSPDir: crypto-config/peerOrganizations/customer.example.com/msp
-
-        AnchorPeers:
-            # AnchorPeers defines the location of peers which can be used
-            # for cross org gossip communication.  Note, this value is only
-            # encoded in the genesis block in the Application section context
-            - Host: peer0.customer.example.com
-              Port: 7051
-
-    - &Deliverer
-        # DefaultOrg defines the organization which is used in the sampleconfig
-        # of the fabric.git development environment
-        Name: DelivererMSP
-
-        # ID to load the MSP definition as
-        ID: DelivererMSP
-
-        MSPDir: crypto-config/peerOrganizations/deliverer.example.com/msp
-
-        AnchorPeers:
-            # AnchorPeers defines the location of peers which can be used
-            # for cross org gossip communication.  Note, this value is only
-            # encoded in the genesis block in the Application section context
-            - Host: peer0.deliverer.example.com
-              Port: 7051
 
 ################################################################################
 #
@@ -143,7 +92,7 @@ Orderer: &OrdererDefaults
     OrdererType: solo
 
     Addresses:
-        - orderer.example.com:7050
+        - orderer.${domain}:7050
 
     # Batch Timeout: The amount of time to wait before creating a batch
     BatchTimeout: 2s
@@ -171,20 +120,6 @@ Orderer: &OrdererDefaults
 
     # Organizations is the list of orgs which are defined as participants on
     # the orderer side of the network
-    Organizations:
-
-################################################################################
-#
-#   SECTION: Application
-#
-#   - This section defines the values to encode into a config transaction or
-#   genesis block for application related parameters
-#
-################################################################################
-Application: &ApplicationDefaults
-
-    # Organizations is the list of orgs which are defined as participants on
-    # the application side of the network
     Organizations:
 
 ################################################################################
@@ -235,3 +170,17 @@ Capabilities:
         # modification of which would cause incompatibilities.  Users should
         # leave this flag set to true.
         V1_1: true
+
+################################################################################
+#
+#   SECTION: Application
+#
+#   - This section defines the values to encode into a config transaction or
+#   genesis block for application related parameters
+#
+################################################################################
+Application: &ApplicationDefaults
+
+    # Organizations is the list of orgs which are defined as participants on
+    # the application side of the network
+    Organizations:

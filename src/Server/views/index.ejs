@@ -1,0 +1,46 @@
+<html>
+   <body>
+      <b>Uniqle_id</b>
+      <p id="unique_id"><%= unique_id %></p>
+   	<b>Translate</b>
+      <form action = "/api/v1/translate" method = "POST">
+         xmlModel: <!--input type = "text" name = "xmlModel"><br> -->
+         <textarea name="xmlModel" rows="10" cols="100" white-space="pre-wrap">input your xmlModel</textarea>
+         <input type = "submit" value = "Submit">
+      </form> 
+      <b>Compile</b>
+      <form action = "/api/v1/compile" method = "POST">
+         unique_id: <input type = "text" name = "unique_id"><br>
+         <!-- chaincode: <input type = "text" name = "chaincode"><br> -->
+         <textarea name="chaincode" rows="10" cols="100" white-space="pre-wrap">input your chaincode</textarea>
+         <input type = "submit" value = "Submit">
+      </form>
+      <b>Deploy</b> 
+      <form action = "/api/v1/deploy" method = "POST">
+         unique_id: <input type = "text" name = "unique_id"><br>
+         <input type = "submit" value = "Submit">
+      </form>
+      <b>Bring Down</b>
+      <form action = "/api/v1/bringdown" method = "POST">
+         unique_id: <input type = "text" name = "unique_id"><br>
+         <input type = "submit" value = "Submit">
+      </form>
+      <b>Invoke</b>
+      <form action = "/api/v1/invoke" method = "POST">
+         unique_id: <input type = "text" name = "unique_id"><br>
+         peer: <input type = "text" name = "peer"><br>
+         function_name: <input type = "text" name = "function_name"><br>
+         parameters: <input type = "text" name = "parameters"><br>
+         <input type = "submit" value = "Submit">
+      </form>   
+      <b>Translate Results</b>
+      <p id="translate_results"><%= translate_results %></p>
+      <textarea name="translated_chaincode" rows="30" cols="200" white-space="pre-wrap"><%= translated_chaincode %></textarea><br>
+      <b>Compile Results</b>
+      <p id="compile_results"><%= compile_results %></p>  
+      <b>Deploy Results</b><br>
+      <textarea name="deploy_results" rows="30" cols="200" white-space="pre-wrap"><%= deploy_results %></textarea><br>
+      <b>Invoke Results</b><br>
+      <textarea name="invoke_results" rows="30" cols="200" white-space="pre-wrap"><%= invoke_results %></textarea><br>
+   </body>
+</html>

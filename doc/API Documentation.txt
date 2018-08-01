@@ -1,0 +1,144 @@
+API Documentation 
+Content-Type: application/json
+
+1. TRANSLATE
+    // POST /api/v1/translate
+    // Description: Translate a BPMN process model to Chaincode smart contract code. 
+    /*
+    POST format
+    {
+        // The BPMN model in XML
+        "xmlModel":
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?><bpmn:definitions>...
+        </bpmn:definitions>"
+    }
+    Response format
+    {
+        "errors": ["<ARRAY_OF_TRANSLATION_ERRORS>"] | null,
+        // Go chaincode smart contract output
+        "contractCode":
+        "type SmartContract struct {}..." | null
+        }
+    */
+
+2. FETCH PEERS
+    //POST /api/v1/account/fetch
+    // Description: this function returns a list of possible senders (peers) for a specific chaincode identified by its unique_id
+    /*
+    POST format
+    {
+        // The unique_id for a chaincode
+        "unique_id":"A2C4D6"
+    }
+    Response format
+    {
+        "error": "If error occurred" | null, 
+        "result": ["Restaurant", "Customer", "Deliverer" ...] 
+    }
+    */
+
+3. COMPILE
+    //POST /api/v1/compile
+    // Description: this function overwrite the uploaded chaincode to the specific unique_id and test compile it
+    /*
+    Post format
+    {
+        "contractCode": "pragma solidity ^0.4.18; contract ProcessFactory {...}",
+        "unique_id": "A2B4C6"
+    }
+    Response format
+    {
+    "errors": ["Compilation errors or warnings"] | null
+    // return bytecode to identify
+    "contracts": {"bytecode":"unique_id"}
+    */
+
+4. DEPLOYE
+    //POST /api/v1/deploy
+    // Description: this function deploys the process identified by the unique_id
+    /*
+    Request format
+    {
+        // Unique Id to identify the generated/compiled chaincode. 
+        "bytecode": "A2B4C6"
+    }
+    Response format
+    {
+        "error": "If error occurred" | null,
+        // UUID generated for deployment. Will be used to watch deployment progress. 
+        "result": "<DEPLOYMENT_ID_FOR_WATCHING_DEPLOYMENT_PROGRESS>"
+    }
+    */
+
+5. BRING DOWN
+    //POST /api/v1/bringdown
+    // Description: this function brings down the deployment identified by the unique_id
+    /*
+    Request format
+    {
+        // Unique Id to identify the deployment. 
+        "bytecode": "A2B4C6"
+    }
+    Response format
+    {
+        "error": "If error occurred" | null,
+    }
+    */
+
+6. LOCAL CALL
+    //POST /api/v1/contract/function/call
+    // Description: this function tests a function call "locally", meaning it only checks if the call is executable.
+    /*
+    Request body: 
+    {
+        "contractAddress": "A2B4C6", 
+        "fnName": "Confirm Order",
+        // Smart contract function parameters.
+        // Must specify in the same order as the 'inputs' array in the contract ABI. 
+        "fnParams": [
+        {
+            "value": "<PARAM_VALUE>"
+        } 
+        ],
+        "txParams": {
+        // participant/peer for calling the function "from": "Restaurant"
+        }
+    }
+    Response body:
+    {
+        "error": "If error occurred" | null, 
+        "result": "<FUNCTION_LOCAL_CALL_RESULT>"
+    }
+    */
+
+7. INVOKE
+    //POST /api/v1/contract/function/sendTx
+    // Description: this function invokes a function call to the ledger, which will affect everyone if succeeds.
+    /*
+    Request body: 
+    {
+        "contractAddress": "A2B4C6", 
+        "fnName": "Confirm Order",
+        // Smart contract function parameters.
+        // Must specify in the same order as the 'inputs' array in the contract ABI. 
+        "fnParams": [
+        {
+            "value": "<PARAM_VALUE>"
+        } 
+        ],
+        "txParams": {
+        // participant/peer for calling the function "from": "Restaurant"
+        }
+    }
+    Response body:
+    {
+        "error": "If error occurred" | null, 
+        "result": "<FUNCTION_LOCAL_CALL_RESULT>"
+    }
+    */
+
+8. GET EVENT LOGS
+    //POST /api/v1/contract/event/getLogs
+    // Description: this is not implemented because we did not find enough relevant information in Hyperledger Fabric.
+    // The closest we found is to get all historical values of a given state, which we used to save task status/tokens.
+    // This feature may be implemented by using GetHistoryForKey in the shim package.

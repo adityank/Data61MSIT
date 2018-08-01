@@ -1,0 +1,16 @@
+.idea/
+.DS_STORE
+out/
+logs/
+node_modules/
+src/Translator/at.js
+src/Translator/bt.js
+src/Translator/main.js
+src/Translator/mt.js
+src/Compiler/chaincode/
+package.json
+src/Server/tmp
+*.ppk
+*project.pem
+project
+*.log
