@@ -8,9 +8,9 @@ src/Translator/bt.js
 src/Translator/main.js
 src/Translator/mt.js
 src/Compiler/chaincode/
-package-lock.json
+package.json
 src/Server/tmp
 *.ppk
-project.pem
+*project.pem
 project
 *.log
