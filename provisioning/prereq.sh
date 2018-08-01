@@ -47,34 +47,10 @@ sudo service mysqld start
 echo "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Unchained#1';" | mysql --user=root --password="$(sudo grep 'temporary password' /var/log/mysqld.log | awk '{print substr($0, 92);}')" ""  --connect-expired-password
 echo "CREATE DATABASE bpmn;" | mysql --user=root --password="Unchained#1"
 
-# ----------------git setup----------------
-#ssh-keygen -t rsa -b 4096 -C ""
-#cat ~/.ssh/id_rsa.pub
-#git clone git@github.com:adityank/Data61MSIT.git
-#cd Data61MSIT
-#git checkout Integration_Second_Release
+# ----------------project setup----------------
 
-# ----------------npm install all packages globally------------------
-
-npm install -g express
-npm install -g shelljs
-npm install -g body-parser
-npm install -g ejs
-npm install -g get-port-sync
-npm install -g hashset
-npm install -g mysql
-npm install -g nodemon
-npm install -g shorthash
-npm install -g elementtree
-npm install -g fs
-npm install -g unique-string
-npm install -g import-fresh
-npm install -g strip-ansi
-
-
-export NODE_PATH=~/.nvm/versions/node/v8.9.4/lib/node_modules
-echo 'export NODE_PATH=~/.nvm/versions/node/v8.9.4/lib/node_modules' >> ~/.bash_profile
-
-sudo tar -xvf ~/aws_project/Data61MSIT.tar
-cd ~/aws_project/Data61MSIT/src/Server
+git clone https://github.com/adityank/Data61MSIT.git
+cd Data61MSIT
+npm install
+cd src/Server
 node server.js

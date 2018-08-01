@@ -3,6 +3,7 @@
 out/
 logs/
 src/*/node_modules/
+node_modules
 src/Translator/at.js
 src/Translator/bt.js
 src/Translator/main.js
