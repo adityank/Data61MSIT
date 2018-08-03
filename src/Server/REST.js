@@ -84,9 +84,9 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
 
         filename = "tmp/" + unique_id + ".bpmn";
 
-        var parse = importFresh("../Translator/parser.js");
+        var parser = importFresh("../Translator/parser.js");
         var translate_results;
-        try {translate_results = parse(receive.xmlModel,unique_id);}
+        try {translate_results = parser.parse(receive.xmlModel,unique_id);}
         catch (err) {
             response = {
                 "errors":[err.toString()],

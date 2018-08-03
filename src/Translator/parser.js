@@ -28,6 +28,8 @@
 ******************************************************************************************************************/
 
 var fs = require('fs');
+var path = require('path');
+var out_root = path.join(__dirname, '../../out/');
 var et = require('elementtree');
 var HashSet = require('hashset');
 var generateYAML = require('./YamlGenerator');
@@ -285,17 +287,16 @@ function parse(data,unique_id){
     catch (err) {return {errors: [err.toString()], num_peers: orgs.length, chaincode: null};}
 
     // Write orgs to peers.txt for deployer reference
-    var file = "../../out/" + unique_id + "/peers.txt";
+    var file = out_root + unique_id + "/peers.txt";
     fs.writeFileSync(file, "");
     for(var iter=0;iter<orgs.length;iter++){
         fs.appendFileSync(file, orgs[iter]+"\n");
     }
-    var gofile = "../../out/" + unique_id + "/chaincode/chaincode.go";
+    var gofile = out_root + unique_id + "/chaincode/chaincode.go";
     var chaincode = fs.readFileSync(gofile,'utf-8');
     return {errors: null, num_peers: orgs.length, chaincode: chaincode};
 }
 
-module.exports = parse;
 
 // Helper function for testing the module by given bpmn filename
 function parse_by_file(filename,unique_id) {
@@ -303,13 +304,6 @@ function parse_by_file(filename,unique_id) {
     return parse(data,unique_id);
 }
 
-/*
-test = "nested_child_lanes";
-result = parse_by_file("../../bpmn_examples/"+test+".bpmn",test);
-console.log(result.errors);
-console.log(result.num_peers);
-// test cases:
-// invalid_lane_name duplicated_lane_names nested_child_lanes unnamed_lanes participant_without_lane
-// no_participant inclusive_gateway duplicated_function_names
 
-*/
+module.exports = {parse:parse,parse_by_file:parse_by_file};
+
