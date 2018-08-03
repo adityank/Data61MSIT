@@ -97,6 +97,19 @@ func (s *SmartContract) DoTask(APIstub shim.ChaincodeStubInterface, targetEvent 
 }
 
 
+func (s *SmartContract) LocalTask(APIstub shim.ChaincodeStubInterface, targetEvent Event) (bool,error) {
+    if targetEvent.Type == "task" {
+        if (targetEvent.Token > 0 || len(targetEvent.XORtoken)>0) {
+            return true, nil
+        } else {
+            return false, nil
+        }
+    } else {
+        return false, errors.New("Event type unexecutable: "+targetEvent.ID+", "+targetEvent.Type)
+    }
+}
+
+
 func (s *SmartContract) ConsumeToken(APIstub shim.ChaincodeStubInterface, event Event) (error) {
     event.Token -= 1
     return s.PutEvent(APIstub, event)
@@ -281,6 +294,47 @@ func (s *SmartContract) Invoke(APIstub shim.ChaincodeStubInterface) peer.Respons
         return s.initLedger(APIstub)
     } else if function == "resetLedger" { // This is for testing purpose only
         return s.Init(APIstub)
+    } else if function == "_localCall" {
+        if len(args)==0 {
+            return shim.Error("Must provide a function name.")
+        }
+
+        local_function := args[0]
+
+        FunctionsAsBytes, err := APIstub.GetState("Functions")
+        if err!=nil {
+            return shim.Error(err.Error())
+        }
+
+        Functions := map[string]string{}
+        json.Unmarshal(FunctionsAsBytes, &Functions)
+
+        if Functions[local_function]=="" {
+            return shim.Error("Invalid function name.")
+        }
+
+        taskEvent, err := s.GetEvent(APIstub, Functions[local_function])
+        if err!=nil {
+            return shim.Error(err.Error())
+        }
+
+        // At the moment, we only care about the caller's domain
+        _, caller, err := s.GetCaller(APIstub)
+        if err!=nil {
+            return shim.Error(err.Error())
+        }
+        if s.CheckAccess(caller, taskEvent) {
+            success, err := s.LocalTask(APIstub, taskEvent)
+            if err!=nil {
+                return shim.Error(err.Error())
+            } else if success {
+                return shim.Success([]byte("This function call is valid."))
+            } else {
+                return shim.Error("Requested function does not follow the business logic.")
+            }
+        } else {
+            return shim.Error(caller+" does not have access to function "+local_function)
+        }
     } else {
         FunctionsAsBytes, err := APIstub.GetState("Functions")
         if err!=nil {

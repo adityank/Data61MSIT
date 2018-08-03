@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_11ir3oy" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:collaboration id="Collaboration_135wl4n">
+    <bpmn:participant id="Participant_02bj9zb" name="Participant" processRef="Process_1" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_1" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1guhohm">
+      <bpmn:lane id="Lane_16oohxf" name="Lane1">
+        <bpmn:flowNodeRef>EndEvent_0fgokvp</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_0qsouxq</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_0srug69" name="Lane1">
+        <bpmn:flowNodeRef>Task_0y1bx2n</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>StartEvent_1</bpmn:flowNodeRef>
+        <bpmn:childLaneSet id="LaneSet_0f7oskg" />
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:sequenceFlow id="SequenceFlow_0h8123d" sourceRef="StartEvent_1" targetRef="Task_0y1bx2n" />
+    <bpmn:sequenceFlow id="SequenceFlow_03brhy4" sourceRef="Task_0y1bx2n" targetRef="Task_0qsouxq" />
+    <bpmn:sequenceFlow id="SequenceFlow_1k8m1s6" sourceRef="Task_0qsouxq" targetRef="EndEvent_0fgokvp" />
+    <bpmn:endEvent id="EndEvent_0fgokvp">
+      <bpmn:incoming>SequenceFlow_1k8m1s6</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:task id="Task_0qsouxq" name="Task B">
+      <bpmn:incoming>SequenceFlow_03brhy4</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_1k8m1s6</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_0y1bx2n" name="Task A">
+      <bpmn:incoming>SequenceFlow_0h8123d</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_03brhy4</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>SequenceFlow_0h8123d</bpmn:outgoing>
+    </bpmn:startEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_135wl4n">
+      <bpmndi:BPMNShape id="Participant_02bj9zb_di" bpmnElement="Participant_02bj9zb">
+        <dc:Bounds x="123" y="60" width="600" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="182" y="238" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_0y1bx2n_di" bpmnElement="Task_0y1bx2n">
+        <dc:Bounds x="269" y="216" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_0h8123d_di" bpmnElement="SequenceFlow_0h8123d">
+        <di:waypoint x="218" y="256" />
+        <di:waypoint x="269" y="256" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Lane_16oohxf_di" bpmnElement="Lane_16oohxf">
+        <dc:Bounds x="153" y="60" width="570" height="125" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_0srug69_di" bpmnElement="Lane_0srug69">
+        <dc:Bounds x="153" y="185" width="570" height="125" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_0qsouxq_di" bpmnElement="Task_0qsouxq">
+        <dc:Bounds x="472" y="80" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_03brhy4_di" bpmnElement="SequenceFlow_03brhy4">
+        <di:waypoint x="369" y="256" />
+        <di:waypoint x="393" y="256" />
+        <di:waypoint x="393" y="120" />
+        <di:waypoint x="472" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="EndEvent_0fgokvp_di" bpmnElement="EndEvent_0fgokvp">
+        <dc:Bounds x="612" y="102" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_1k8m1s6_di" bpmnElement="SequenceFlow_1k8m1s6">
+        <di:waypoint x="572" y="120" />
+        <di:waypoint x="612" y="120" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

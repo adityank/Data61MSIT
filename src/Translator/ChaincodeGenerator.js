@@ -4,8 +4,9 @@
 * Copyright: Team Unchained
 * Versions:
 *   
-* 1.0 March 2018 - Initial implementation by Dongliang Zhou
-* 2.0 June 2018 - Modified to use unique id. Dongliang Zhou
+*   March 2018 - Dongliang Zhou - Initial implementation
+*   June 2018 - Dongliang Zhou - Modified to use unique id
+*   Junly 2018 - Dongliang Zhou - Added comments
 *
 * Description: This is the generator that genereates chaincode in a .go file which implements the BPMN logic.
 *
@@ -18,6 +19,7 @@ var fs = require('fs'),
 var logger = require('../Logger/logger');
 
 
+// Helper function to check dir and mkdir
 function checkPath(unique_id) {
     if (!fs.existsSync('../../out')) {
         fs.mkdirSync('../../out');
@@ -31,21 +33,24 @@ function checkPath(unique_id) {
 }
 
 
+// Main function to generate chaincode go file
 function generateGo(unique_id, tasks) {
-    console.log('---begin generating Go chaincode---');
-
+    //console.log('---begin generating Go chaincode---');
     logger.log('translator','---begin generating Go chaincode---');
     
-    checkPath(unique_id)
-    var outpath = '../../out/'+unique_id+'/chaincode/';
-    var writer = fs.createWriteStream(outpath+'chaincode.go');
+    checkPath(unique_id);
+    var outpath = '../../out/'+unique_id+'/chaincode/chaincode.go';
+    fs.writeFileSync(outpath, "");
+
     var domain = unique_id + '.com';
 
+    // Write header
     var header_template = fs.readFileSync('../../template/chaincode_header.go', 'utf8');
     header_template.split(/\r?\n/).forEach(function(line){
-            writer.write(eval('`'+line+'\n`'));
-        })
+            fs.appendFileSync(outpath,eval('`'+line+'\n`'));
+        });
 
+    // Write all elements(Tasks)
     var event_setup_template = fs.readFileSync('../../template/chaincode_event_setup.go', 'utf8');
     for (var i=0; i<tasks.length; i++) {
         var task = tasks[i]
@@ -70,25 +75,18 @@ function generateGo(unique_id, tasks) {
             function_control = 'Functions[event.Name]=event.ID';
         }
         event_setup_template.split(/\r?\n/).forEach(function(line){
-            writer.write(eval('`'+line+'\n`'));
+            fs.appendFileSync(outpath,eval('`'+line+'\n`'));
         });
     }
 
+    // Write remaining body part
     var body_template = fs.readFileSync('../../template/chaincode_body.go', 'utf8');
     body_template.split(/\r?\n/).forEach(function(line){
-            writer.write(eval('`'+line+'\n`'));
-        })
+            fs.appendFileSync(outpath,eval('`'+line+'\n`'));
+        });
 
-    writer.end();
-    console.log('---end generating Go chaincode---');
+    //console.log('---end generating Go chaincode---');
     logger.log('translator','---end generating Go chaincode---');
-    
 }
 
 module.exports = generateGo;
-
-// var tasks = [{Type:'START', ID: 'sta123', Name:'Start', Parents:[], Children:['cre123'], Lane:'restaurant.example.com'},
-//          {Type:'task', ID: 'cre123', Name:'Creat Order', Parents:['sta123'], Children:['and123'], Lane:'customer.example.com'},
-//          {Type:'AND', ID: 'and123', Name:'Parellel Gateway', Parents:['cre123','cre666'], Children:[], Lane:'restaurant.example.com'}];
-// var unique_id = '1';
-// generateGo(unique_id, tasks);

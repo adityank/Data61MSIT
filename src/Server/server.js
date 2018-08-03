@@ -1,5 +1,18 @@
-// BPMN server
-// @by700git
+/******************************************************************************************************************
+* File: server.js
+* Project: MSIT-SE Studio Project (Data61)
+* Copyright: Team Unchained
+* Versions:
+*   
+*   June 2018 - Xue Liu - Initial implementation
+*
+* Description: This is the server module to provide RESTful API.
+*
+* External Dependencies: 
+* 1. mysql, express, body-parser
+* 2. bpmn database in mysql
+*
+******************************************************************************************************************/
 
 var express = require("express");             //express is a Node.js web application framework 
 var mysql   = require("mysql");               //Database

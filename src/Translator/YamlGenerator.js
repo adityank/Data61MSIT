@@ -1,12 +1,28 @@
+/******************************************************************************************************************
+* File: YamlGenerator.js
+* Project: MSIT-SE Studio Project (Data61)
+* Copyright: Team Unchained
+* Versions:
+*   
+*   May 2018 - Dongliang Zhou - Initial implementation
+*   July 2018 - Dongliang Zhou - Minor bug fix and add comments
+*
+* Description: This is the module to generate YAML files for deployment purposes
+*
+* Dependencies: ../template/*.yaml
+*
+******************************************************************************************************************/
+
+
 var fs = require('fs'),
     readline = require('readline'),
     outpath = '';
-
-
 var logger = require('../Logger/logger');
 
+
+// Helper function to generate crypto-config.yaml
 function generateCryptoConfig(orgs, unique_id) {
-    console.log('---begin generating crypto-config.yaml---');
+    //console.log('---begin generating crypto-config.yaml---');
     logger.log('translator','---begin generating crypto-config.yaml---');
     var writer = fs.createWriteStream(outpath+'crypto-config.yaml');
 
@@ -27,13 +43,14 @@ function generateCryptoConfig(orgs, unique_id) {
         })
     }
     writer.end();
-    console.log('---end generating crypto-config.yaml---');
+    //console.log('---end generating crypto-config.yaml---');
     logger.log('translator','---end generating crypto-config.yaml---');
 
 }
 
+// Helper function to generate configtx.yaml
 function generateConfigTX(orgs, unique_id) {
-    console.log('---begin generating configtx.yaml---');
+    //console.log('---begin generating configtx.yaml---');
     logger.log('translator','---begin generating configtx.yaml---');
 
     var writer = fs.createWriteStream(outpath+'configtx.yaml');
@@ -64,12 +81,14 @@ function generateConfigTX(orgs, unique_id) {
         });
     }
     writer.end();
-    console.log('---end generating configtx.yaml---');
+    //console.log('---end generating configtx.yaml---');
     logger.log('translator','---end generating configtx.yaml---');    
 }
 
+
+// Helper function to generate docker-compose-cli.yaml
 function generateDockerComposeCli(orgs, unique_id) {    
-    console.log('---begin generating docker-compose-cli.yaml---');
+    //console.log('---begin generating docker-compose-cli.yaml---');
     logger.log('translator','---begin generating docker-compose-cli.yaml---');        
     var writer = fs.createWriteStream(outpath+'docker-compose-cli.yaml');
 
@@ -116,28 +135,26 @@ function generateDockerComposeCli(orgs, unique_id) {
         });
     }
     writer.end();
-    console.log('---end generating docker-compose-cli.yaml---');
+    //console.log('---end generating docker-compose-cli.yaml---');
     logger.log('translator','---end generating docker-compose-cli.yaml---');            
 }
 
+
+// Helper function to generate docker-compose-base.yaml
 function generateDockerComposeBase(orgs, unique_id) {
-    console.log('---begin generating docker-compose-base.yaml---');
+    //console.log('---begin generating docker-compose-base.yaml---');
     logger.log('translator','---begin generating docker-compose-base.yaml---');
 
     var writer = fs.createWriteStream(outpath+'base/docker-compose-base.yaml');
-
     var domain = unique_id + '.com';
 
-    var template = fs.readFileSync('../../template/base/docker-compose-base.yaml', 'utf8');
-    
+    var template = fs.readFileSync('../../template/base/docker-compose-base.yaml', 'utf8');    
     var ordererPort = "$port0";
-
     template.split(/\r?\n/).forEach(function(line){
             writer.write(eval('`'+line+'\n`'));
         });
 
     var peer_template = fs.readFileSync('../../template/base/docker-compose-base-peer.yaml', 'utf8');
-
     for (var i = orgs.length - 1; i >= 0; i--) {
         var peerName = orgs[i];
         var peerDomainPrefix = peerName;
@@ -149,31 +166,32 @@ function generateDockerComposeBase(orgs, unique_id) {
     }
 
     writer.end();
-    console.log('---end generating docker-compose-base.yaml---');
+    //console.log('---end generating docker-compose-base.yaml---');
     logger.log('translator','---end generating docker-compose-base.yaml---');
-
 }
 
+
+// Helper function to generate peer-base.yaml
 function generatePeerBase(unique_id) {
-    console.log('---begin generating peer-base.yaml---');
+    //console.log('---begin generating peer-base.yaml---');
     logger.log('translator','---begin generating peer-base.yaml---');
     
     var writer = fs.createWriteStream(outpath+'base/peer-base.yaml');
     var domain = unique_id + '.com';
 
-    var template = fs.readFileSync('../../template/base/peer-base.yaml', 'utf8');
-    
+    var template = fs.readFileSync('../../template/base/peer-base.yaml', 'utf8');    
     template.split(/\r?\n/).forEach(function(line){
             writer.write(eval('`'+line+'\n`'));
         });
     writer.end();
-    console.log('---end generating peer-base.yaml---');
+    //console.log('---end generating peer-base.yaml---');
     logger.log('translator','---end generating peer-base.yaml---');
-    
 }
 
+
+// Main function to generate YAML files
 function generateYAML(orgs, unique_id) {
-    console.log('---begin generating YAML files---');
+    //console.log('---begin generating YAML files---');
     logger.log('translator','---begin generating YAML files---');
     outpath = '../../out/'+unique_id+'/';
     checkPath(unique_id);
@@ -182,11 +200,12 @@ function generateYAML(orgs, unique_id) {
     generateCryptoConfig(orgs, unique_id);
     generateConfigTX(orgs, unique_id);
     generateDockerComposeCli(orgs, unique_id);
-    console.log('---end generating YAML files---');
-    logger.log('translator','---begin generating YAML files---');
-    
+    //console.log('---end generating YAML files---');
+    logger.log('translator','---begin generating YAML files---');   
 }
 
+
+// Helper function to check dir and mkdir
 function checkPath(unique_id) {
     if (!fs.existsSync('../../out')) {
         fs.mkdirSync('../../out');
