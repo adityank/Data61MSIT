@@ -55,13 +55,18 @@ function Task(id,type,name,lane,children,parents) {
 
 
 // Parse XML format BPMN to a tree object
-function getElementTree(data){
+function getElementTree(etree,data){
     // In particular, tree for XML file
     var XML = et.XML;
     var ElementTree = et.ElementTree;
 
     // The input bpmn file
-    return et.parse(data);
+    try{
+        etree = et.parse(data);
+    }
+    catch(err){
+        return "Invalid BPMN";    
+    }
 }
 
 
@@ -254,7 +259,11 @@ function formArray(typeMap,nameMap,laneMap,incomingMap,outgoingMap){
 function parse(data,unique_id){
     logger.init(unique_id);
     //tree
-    var etree = getElementTree(data);
+    var err = null;
+    var etree;
+    err = getElementTree(etree,data);
+    if (err) return {errors: [err.toString()], num_peers: 0, chaincode: null};
+
     //sequence
     var flows = getFlows(etree);
     
@@ -262,7 +271,7 @@ function parse(data,unique_id){
     var nameMap = {};
     var typeMap = {};
     var functionNames = new HashSet();
-    var err = null;
+   
     err = getNameAndTypeMappings(etree,typeMap,nameMap,functionNames);
     if (err) return {errors: [err.toString()], num_peers: 0, chaincode: null};
 
@@ -304,6 +313,7 @@ function parse_by_file(filename,unique_id) {
     return parse(data,unique_id);
 }
 
+parse_by_file("../../bpmn_examples/pizza.bpmn","adi");
 
 module.exports = {parse:parse,parse_by_file:parse_by_file};
 
