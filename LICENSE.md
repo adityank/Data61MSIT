@@ -1,6 +1,11 @@
 MIT License
 
-Copyright (c) 2018 Aditya Kamble
+Copyright (c) 2018 Team Unchained at MSIT-SE Carnegie Mellon University batch of 2017-18. 
+
+Members of the team are:
+Aditya Kamble
+Dongliang Zhou
+Xue Liu
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
