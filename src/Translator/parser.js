@@ -36,6 +36,7 @@ var generateYAML = require('./YamlGenerator');
 var generateGo = require('./ChaincodeGenerator');
 var logger = require('../Logger/logger');
 
+var etree;
 
 // Helper structure for an object in BPMN (event, task, gateway)
 function Task(id,type,name,lane,children,parents) {
@@ -55,13 +56,14 @@ function Task(id,type,name,lane,children,parents) {
 
 
 // Parse XML format BPMN to a tree object
-function getElementTree(etree,data){
+function getElementTree(data){
     // In particular, tree for XML file
-    var XML = et.XML;
-    var ElementTree = et.ElementTree;
+    
 
     // The input bpmn file
     try{
+        var XML = et.XML;
+        var ElementTree = et.ElementTree;
         etree = et.parse(data);
     }
     catch(err){
@@ -72,7 +74,7 @@ function getElementTree(etree,data){
 
 // Helper function to get mappings from id to type and id to name
 // And insert function names into a hashset to check duplicates
-function getNameAndTypeMappings(etree,typeMap,nameMap,functionNames){
+function getNameAndTypeMappings(typeMap,nameMap,functionNames){
     var tasks = etree.findall('./bpmn:process/bpmn:task');
 
     // Check here if taskname is unique
@@ -186,7 +188,7 @@ function getDependancies(flows,incomingMap,outgoingMap,typeMap,nameMap,laneMap,f
 
 // Helper function to get mappings from id to lane name and list of peers(orgs)
 // Returns any error message or null
-function getOrgsAndAccess(etree,orgs,laneMap){
+function getOrgsAndAccess(orgs,laneMap){
     // Get all participants(lanes)
     var childlanes,numchildlanes,laneName,accessible,childlane;
 
@@ -260,8 +262,8 @@ function parse(data,unique_id){
     logger.init(unique_id);
     //tree
     var err = null;
-    var etree;
-    err = getElementTree(etree,data);
+   
+    err = getElementTree(data);
     if (err) return {errors: [err.toString()], num_peers: 0, chaincode: null};
 
     //sequence
@@ -272,13 +274,13 @@ function parse(data,unique_id){
     var typeMap = {};
     var functionNames = new HashSet();
    
-    err = getNameAndTypeMappings(etree,typeMap,nameMap,functionNames);
+    err = getNameAndTypeMappings(typeMap,nameMap,functionNames);
     if (err) return {errors: [err.toString()], num_peers: 0, chaincode: null};
 
     //access control
     var orgs = [];
     var laneMap = {};
-    err = getOrgsAndAccess(etree,orgs,laneMap);
+    err = getOrgsAndAccess(orgs,laneMap);
     if (err) return {errors: [err.toString()], num_peers: 0, chaincode: null};
 
     //task flow
@@ -313,7 +315,7 @@ function parse_by_file(filename,unique_id) {
     return parse(data,unique_id);
 }
 
-parse_by_file("../../bpmn_examples/pizza.bpmn","adi");
+//parse_by_file("../../bpmn_examples/pizza.bpmn","adi");
 
 module.exports = {parse:parse,parse_by_file:parse_by_file};
 
