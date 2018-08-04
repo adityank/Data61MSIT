@@ -30,8 +30,8 @@ function checkPath(unique_id) {
     if (!fs.existsSync(out_root+unique_id)) {
         fs.mkdirSync(out_root+unique_id);
     }
-    if (!fs.existsSync(out_root+unique_id+'/base/')) {
-        fs.mkdirSync(out_root+unique_id+'/base/');
+    if (!fs.existsSync(out_root+unique_id+'/chaincode/')) {
+        fs.mkdirSync(out_root+unique_id+'/chaincode/');
     }
 }
 
