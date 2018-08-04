@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2018 Team Unchained at MSIT-SE Carnegie Mellon University batch of 2017-18. 
+Copyright (c) 2018 Team Unchained at Carnegie Mellon University MSIT-SE batch of 2017-18. 
 
 Members of the team are:
 Aditya Kamble, Dongliang Zhou and Xue Liu
