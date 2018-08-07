@@ -18,6 +18,8 @@
 // module for file-system
 var fs = require('fs');
 var shell = require('shelljs');
+var path = require('path');
+var out_root = path.join(__dirname, '../../out/');
 var logger = require('../Logger/logger');
 
 // This function tries to compile the chaincode that exists in ../../out/unique_id/chaincode
@@ -26,7 +28,7 @@ function compile(unique_id) {
     logger.init(unique_id);
     console.log('Start compiling...')
 
-    obj = shell.exec('cd ../../out/'+unique_id+'/chaincode/ && go build --tags nopkcs11 chaincode.go');
+    obj = shell.exec('cd '+out_root+unique_id+'/chaincode/ && go build --tags nopkcs11 chaincode.go');
     if(obj.code !== 0) {
         //console.log('Compilation failed.');
         //console.log(obj.stdout);

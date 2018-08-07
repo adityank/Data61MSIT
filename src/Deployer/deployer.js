@@ -20,6 +20,8 @@
 
 var shell = require('shelljs');
 var fs = require('fs');
+var path = require('path');
+var out_root = path.join(__dirname, '../../out/');
 var logger = require('../Logger/logger');
 const stripAnsi = require('strip-ansi');
 
@@ -203,7 +205,7 @@ function getPeers(unique_id){
 function deploy(unique_id,stage,ports){
     channelProfile = unique_id + "Channel";
     channelName = "mychannel";
-    deploymentPath = "../../out/" + unique_id + "/";
+    deploymentPath = out_root + unique_id + "/";
     fabricSamplesPath = "~/fabric-samples/";
 
     var err;
@@ -274,7 +276,8 @@ function deploy(unique_id,stage,ports){
         // Wait 10 seconds for all containers to start
         logger.log('deployer', 'before wait');
         var start = new Date().getTime();
-        while ((new Date().getTime() - start) < 10000){
+        var waittime = 10000;
+        while ((new Date().getTime() - start) < waittime){
             // wait for network to run
             stage = 2;
         }
@@ -362,7 +365,7 @@ function deploy(unique_id,stage,ports){
 // This function brings down the deployed environment
 // Returns {result: final stage number, error: if any error message}
 function bringDown(unique_id,stage) {
-    deploymentPath = "../../out/" + unique_id + "/";
+    deploymentPath = out_root + unique_id + "/";
 
     logger.init(unique_id);
     logger.log('deployer',"........----------------Starting to log deployment-----------------.............");  
