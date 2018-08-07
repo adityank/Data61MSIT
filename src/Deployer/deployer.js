@@ -276,7 +276,8 @@ function deploy(unique_id,stage,ports){
         // Wait 10 seconds for all containers to start
         logger.log('deployer', 'before wait');
         var start = new Date().getTime();
-        while ((new Date().getTime() - start) < 10000){
+        var waittime = 10000;
+        while ((new Date().getTime() - start) < waittime){
             // wait for network to run
             stage = 2;
         }
