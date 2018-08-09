@@ -68,7 +68,25 @@ function getElementTree(data){
 // Helper function to get mappings from id to type and id to name
 // And insert function names into a hashset to check duplicates
 function getNameAndTypeMappings(etree,typeMap,nameMap,functionNames){
-    var tasks = etree.findall('./bpmn:process/bpmn:task');
+
+    var tasks = [];
+    var normalTasks = etree.findall('./bpmn:process/bpmn:task');
+    var sendTasks = etree.findall('./bpmn:process/bpmn:sendTask');
+    var receiveTasks = etree.findall('./bpmn:process/bpmn:receiveTask');
+    var userTasks = etree.findall('./bpmn:process/bpmn:userTask');
+    var manualTasks = etree.findall('./bpmn:process/bpmn:manualTask');
+    var businessRuleTasks = etree.findall('./bpmn:process/bpmn:businessRuleTask');
+    var scriptTasks = etree.findall('./bpmn:process/bpmn:scriptTask');
+    var serviceTasks = etree.findall('./bpmn:process/bpmn:serviceTask');
+    
+    tasks = tasks.concat(normalTasks);
+    tasks = tasks.concat(sendTasks);
+    tasks = tasks.concat(receiveTasks);
+    tasks = tasks.concat(userTasks);
+    tasks = tasks.concat(manualTasks);
+    tasks = tasks.concat(businessRuleTasks);
+    tasks = tasks.concat(scriptTasks);  
+    tasks = tasks.concat(serviceTasks);
 
     // Check here if taskname is unique
     for(var iter=0; iter<tasks.length; iter++){
